@@ -1,0 +1,14 @@
+# .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+
+# Rider / Visual Studio
+.idea/
+.vs/
+*.sln.DotSettings.user
+
+# macOS
+.DS_Store
