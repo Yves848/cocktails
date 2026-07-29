@@ -1,172 +1,60 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Cocktails.Core;
-using Cocktails.Core.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
+/// <summary>
+/// Shell de l'application : navigation latérale + écran actif. Chaque écran est un
+/// <see cref="ScreenViewModel"/> autonome ; le shell se contente de commuter l'écran
+/// courant et d'exposer son état pour la barre d'état.
+/// </summary>
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly IHomebrewService _homebrew;
-
-    /// <summary>
-    /// Recharge la vue courante (installés / résultats de recherche / obsolètes).
-    /// Ré-exécuté après une installation ou une désinstallation pour refléter le
-    /// nouvel état sans changer de vue. Ne gère pas l'état occupé : appelé depuis
-    /// l'intérieur de <see cref="RunAsync"/>.
-    /// </summary>
-    private Func<Task> _reload;
+    // Icônes tracées au trait (viewBox 24×24, style Lucide).
+    private const string IconInstalled =
+        "M21 8v8a2 2 0 0 1-1 1.73l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.73l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z M3.3 7 12 12l8.7-5 M12 22V12";
+    private const string IconSearch =
+        "M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z M21 21l-4.35-4.35";
+    private const string IconUpdates =
+        "M12 3v12 M8 11l4 4 4-4 M3 21h18";
+    private const string IconMaintenance =
+        "M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z";
+    private const string IconSettings =
+        "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6";
 
     public MainViewModel(IHomebrewService homebrew)
     {
-        _homebrew = homebrew;
-        _reload = LoadInstalledCoreAsync;
+        NavItems =
+        [
+            new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew)),
+            new NavItem("Rechercher", IconSearch, new SearchViewModel(homebrew)),
+            new NavItem("Mises à jour", IconUpdates, new OutdatedViewModel(homebrew)),
+            new NavItem("Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
+            new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew)),
+        ];
+        SelectedNav = NavItems[0];
     }
 
-    /// <summary>Constructeur sans argument pour le previewer XAML (design-time).</summary>
-    public MainViewModel()
-        : this(new DesignHomebrewService())
+    /// <summary>Constructeur design-time (previewer XAML).</summary>
+    public MainViewModel() : this(new DesignHomebrewService())
     {
     }
 
-    public ObservableCollection<Package> Packages { get; } = [];
+    public ObservableCollection<NavItem> NavItems { get; }
 
     [ObservableProperty]
-    public partial string SearchQuery { get; set; } = string.Empty;
+    public partial NavItem? SelectedNav { get; set; }
 
     [ObservableProperty]
-    public partial string StatusMessage { get; set; } = "Prêt.";
+    public partial ScreenViewModel? CurrentScreen { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsBusy { get; set; }
-
-    // --- Chargement des vues ---------------------------------------------------
-
-    [RelayCommand]
-    private async Task RefreshInstalledAsync()
+    partial void OnSelectedNavChanged(NavItem? value)
     {
-        _reload = LoadInstalledCoreAsync;
-        await RunAsync("Chargement des packages installés…", _reload);
-    }
-
-    [RelayCommand]
-    private async Task SearchAsync()
-    {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
+        CurrentScreen = value?.Screen;
+        if (value?.Screen is { } screen)
         {
-            await RefreshInstalledAsync();
-            return;
-        }
-
-        _reload = SearchCoreAsync;
-        await RunAsync($"Recherche de « {SearchQuery.Trim()} »…", _reload);
-    }
-
-    [RelayCommand]
-    private async Task ShowOutdatedAsync()
-    {
-        _reload = LoadOutdatedCoreAsync;
-        await RunAsync("Recherche des mises à jour…", _reload);
-    }
-
-    // --- Actions par package ---------------------------------------------------
-
-    [RelayCommand]
-    private async Task InstallAsync(Package? package)
-    {
-        if (package is null)
-        {
-            return;
-        }
-
-        await RunAsync($"Installation de « {package.Name} »…", async () =>
-        {
-            await _homebrew.InstallAsync(package.Name);
-            await _reload();
-            StatusMessage = $"« {package.Name} » installé.";
-        });
-    }
-
-    [RelayCommand]
-    private async Task UninstallAsync(Package? package)
-    {
-        if (package is null)
-        {
-            return;
-        }
-
-        await RunAsync($"Désinstallation de « {package.Name} »…", async () =>
-        {
-            await _homebrew.UninstallAsync(package.Name);
-            await _reload();
-            StatusMessage = $"« {package.Name} » désinstallé.";
-        });
-    }
-
-    // --- Loaders (sans garde d'état occupé, réutilisables par _reload) ---------
-
-    private async Task LoadInstalledCoreAsync()
-    {
-        var installed = await _homebrew.GetInstalledAsync();
-        Replace(installed);
-        StatusMessage = $"{installed.Count} package(s) installé(s).";
-    }
-
-    private async Task SearchCoreAsync()
-    {
-        var query = SearchQuery.Trim();
-        var results = await _homebrew.SearchAsync(query);
-        Replace(results);
-        StatusMessage = $"{results.Count} résultat(s) pour « {query} ».";
-    }
-
-    private async Task LoadOutdatedCoreAsync()
-    {
-        var outdated = await _homebrew.GetOutdatedAsync();
-        Replace(outdated);
-        StatusMessage = outdated.Count == 0
-            ? "Tout est à jour."
-            : $"{outdated.Count} mise(s) à jour disponible(s).";
-    }
-
-    private void Replace(IReadOnlyList<Package> packages)
-    {
-        Packages.Clear();
-        foreach (var p in packages)
-        {
-            Packages.Add(p);
-        }
-    }
-
-    /// <summary>Exécute une opération en gérant l'état occupé et les erreurs Homebrew.</summary>
-    private async Task RunAsync(string busyMessage, Func<Task> action)
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        IsBusy = true;
-        StatusMessage = busyMessage;
-        try
-        {
-            await action();
-        }
-        catch (HomebrewException ex)
-        {
-            StatusMessage = $"Erreur brew : {ex.StandardError}".Trim();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Erreur : {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
+            _ = screen.ActivateAsync();
         }
     }
 }

@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Cocktails.ViewModels"
+             xmlns:models="using:Cocktails.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
+             x:Class="Cocktails.Views.OutdatedView"
+             x:DataType="vm:OutdatedViewModel">
+
+    <Design.DataContext>
+        <vm:OutdatedViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="18,16,18,10">
+            <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
+                       FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="act" Content="Rafraîchir" Margin="0,0,8,0"
+                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="2" Classes="act primary" Content="Tout mettre à jour"
+                    Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
+        </Grid>
+
+        <ListBox x:Name="List" Grid.Row="1" Classes="rows" Margin="10,0,10,10"
+                 ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:Package">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                        <Border Classes="badge" Grid.Column="0">
+                            <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextMuted}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Classes="body" Text="{Binding Name}" />
+                            <TextBlock Classes="muted" Text="{Binding KindLabel}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center"
+                                   Margin="0,0,8,0" Opacity="0.7"
+                                   Text="{Binding InstalledVersion}" />
+                        <Border Grid.Column="3" Classes="chip" Margin="0,0,10,0">
+                            <TextBlock FontSize="11.5" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Warning}"
+                                       Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
+                        </Border>
+                        <Button Grid.Column="4" Classes="act primary small" Content="Mettre à jour"
+                                Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
+                                CommandParameter="{Binding}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

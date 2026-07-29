@@ -130,6 +130,32 @@
     <Setter Property="CornerRadius" Value="12" />
   </Style>
 
+  <!-- Navigation latérale (ListBox.nav) -->
+  <Style Selector="ListBox.nav">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="10,14" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem">
+    <Setter Property="Padding" Value="11,9" />
+    <Setter Property="Margin" Value="0,1" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#0DFFFFFF" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:selected">
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+  </Style>
+
   <!-- Puce (pill) : type / catégorie -->
   <Style Selector="Border.chip">
     <Setter Property="Background" Value="{StaticResource AccentSoft}" />

@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Cocktails.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
+             x:Class="Cocktails.Views.MaintenanceView"
+             x:DataType="vm:MaintenanceViewModel">
+
+    <Design.DataContext>
+        <vm:MaintenanceViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
+                   Margin="18,16,18,10" />
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="8" MaxWidth="360">
+            <TextBlock Classes="body" HorizontalAlignment="Center"
+                       Text="Nettoyage &amp; diagnostic" />
+            <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap"
+                       Text="Nettoyage du cache, retrait des dépendances orphelines, diagnostic (brew doctor) et gestion des services. À venir (phase 2)." />
+        </StackPanel>
+    </Grid>
+</UserControl>
