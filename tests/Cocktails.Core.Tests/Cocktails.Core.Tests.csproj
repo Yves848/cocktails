@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cocktails.Core\Cocktails.Core.csproj" />
+    <ProjectReference Include="..\..\src\Cocktails\Cocktails.csproj" />
   </ItemGroup>
 
 </Project>

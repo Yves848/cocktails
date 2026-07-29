@@ -13,9 +13,18 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly IHomebrewService _homebrew;
 
+    /// <summary>
+    /// Recharge la vue courante (installés / résultats de recherche / obsolètes).
+    /// Ré-exécuté après une installation ou une désinstallation pour refléter le
+    /// nouvel état sans changer de vue. Ne gère pas l'état occupé : appelé depuis
+    /// l'intérieur de <see cref="RunAsync"/>.
+    /// </summary>
+    private Func<Task> _reload;
+
     public MainViewModel(IHomebrewService homebrew)
     {
         _homebrew = homebrew;
+        _reload = LoadInstalledCoreAsync;
     }
 
     /// <summary>Constructeur sans argument pour le previewer XAML (design-time).</summary>
@@ -35,15 +44,13 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
+    // --- Chargement des vues ---------------------------------------------------
+
     [RelayCommand]
     private async Task RefreshInstalledAsync()
     {
-        await RunAsync("Chargement des packages installés…", async () =>
-        {
-            var installed = await _homebrew.GetInstalledAsync();
-            Replace(installed);
-            StatusMessage = $"{installed.Count} package(s) installé(s).";
-        });
+        _reload = LoadInstalledCoreAsync;
+        await RunAsync("Chargement des packages installés…", _reload);
     }
 
     [RelayCommand]
@@ -55,25 +62,75 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        await RunAsync($"Recherche de « {SearchQuery} »…", async () =>
-        {
-            var results = await _homebrew.SearchAsync(SearchQuery.Trim());
-            Replace(results);
-            StatusMessage = $"{results.Count} résultat(s) pour « {SearchQuery.Trim()} ».";
-        });
+        _reload = SearchCoreAsync;
+        await RunAsync($"Recherche de « {SearchQuery.Trim()} »…", _reload);
     }
 
     [RelayCommand]
     private async Task ShowOutdatedAsync()
     {
-        await RunAsync("Recherche des mises à jour…", async () =>
+        _reload = LoadOutdatedCoreAsync;
+        await RunAsync("Recherche des mises à jour…", _reload);
+    }
+
+    // --- Actions par package ---------------------------------------------------
+
+    [RelayCommand]
+    private async Task InstallAsync(Package? package)
+    {
+        if (package is null)
         {
-            var outdated = await _homebrew.GetOutdatedAsync();
-            Replace(outdated);
-            StatusMessage = outdated.Count == 0
-                ? "Tout est à jour."
-                : $"{outdated.Count} mise(s) à jour disponible(s).";
+            return;
+        }
+
+        await RunAsync($"Installation de « {package.Name} »…", async () =>
+        {
+            await _homebrew.InstallAsync(package.Name);
+            await _reload();
+            StatusMessage = $"« {package.Name} » installé.";
         });
+    }
+
+    [RelayCommand]
+    private async Task UninstallAsync(Package? package)
+    {
+        if (package is null)
+        {
+            return;
+        }
+
+        await RunAsync($"Désinstallation de « {package.Name} »…", async () =>
+        {
+            await _homebrew.UninstallAsync(package.Name);
+            await _reload();
+            StatusMessage = $"« {package.Name} » désinstallé.";
+        });
+    }
+
+    // --- Loaders (sans garde d'état occupé, réutilisables par _reload) ---------
+
+    private async Task LoadInstalledCoreAsync()
+    {
+        var installed = await _homebrew.GetInstalledAsync();
+        Replace(installed);
+        StatusMessage = $"{installed.Count} package(s) installé(s).";
+    }
+
+    private async Task SearchCoreAsync()
+    {
+        var query = SearchQuery.Trim();
+        var results = await _homebrew.SearchAsync(query);
+        Replace(results);
+        StatusMessage = $"{results.Count} résultat(s) pour « {query} ».";
+    }
+
+    private async Task LoadOutdatedCoreAsync()
+    {
+        var outdated = await _homebrew.GetOutdatedAsync();
+        Replace(outdated);
+        StatusMessage = outdated.Count == 0
+            ? "Tout est à jour."
+            : $"{outdated.Count} mise(s) à jour disponible(s).";
     }
 
     private void Replace(IReadOnlyList<Package> packages)
