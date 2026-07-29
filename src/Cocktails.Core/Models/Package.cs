@@ -23,6 +23,12 @@ public record Package(
     /// </summary>
     public bool IsOutdated =>
         IsInstalled && LatestVersion is not null && InstalledVersion != LatestVersion;
+
+    /// <summary>Libellé lisible du type (« Formula » / « Cask »).</summary>
+    public string KindLabel => Kind == PackageKind.Cask ? "Cask" : "Formula";
+
+    /// <summary>Initiale du type pour le badge de la liste (« F » / « C »).</summary>
+    public string KindBadge => Kind == PackageKind.Cask ? "C" : "F";
 }
 
 /// <summary>Nature d'un package Homebrew.</summary>

@@ -1,0 +1,193 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    ============================================================================
+    Design system « command-card » — repris de l'app LedControl (même stack
+    Avalonia). Carte translucide sombre + flou acrylique, accent bleu.
+
+    Palette :
+      Texte principal   #ECEEF5      Accent            #5B8CFF
+      Texte atténué     #9AA0B4      Accent (sélection) #295B8CFF
+      Teinte carte      #161826      Succès (à jour)   #37D67A
+      Filet/hairline    #12FFFFFF    Danger            #FF5F6D
+      Avertissement (maj) #F5A623
+
+    Fond : verre dépoli via ExperimentalAcrylicBorder (teinte #161826) dans une fenêtre
+    WindowDecorations="None" + Background transparent. Donne un fond réellement flouté
+    sur macOS sans boutons de titre (cf. MainWindow.axaml).
+    ============================================================================
+  -->
+  <Styles.Resources>
+    <SolidColorBrush x:Key="TextPrimary" Color="#ECEEF5" />
+    <SolidColorBrush x:Key="TextMuted" Color="#9AA0B4" />
+    <SolidColorBrush x:Key="Accent" Color="#5B8CFF" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#295B8CFF" />
+    <SolidColorBrush x:Key="Success" Color="#37D67A" />
+    <SolidColorBrush x:Key="Warning" Color="#F5A623" />
+    <SolidColorBrush x:Key="Danger" Color="#FF5F6D" />
+    <SolidColorBrush x:Key="Hairline" Color="#12FFFFFF" />
+    <SolidColorBrush x:Key="FillSubtle" Color="#10FFFFFF" />
+    <!-- Bordure 2px qui délimite la carte (filet clair discret sur fond sombre). -->
+    <SolidColorBrush x:Key="CardBorder" Color="#59FFFFFF" />
+    <!-- Verre dépoli (flou) — fournit la transparence/frost. -->
+    <ExperimentalAcrylicMaterial x:Key="CardMaterial"
+                                 BackgroundSource="Digger"
+                                 TintColor="#05060A"
+                                 TintOpacity="0.45"
+                                 MaterialOpacity="0.55" />
+    <!-- Teinte sombre superposée AU-DESSUS de l'acrylique : contrôle la « noirceur ».
+         Seul réglage à toucher pour + / − sombre (alpha du début : ~D9 = 85%). -->
+    <SolidColorBrush x:Key="CardTint" Color="#D9070912" />
+  </Styles.Resources>
+
+  <!-- Carte : conteneur racine arrondi + bordure 2px. Le fond translucide/flou est fourni par
+       un ExperimentalAcrylicBorder placé À L'INTÉRIEUR (cf. MainWindow). -->
+  <Style Selector="Border.card">
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+  </Style>
+
+  <!-- Filet de séparation 1px -->
+  <Style Selector="Border.hairline">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Background" Value="{StaticResource Hairline}" />
+  </Style>
+
+  <!-- Textes -->
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+  </Style>
+  <Style Selector="TextBlock.body">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+  </Style>
+  <Style Selector="TextBlock.section">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+  </Style>
+
+  <!-- Badge carré (initiale de type : F = formula, C = cask). -->
+  <Style Selector="Border.badge">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="CornerRadius" Value="7" />
+    <Setter Property="Background" Value="{StaticResource FillSubtle}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!-- Pastille d'état -->
+  <Style Selector="Ellipse.dot">
+    <Setter Property="Width" Value="9" />
+    <Setter Property="Height" Value="9" />
+  </Style>
+
+  <!-- Bouton icône (carré fixe, contenu centré). -->
+  <Style Selector="Button.icon">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="Width" Value="30" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+  </Style>
+  <Style Selector="Button.icon:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#14FFFFFF" />
+  </Style>
+
+  <!-- Liste navigable au clavier (ListBox.rows) : lignes arrondies, survol + sélection. -->
+  <Style Selector="ListBox.rows">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+  <Style Selector="ListBox.rows ListBoxItem">
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="Margin" Value="0,1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ListBox.rows ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#0DFFFFFF" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="ListBox.rows ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+
+  <!-- Puce (pill) : type / catégorie -->
+  <Style Selector="Border.chip">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="9,3" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!-- Bouton d'action -->
+  <Style Selector="Button.act">
+    <Setter Property="Background" Value="#12FFFFFF" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="14,8" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.act:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#1FFFFFFF" />
+  </Style>
+  <Style Selector="Button.act:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="#08FFFFFF" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+  </Style>
+  <Style Selector="Button.act.primary">
+    <Setter Property="Background" Value="{StaticResource Accent}" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Button.act.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#7BA0FF" />
+  </Style>
+  <!-- Action destructive (désinstaller) : rouge, discret tant qu'on ne survole pas. -->
+  <Style Selector="Button.act.danger">
+    <Setter Property="Foreground" Value="{StaticResource Danger}" />
+  </Style>
+  <Style Selector="Button.act.danger:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#33FF5F6D" />
+  </Style>
+
+  <!-- Bouton d'action compact (par ligne) -->
+  <Style Selector="Button.act.small">
+    <Setter Property="Padding" Value="10,5" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <!-- Champ de saisie -->
+  <Style Selector="TextBox.medit">
+    <Setter Property="Background" Value="#33000000" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    <Setter Property="BorderBrush" Value="#22FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Padding" Value="10,7" />
+  </Style>
+  <Style Selector="TextBox.medit:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+</Styles>
