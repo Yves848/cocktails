@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Cocktails.Controls.ShakerLoader"
+             x:Name="Root"
+             Width="104"
+             Height="104"
+             IsHitTestVisible="False">
+
+    <Grid>
+        <!-- Le Viewbox tourne autour de son centre : le shaker reste fixe dans la mise en page. -->
+        <Viewbox x:Name="AnimatedShaker"
+                 Width="72"
+                 Height="88"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 RenderTransformOrigin="50%,50%">
+            <Viewbox.RenderTransform>
+                <RotateTransform />
+            </Viewbox.RenderTransform>
+
+            <Canvas Width="72" Height="88">
+                <!-- Bouchon et épaulement. -->
+                <Path Data="M24,7 L48,7 L51,17 L21,17 Z"
+                      Fill="{StaticResource Accent}"
+                      Stroke="{StaticResource TextPrimary}"
+                      StrokeThickness="2"
+                      StrokeJoin="Round" />
+                <Path Data="M21,17 L51,17 L47,28 L25,28 Z"
+                      Fill="#365B8CFF"
+                      Stroke="{StaticResource TextPrimary}"
+                      StrokeThickness="2"
+                      StrokeJoin="Round" />
+
+                <!-- Corps du shaker. -->
+                <Path Data="M25,28 L47,28 L53,74 Q54,81 47,84 L25,84 Q18,81 19,74 Z"
+                      Fill="#24161826"
+                      Stroke="{StaticResource TextPrimary}"
+                      StrokeThickness="2.2"
+                      StrokeJoin="Round" />
+
+                <!-- Reflets simples, cohérents avec l'interface au trait. -->
+                <Path Data="M29,34 L25,70"
+                      Stroke="#80FFFFFF"
+                      StrokeThickness="2"
+                      StrokeLineCap="Round" />
+                <Path Data="M44,34 L48,64"
+                      Stroke="{StaticResource Accent}"
+                      StrokeThickness="1.6"
+                      StrokeLineCap="Round"
+                      Opacity="0.7" />
+            </Canvas>
+        </Viewbox>
+    </Grid>
+</UserControl>
