@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Cocktails.ViewModels;
 
 namespace Cocktails.Views;
 
 public partial class MainWindow : Window
 {
+    // Écran dont on suit le log pour l'auto-défilement.
+    private ScreenViewModel? _observedScreen;
     private static readonly TimeSpan SplashHold = TimeSpan.FromMilliseconds(1500);
     private static readonly TimeSpan SplashFade = TimeSpan.FromMilliseconds(500);
 
@@ -118,6 +123,44 @@ public partial class MainWindow : Window
         e.Pointer.Capture(null);
         e.Handled = true;
     }
+
+    // --- Auto-défilement du log de l'overlay ---------------------------------
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is MainViewModel vm)
+        {
+            vm.PropertyChanged += OnShellPropertyChanged;
+            HookLog(vm.CurrentScreen);
+        }
+    }
+
+    private void OnShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.CurrentScreen) && DataContext is MainViewModel vm)
+        {
+            HookLog(vm.CurrentScreen);
+        }
+    }
+
+    private void HookLog(ScreenViewModel? screen)
+    {
+        if (_observedScreen is not null)
+        {
+            _observedScreen.OutputLog.CollectionChanged -= OnLogChanged;
+        }
+
+        _observedScreen = screen;
+
+        if (_observedScreen is not null)
+        {
+            _observedScreen.OutputLog.CollectionChanged += OnLogChanged;
+        }
+    }
+
+    private void OnLogChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        => Dispatcher.UIThread.Post(() => LogScroll?.ScrollToEnd(), DispatcherPriority.Background);
 
     private void OnOpened(object? sender, EventArgs e)
     {

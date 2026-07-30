@@ -34,7 +34,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
     /// <summary>Dernières lignes du log brew de l'opération en cours (tail affiché dans l'overlay).</summary>
     public ObservableCollection<string> OutputLog { get; } = [];
 
-    private const int MaxLogLines = 14;
+    private const int MaxLogLines = 200;
     private bool _activated;
 
     /// <summary>
