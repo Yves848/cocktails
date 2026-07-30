@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -25,6 +26,10 @@ public abstract partial class ScreenViewModel : ViewModelBase
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = "Prêt.";
 
+    /// <summary>Dernières lignes du log brew de l'opération en cours (tail affiché dans l'overlay).</summary>
+    public ObservableCollection<string> OutputLog { get; } = [];
+
+    private const int MaxLogLines = 14;
     private bool _activated;
 
     /// <summary>
@@ -71,5 +76,25 @@ public abstract partial class ScreenViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Variante de <see cref="RunAsync"/> pour les commandes brew longues : alimente
+    /// <see cref="OutputLog"/> avec le flux de sortie (tail des dernières lignes). Le
+    /// reporter est créé sur le thread UI, donc <c>OutputLog</c> est mis à jour dessus.
+    /// </summary>
+    protected Task RunWithOutputAsync(string busyMessage, Func<IProgress<string>, Task> action)
+    {
+        OutputLog.Clear();
+        var progress = new Progress<string>(line =>
+        {
+            OutputLog.Add(line);
+            while (OutputLog.Count > MaxLogLines)
+            {
+                OutputLog.RemoveAt(0);
+            }
+        });
+
+        return RunAsync(busyMessage, () => action(progress));
     }
 }

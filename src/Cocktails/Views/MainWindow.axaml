@@ -75,13 +75,32 @@
                                 IsVisible="{Binding CurrentScreen.IsBusy}">
                             <StackPanel HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Spacing="10">
-                                <controls:ShakerLoader />
+                                        Spacing="14" MaxWidth="560">
+                                <controls:ShakerLoader HorizontalAlignment="Center" />
                                 <TextBlock Classes="body"
-                                           MaxWidth="320"
+                                           MaxWidth="360"
+                                           HorizontalAlignment="Center"
                                            TextAlignment="Center"
                                            TextWrapping="Wrap"
                                            Text="{Binding CurrentScreen.StatusMessage}" />
+
+                                <!-- Log brew en direct (tail des dernières lignes). -->
+                                <Border Background="#D905060A"
+                                        BorderBrush="{StaticResource Hairline}" BorderThickness="1"
+                                        CornerRadius="9" Padding="14,11" Width="520"
+                                        IsVisible="{Binding CurrentScreen.OutputLog.Count}">
+                                    <ItemsControl ItemsSource="{Binding CurrentScreen.OutputLog}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}"
+                                                           FontFamily="Menlo, Consolas, monospace"
+                                                           FontSize="11.5" LineHeight="17"
+                                                           Foreground="{StaticResource TextMuted}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
                             </StackPanel>
                         </Border>
                     </Grid>

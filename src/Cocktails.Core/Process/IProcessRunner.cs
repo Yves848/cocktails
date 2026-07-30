@@ -17,9 +17,14 @@ public record ProcessResult(int ExitCode, string StandardOutput, string Standard
 /// </summary>
 public interface IProcessRunner
 {
-    /// <summary>Exécute <paramref name="fileName"/> avec ses arguments et attend la fin.</summary>
+    /// <summary>
+    /// Exécute <paramref name="fileName"/> avec ses arguments et attend la fin.
+    /// Si <paramref name="output"/> est fourni, chaque ligne de stdout/stderr lui est
+    /// signalée au fil de l'eau (en plus d'être accumulée dans le résultat final).
+    /// </summary>
     Task<ProcessResult> RunAsync(
         string fileName,
         IReadOnlyList<string> arguments,
+        IProgress<string>? output = null,
         CancellationToken cancellationToken = default);
 }

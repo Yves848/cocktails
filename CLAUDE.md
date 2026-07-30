@@ -30,7 +30,10 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     `brew` capturées, sans lancer de processus.
   - `IProcessRunner` / `ProcessRunner` : abstraction de `System.Diagnostics.Process`.
     C'est le point d'injection qui rend `HomebrewService` testable — les tests
-    fournissent un runner factice, la prod utilise le vrai.
+    fournissent un runner factice, la prod utilise le vrai. `RunAsync` accepte un
+    `IProgress<string>?` : `ProcessRunner` lit stdout/stderr **ligne à ligne** et les
+    signale au fil de l'eau (les opérations mutantes install/uninstall/upgrade le
+    relaient, cf. l'`OutputLog` de `ScreenViewModel` affiché dans l'overlay).
   - `Models/Package` : record de liste (`Name`, `Kind`, `InstalledVersion`,
     `LatestVersion`, dérivés `IsInstalled` / `IsOutdated` / `KindLabel` / `KindBadge`).
     `Models/PackageDetails` : détail enrichi (`GetInfoAsync` → `brew info --json=v2`)

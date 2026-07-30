@@ -21,15 +21,15 @@ public interface IHomebrewService
     /// <summary>Récupère le détail enrichi d'un package (description, dépendances, homepage…).</summary>
     Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default);
 
-    /// <summary>Installe un package.</summary>
-    Task InstallAsync(string name, CancellationToken cancellationToken = default);
+    /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
+    Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
-    /// <summary>Désinstalle un package installé.</summary>
-    Task UninstallAsync(string name, CancellationToken cancellationToken = default);
+    /// <summary>Désinstalle un package installé. <paramref name="output"/> reçoit le log brew.</summary>
+    Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Met à jour un package précis, ou tous les packages obsolètes si
-    /// <paramref name="name"/> est <c>null</c>.
+    /// <paramref name="name"/> est <c>null</c>. <paramref name="output"/> reçoit le log brew.
     /// </summary>
-    Task UpgradeAsync(string? name = null, CancellationToken cancellationToken = default);
+    Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 }

@@ -42,9 +42,9 @@ public partial class InstalledViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunAsync($"Désinstallation de « {package.Name} »…", async () =>
+        return RunWithOutputAsync($"Désinstallation de « {package.Name} »…", async progress =>
         {
-            await Homebrew.UninstallAsync(package.Name);
+            await Homebrew.UninstallAsync(package.Name, progress);
             ClearSelection();
             var installed = await Homebrew.GetInstalledAsync();
             Replace(installed);

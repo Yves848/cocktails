@@ -41,18 +41,18 @@ public partial class OutdatedViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunAsync($"Mise à jour de « {package.Name} »…", async () =>
+        return RunWithOutputAsync($"Mise à jour de « {package.Name} »…", async progress =>
         {
-            await Homebrew.UpgradeAsync(package.Name);
+            await Homebrew.UpgradeAsync(package.Name, progress);
             await ReloadAsync();
             StatusMessage = $"« {package.Name} » à jour.";
         });
     }
 
     [RelayCommand]
-    private Task UpgradeAllAsync() => RunAsync("Mise à jour de tous les packages…", async () =>
+    private Task UpgradeAllAsync() => RunWithOutputAsync("Mise à jour de tous les packages…", async progress =>
     {
-        await Homebrew.UpgradeAsync();
+        await Homebrew.UpgradeAsync(null, progress);
         await ReloadAsync();
         StatusMessage = "Tous les packages sont à jour.";
     });

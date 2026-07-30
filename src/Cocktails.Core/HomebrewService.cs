@@ -55,21 +55,22 @@ public sealed class HomebrewService : IHomebrewService
         return ParseInfo(result.StandardOutput, name);
     }
 
-    public async Task InstallAsync(string name, CancellationToken cancellationToken = default)
-        => await RunAsync(["install", name], cancellationToken);
+    public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["install", name], cancellationToken, output);
 
-    public async Task UninstallAsync(string name, CancellationToken cancellationToken = default)
-        => await RunAsync(["uninstall", name], cancellationToken);
+    public async Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["uninstall", name], cancellationToken, output);
 
-    public async Task UpgradeAsync(string? name = null, CancellationToken cancellationToken = default)
+    public async Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
     {
         string[] args = name is null ? ["upgrade"] : ["upgrade", name];
-        await RunAsync(args, cancellationToken);
+        await RunAsync(args, cancellationToken, output);
     }
 
-    private async Task<ProcessResult> RunAsync(string[] args, CancellationToken cancellationToken)
+    private async Task<ProcessResult> RunAsync(
+        string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
     {
-        var result = await _runner.RunAsync(_brewPath, args, cancellationToken).ConfigureAwait(false);
+        var result = await _runner.RunAsync(_brewPath, args, output, cancellationToken).ConfigureAwait(false);
         if (!result.Success)
         {
             throw new HomebrewException(string.Join(' ', args), result);

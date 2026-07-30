@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,21 +35,21 @@ public class ScreenViewModelTests
                 name, PackageKind.Formula, "desc", "https://example.org",
                 "1.0", "1.0", ["dep1", "dep2"], false, "homebrew/core"));
 
-        public Task InstallAsync(string name, CancellationToken cancellationToken = default)
+        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             InstallCalls.Add(name);
             Installed.Add(name);
             return Task.CompletedTask;
         }
 
-        public Task UninstallAsync(string name, CancellationToken cancellationToken = default)
+        public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             UninstallCalls.Add(name);
             Installed.Remove(name);
             return Task.CompletedTask;
         }
 
-        public Task UpgradeAsync(string? name = null, CancellationToken cancellationToken = default)
+        public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 
@@ -66,15 +67,15 @@ public class ScreenViewModelTests
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
-        public Task InstallAsync(string name, CancellationToken cancellationToken = default)
+        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => throw new HomebrewException(
                 "install " + name,
                 new Cocktails.Core.Process.ProcessResult(1, "", "No available formula"));
 
-        public Task UninstallAsync(string name, CancellationToken cancellationToken = default)
+        public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task UpgradeAsync(string? name = null, CancellationToken cancellationToken = default)
+        public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 

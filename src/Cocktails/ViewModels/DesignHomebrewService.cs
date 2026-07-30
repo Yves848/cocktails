@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +37,12 @@ internal sealed class DesignHomebrewService : IHomebrewService
             "https://git-scm.com", "2.45.2", "2.45.2",
             ["gettext", "pcre2", "openssl@3"], false, "homebrew/core"));
 
-    public Task InstallAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 
-    public Task UninstallAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 
-    public Task UpgradeAsync(string? name = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }

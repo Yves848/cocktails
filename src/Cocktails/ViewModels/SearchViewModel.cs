@@ -49,9 +49,9 @@ public partial class SearchViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunAsync($"Installation de « {package.Name} »…", async () =>
+        return RunWithOutputAsync($"Installation de « {package.Name} »…", async progress =>
         {
-            await Homebrew.InstallAsync(package.Name);
+            await Homebrew.InstallAsync(package.Name, progress);
             StatusMessage = $"« {package.Name} » installé.";
         });
     }
