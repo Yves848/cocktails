@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
@@ -132,5 +134,46 @@ public partial class InstalledViewModel : PackageListViewModel
             var installed = await Homebrew.GetInstalledAsync();
             Replace(installed);
             StatusMessage = $"« {package.Name} » désinstallé.";
+        });
+
+    /// <summary>Désinstalle en une passe toutes les lignes cochées (confirmation d'abord).</summary>
+    [RelayCommand]
+    private void BatchUninstall()
+    {
+        var targets = CheckedPackages();
+        if (targets.Count == 0)
+        {
+            return;
+        }
+
+        if (!_settings.ConfirmBeforeUninstall)
+        {
+            _ = DoBatchUninstallAsync(targets);
+            return;
+        }
+
+        var names = string.Join(", ", targets.Select(t => t.Name));
+        RequestConfirmation(
+            $"Désinstaller {targets.Count} paquet(s) ?",
+            $"Ces paquets vont être désinstallés : {names}. Opération irréversible ; les paquets qui en dépendent pourraient cesser de fonctionner.",
+            "Tout désinstaller",
+            () => DoBatchUninstallAsync(targets));
+    }
+
+    private Task DoBatchUninstallAsync(IReadOnlyList<Package> targets)
+        => RunWithOutputAsync($"Désinstallation de {targets.Count} paquet(s)…", async progress =>
+        {
+            var done = 0;
+            foreach (var package in targets)
+            {
+                progress.Report($"$ brew uninstall {package.Name}");
+                await Homebrew.UninstallAsync(package.Name, progress);
+                done++;
+                StatusMessage = $"Désinstallation… ({done}/{targets.Count})";
+            }
+
+            ClearSelection();
+            Replace(await Homebrew.GetInstalledAsync());
+            StatusMessage = $"{targets.Count} paquet(s) désinstallé(s).";
         });
 }

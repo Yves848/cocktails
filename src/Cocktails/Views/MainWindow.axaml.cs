@@ -54,7 +54,41 @@ public partial class MainWindow : Window
         AddHandler(PointerMovedEvent, OnResizePointerMoved, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, OnResizePointerReleased, Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
+        // Raccourcis clavier globaux (tunnel : indépendants du focus courant).
+        AddHandler(KeyDownEvent, OnGlobalKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+
         Opened += OnOpened;
+    }
+
+    /// <summary>
+    /// Raccourcis clavier au niveau fenêtre. Choix pensés pour un clavier AZERTY Apple
+    /// (touches lettres + F1 + ⌘, standard) — cf. écran Aide qui les documente.
+    /// </summary>
+    private void OnGlobalKeyDown(object? sender, KeyEventArgs e)
+    {
+        var meta = e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+        var vm = DataContext as MainViewModel;
+
+        if (meta && e.Key == Key.W)
+        {
+            Close();
+            e.Handled = true;
+        }
+        else if (meta && e.Key == Key.M)
+        {
+            WindowState = WindowState.Minimized;
+            e.Handled = true;
+        }
+        else if (meta && (e.Key == Key.OemComma || e.KeySymbol == ","))
+        {
+            vm?.SelectScreen("Réglages");
+            e.Handled = true;
+        }
+        else if (e.Key == Key.F1)
+        {
+            vm?.SelectScreen("Aide");
+            e.Handled = true;
+        }
     }
 
     private void WireResize(Control handle, WindowEdge edge)

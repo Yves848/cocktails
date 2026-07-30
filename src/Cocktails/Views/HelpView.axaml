@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Cocktails.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
+             x:Class="Cocktails.Views.HelpView"
+             x:DataType="vm:HelpViewModel">
+
+    <Design.DataContext>
+        <vm:HelpViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <!-- Touche de clavier (key cap) -->
+        <Style Selector="Border.kbd">
+            <Setter Property="Background" Value="#1AFFFFFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource Hairline}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9,3" />
+            <Setter Property="MinWidth" Value="34" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.kbd TextBlock">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="17"
+                   FontWeight="SemiBold" VerticalAlignment="Center" Margin="18,16,18,10" />
+
+        <ScrollViewer Grid.Row="1" Padding="18,0,18,18">
+            <StackPanel Spacing="18" MaxWidth="560" HorizontalAlignment="Left">
+
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Cocktails — interface graphique pour Homebrew. Raccourcis clavier disponibles (⌘ = touche Commande) :" />
+
+                <!-- Groupes de raccourcis -->
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Spacing="14" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ShortcutGroup">
+                            <Border Classes="mcard">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="section" Text="{Binding Title}" />
+                                    <ItemsControl ItemsSource="{Binding Shortcuts}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:Shortcut">
+                                                <Grid ColumnDefinitions="120,*">
+                                                    <Border Grid.Column="0" Classes="kbd" HorizontalAlignment="Left">
+                                                        <TextBlock Text="{Binding Keys}" />
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Classes="body" VerticalAlignment="Center"
+                                                               TextWrapping="Wrap" Text="{Binding Description}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Opérations par lot -->
+                <Border Classes="mcard">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="section" Text="OPÉRATIONS PAR LOT" />
+                        <ItemsControl ItemsSource="{Binding BatchTips}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Spacing="7" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <TextBlock Grid.Column="0" Classes="body" Text="•" Margin="0,0,8,0"
+                                                   Foreground="{StaticResource Accent}" />
+                                        <TextBlock Grid.Column="1" Classes="body" TextWrapping="Wrap"
+                                                   Text="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

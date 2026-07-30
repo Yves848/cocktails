@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
@@ -67,6 +68,32 @@ public partial class OutdatedViewModel : PackageListViewModel
         await ReloadAsync();
         StatusMessage = "Tous les packages sont à jour.";
     });
+
+    /// <summary>Met à jour en une passe toutes les lignes cochées.</summary>
+    [RelayCommand]
+    private Task BatchUpgradeAsync()
+    {
+        var targets = CheckedPackages();
+        if (targets.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunWithOutputAsync($"Mise à jour de {targets.Count} paquet(s)…", async progress =>
+        {
+            var done = 0;
+            foreach (var package in targets)
+            {
+                progress.Report($"$ brew upgrade {package.Name}");
+                await Homebrew.UpgradeAsync(package.Name, progress);
+                done++;
+                StatusMessage = $"Mise à jour… ({done}/{targets.Count})";
+            }
+
+            await ReloadAsync();
+            StatusMessage = $"{targets.Count} paquet(s) à jour.";
+        });
+    }
 
     private async Task ReloadAsync() => Replace(await Homebrew.GetOutdatedAsync());
 }

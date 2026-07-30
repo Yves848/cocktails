@@ -53,8 +53,18 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     `Installed` (filtre texte + segmented Formulae/Casks + tri) et `Search`
     (master-detail, volet partagé `Views/PackageDetailView` — avec icône via
     `AppIcon` et bouton « Ouvrir la page »), `Outdated`, `Maintenance` (cleanup/
-    autoremove/doctor) et `Settings`. Les vues (`Views/XxxView.axaml`) sont résolues
-    par le `ViewLocator` (mapping `ViewModels.XxxViewModel` → `Views.XxxView`).
+    autoremove/doctor), `Services`, `Taps`, `Settings` et `Help`. Les vues
+    (`Views/XxxView.axaml`) sont résolues par le `ViewLocator` (mapping
+    `ViewModels.XxxViewModel` → `Views.XxxView`).
+  - **Opérations par lot** : `PackageListViewModel` enveloppe chaque ligne dans un
+    `SelectablePackage` (état `IsChecked` observable + relais de présentation). Les noms
+    cochés sont suivis dans un `HashSet` (persisté à travers les filtres, remis à zéro à
+    chaque `Replace`), exposés via `SelectedCount`/`AnySelected` et `CheckedPackages()`.
+    `Installed` (désinstallation par lot, confirmée) et `Outdated` (mise à jour par lot)
+    affichent une barre d'actions quand au moins une ligne est cochée.
+  - **Raccourcis clavier** : gérés au niveau fenêtre dans `MainWindow.OnGlobalKeyDown`
+    (⌘W fermer, ⌘M réduire, ⌘, Réglages, F1 Aide — via `MainViewModel.SelectScreen`) ;
+    documentés dans l'écran `Help`. Choix pensés pour un clavier AZERTY Apple.
   - **Confirmation & réglages** : `ScreenViewModel.RequestConfirmation` + dialogue modal
     (cf. `ConfirmationRequest`) ; `AppSettings` (instance partagée créée par le shell,
     persistée par `Services/SettingsStore` dans `~/Library/Application Support/Cocktails/settings.json`).
@@ -74,8 +84,9 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     en dehors de `brew` (et il ne parle qu'à `yg-devworks.com`).
   - `Converters/StringToGeometryConverter` : parse les icônes (path SVG) à l'affichage,
     pour garder les VMs indépendants de la plateforme (testables).
-  - `ViewModels/DesignHomebrewService` : stub **design-time uniquement** (previewer
-    XAML et ctors sans argument des VMs) ; jamais utilisé à l'exécution réelle.
+  - `ViewModels/DesignHomebrewService` : stub design-time (previewer XAML et ctors sans
+    argument des VMs). Aucune commande brew réelle ; `HelpViewModel` s'en sert aussi à
+    l'exécution puisqu'il n'appelle jamais Homebrew (écran purement statique).
 - **`tests/Cocktails.Core.Tests`** — xUnit. Parsers de `HomebrewService` + VMs d'écran.
 
 ### Conventions importantes

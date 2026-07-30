@@ -296,7 +296,7 @@ public class ScreenViewModelTests
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
 
-        await vm.ReinstallCommand.ExecuteAsync(vm.Packages[0]);
+        await vm.ReinstallCommand.ExecuteAsync(vm.Packages[0].Package);
 
         Assert.Contains("reinstall:git", fake.Maintenance);
         Assert.False(vm.IsBusy);
@@ -308,7 +308,7 @@ public class ScreenViewModelTests
         var fake = new FakeHomebrewService { Installed = { "git" } };
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
-        vm.SelectedPackage = vm.Packages[0];
+        vm.SelectedPackage = vm.Packages[0].Package;
         Assert.False(vm.Details!.IsPinned);
 
         await vm.PinCommand.ExecuteAsync(vm.SelectedPackage);
@@ -329,7 +329,7 @@ public class ScreenViewModelTests
         var vm = new InstalledViewModel(fake, settings);
         await vm.ActivateAsync();
 
-        vm.UninstallCommand.Execute(vm.Packages[0]);
+        vm.UninstallCommand.Execute(vm.Packages[0].Package);
 
         Assert.Null(vm.Confirmation);               // pas de dialogue
         Assert.Equal(["git"], fake.UninstallCalls); // désinstallé directement
@@ -342,7 +342,7 @@ public class ScreenViewModelTests
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
 
-        vm.UninstallCommand.Execute(vm.Packages[0]);
+        vm.UninstallCommand.Execute(vm.Packages[0].Package);
         vm.CancelConfirmationCommand.Execute(null);
 
         Assert.Null(vm.Confirmation);
@@ -357,7 +357,7 @@ public class ScreenViewModelTests
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
 
-        vm.SelectedPackage = vm.Packages[0];
+        vm.SelectedPackage = vm.Packages[0].Package;
 
         Assert.NotNull(vm.Details);
         Assert.Equal("git", vm.Details!.Name);
@@ -419,7 +419,7 @@ public class ScreenViewModelTests
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
 
-        vm.SelectedPackage = vm.Packages[0];
+        vm.SelectedPackage = vm.Packages[0].Package;
 
         Assert.Equal(["bat", "node"], vm.Dependents);
     }
@@ -449,7 +449,7 @@ public class ScreenViewModelTests
         var fake = new FakeHomebrewService { Installed = { "git" } };
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
-        vm.SelectedPackage = vm.Packages[0];
+        vm.SelectedPackage = vm.Packages[0].Package;
 
         vm.SelectedPackage = null;
 
@@ -463,7 +463,7 @@ public class ScreenViewModelTests
         vm.SearchQuery = "ripgrep";
         await vm.SearchCommand.ExecuteAsync(null);
 
-        vm.SelectedPackage = vm.Packages[0];
+        vm.SelectedPackage = vm.Packages[0].Package;
 
         Assert.NotNull(vm.Details);
         Assert.Equal("ripgrep", vm.Details!.Name);
@@ -673,8 +673,154 @@ public class ScreenViewModelTests
     {
         var vm = new MainViewModel(new FakeHomebrewService());
 
-        Assert.Equal(7, vm.NavItems.Count);
+        Assert.Equal(8, vm.NavItems.Count);
         Assert.Equal("Installés", vm.SelectedNav?.Title);
         Assert.IsType<InstalledViewModel>(vm.CurrentScreen);
+    }
+
+    [Fact]
+    public void Shell_SelectScreen_SwitchesToNamedScreen()
+    {
+        var vm = new MainViewModel(new FakeHomebrewService());
+
+        vm.SelectScreen("Aide");
+        Assert.Equal("Aide", vm.SelectedNav?.Title);
+        Assert.IsType<HelpViewModel>(vm.CurrentScreen);
+
+        vm.SelectScreen("Réglages");
+        Assert.IsType<SettingsViewModel>(vm.CurrentScreen);
+
+        // Titre inconnu : ne change rien.
+        vm.SelectScreen("Inexistant");
+        Assert.IsType<SettingsViewModel>(vm.CurrentScreen);
+    }
+
+    [Fact]
+    public async Task Installed_BatchUninstall_UninstallsAllCheckedThenReloads()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git", "wget", "node" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        // Coche git et node (pas wget).
+        vm.Packages.First(p => p.Name == "git").IsChecked = true;
+        vm.Packages.First(p => p.Name == "node").IsChecked = true;
+        Assert.Equal(2, vm.SelectedCount);
+        Assert.True(vm.AnySelected);
+
+        // 1er clic : confirmation, rien de fait.
+        vm.BatchUninstallCommand.Execute(null);
+        Assert.NotNull(vm.Confirmation);
+        Assert.Empty(fake.UninstallCalls);
+
+        await vm.ConfirmCommand.ExecuteAsync(null);
+
+        Assert.Equal(["git", "node"], fake.UninstallCalls);
+        Assert.Equal(["wget"], vm.Packages.Select(p => p.Name));
+        Assert.Equal(0, vm.SelectedCount);       // coches réinitialisées après rechargement
+        Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Installed_ClearChecks_ResetsSelection()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git", "wget" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.Packages[0].IsChecked = true;
+        vm.Packages[1].IsChecked = true;
+        Assert.Equal(2, vm.SelectedCount);
+
+        vm.ClearChecksCommand.Execute(null);
+
+        Assert.Equal(0, vm.SelectedCount);
+        Assert.All(vm.Packages, p => Assert.False(p.IsChecked));
+    }
+
+    [Fact]
+    public async Task Installed_CheckState_SurvivesFiltering()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git", "gnupg", "wget" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.Packages.First(p => p.Name == "git").IsChecked = true;
+
+        // Filtre qui masque git, puis le rend de nouveau visible.
+        vm.FilterText = "wget";
+        Assert.DoesNotContain(vm.Packages, p => p.Name == "git");
+        Assert.Equal(1, vm.SelectedCount);   // toujours compté
+
+        vm.FilterText = "";
+        Assert.True(vm.Packages.First(p => p.Name == "git").IsChecked);   // coche restaurée
+    }
+
+    [Fact]
+    public async Task Outdated_BatchUpgrade_UpgradesAllChecked()
+    {
+        var fake = new BatchOutdatedStub { Outdated = { "git", "wget", "node" } };
+        var vm = new OutdatedViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.Packages.First(p => p.Name == "git").IsChecked = true;
+        vm.Packages.First(p => p.Name == "wget").IsChecked = true;
+
+        await vm.BatchUpgradeCommand.ExecuteAsync(null);
+
+        Assert.Equal(["git", "wget"], fake.Upgraded);
+        Assert.False(vm.IsBusy);
+    }
+
+    /// <summary>Stub minimal exposant les obsolètes + traçant les upgrades ciblés.</summary>
+    private sealed class BatchOutdatedStub : IHomebrewService
+    {
+        public List<string> Outdated { get; init; } = [];
+        public List<string> Upgraded { get; } = [];
+
+        public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>(
+                Outdated.Select(n => new Package(n, PackageKind.Formula, "1.0", "2.0")).ToList());
+
+        public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            if (name is not null)
+            {
+                Upgraded.Add(name);
+                Outdated.Remove(name);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, "1.0", "2.0", [], false, null));
+
+        public Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
+        public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
+        public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default) => Task.FromResult(new BrewEnvironment("?", "/opt/homebrew", "/cache"));
+        public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewService>>([]);
+        public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewTap>>([]);
+        public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

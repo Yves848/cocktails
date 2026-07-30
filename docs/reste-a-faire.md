@@ -29,7 +29,6 @@ _(fait — voir « Fait »)_
 ## Raffinements
 
 - [ ] Auto-rafraîchir les écrans quand le moniteur détecte un changement.
-- [ ] Raccourcis clavier (navigation, rechercher).
 
 ## Fait
 
@@ -51,3 +50,7 @@ _(fait — voir « Fait »)_
 - [x] **`reinstall`** — bouton « Réinstaller » dans le détail Installés.
 - [x] **Réglages enrichis** — version/préfixe/cache réels (`brew config`/`--cache`) + toggle analytics.
 - [x] **Persistance de la fenêtre** — taille/position/maximisé restaurés au démarrage.
+- [x] **Écran Aide** — raccourcis clavier + rappel des opérations par lot.
+- [x] **Raccourcis clavier** — ⌘W / ⌘M / ⌘, / F1 (au niveau fenêtre, pensés AZERTY).
+- [x] **Opérations par lot** — cases à cocher dans Installés/Mises à jour ; désinstallation
+  et mise à jour par lot sur la sélection.

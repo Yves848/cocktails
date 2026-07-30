@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
@@ -20,6 +21,10 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     // Jeu complet (non filtré) ; Packages est la vue filtrée+triée liée à l'UI.
     private readonly List<Package> _all = [];
 
+    // Noms cochés (persistés à travers les changements de filtre) et garde anti-réentrance.
+    private readonly HashSet<string> _checkedNames = new(StringComparer.Ordinal);
+    private bool _suppressCheck;
+
     // Séquence pour ignorer les résultats de détail obsolètes (sélection rapide).
     private int _detailToken;
 
@@ -28,7 +33,61 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     }
 
     /// <summary>Vue affichée (filtrée par <see cref="FilterText"/>, triée par nom).</summary>
-    public ObservableCollection<Package> Packages { get; } = [];
+    public ObservableCollection<SelectablePackage> Packages { get; } = [];
+
+    /// <summary>Nombre de lignes cochées (pilote la barre d'actions par lot).</summary>
+    [ObservableProperty]
+    public partial int SelectedCount { get; set; }
+
+    /// <summary>Vrai dès qu'au moins une ligne est cochée.</summary>
+    public bool AnySelected => SelectedCount > 0;
+
+    partial void OnSelectedCountChanged(int value) => OnPropertyChanged(nameof(AnySelected));
+
+    /// <summary>Ligne mise en surbrillance (pilote le volet de détail).</summary>
+    [ObservableProperty]
+    public partial SelectablePackage? SelectedItem { get; set; }
+
+    partial void OnSelectedItemChanged(SelectablePackage? value) => SelectedPackage = value?.Package;
+
+    /// <summary>Packages actuellement cochés (dans l'ordre du jeu complet).</summary>
+    protected IReadOnlyList<Package> CheckedPackages()
+        => _all.Where(p => _checkedNames.Contains(p.Name)).ToList();
+
+    /// <summary>Décoche toutes les lignes.</summary>
+    [RelayCommand]
+    protected void ClearChecks()
+    {
+        _suppressCheck = true;
+        foreach (var w in Packages)
+        {
+            w.IsChecked = false;
+        }
+
+        _suppressCheck = false;
+        _checkedNames.Clear();
+        SelectedCount = 0;
+    }
+
+    private void OnItemCheckChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_suppressCheck || e.PropertyName != nameof(SelectablePackage.IsChecked))
+        {
+            return;
+        }
+
+        var w = (SelectablePackage)sender!;
+        if (w.IsChecked)
+        {
+            _checkedNames.Add(w.Package.Name);
+        }
+        else
+        {
+            _checkedNames.Remove(w.Package.Name);
+        }
+
+        SelectedCount = _checkedNames.Count;
+    }
 
     /// <summary>Filtre texte (sous-chaîne du nom, insensible à la casse).</summary>
     [ObservableProperty]
@@ -71,9 +130,11 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     /// <summary>Prédicat de filtre additionnel optionnel (ex. « racines seulement »).</summary>
     protected Func<Package, bool>? ExtraFilter { get; set; }
 
-    /// <summary>Remplace le jeu complet puis applique filtre + tri.</summary>
+    /// <summary>Remplace le jeu complet puis applique filtre + tri (réinitialise les coches).</summary>
     protected void Replace(IReadOnlyList<Package> items)
     {
+        _checkedNames.Clear();
+        SelectedCount = 0;
         _all.Clear();
         _all.AddRange(items);
         ApplyFilter();
@@ -102,16 +163,24 @@ public abstract partial class PackageListViewModel : ScreenViewModel
             query = query.Where(extra);
         }
 
+        foreach (var w in Packages)
+        {
+            w.PropertyChanged -= OnItemCheckChanged;
+        }
+
         Packages.Clear();
         foreach (var p in query.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
         {
-            Packages.Add(p);
+            var w = new SelectablePackage(p) { IsChecked = _checkedNames.Contains(p.Name) };
+            w.PropertyChanged += OnItemCheckChanged;
+            Packages.Add(w);
         }
     }
 
     /// <summary>Vide la sélection et le détail (ex. après une désinstallation).</summary>
     protected void ClearSelection()
     {
+        SelectedItem = null;
         SelectedPackage = null;
         Details = null;
         Dependents.Clear();

@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
-             xmlns:models="using:Cocktails.Core.Models"
              xmlns:views="using:Cocktails.Views"
              xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -14,7 +13,7 @@
         <vm:OutdatedViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" />
@@ -27,33 +26,49 @@
                     Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,300">
+        <!-- Barre d'actions par lot (visible dès qu'une ligne est cochée). -->
+        <Border Grid.Row="1" Classes="mcard" Margin="18,0,18,10" Padding="12,8"
+                IsVisible="{Binding AnySelected}">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
+                           Text="{Binding SelectedCount, StringFormat='{}{0} paquet(s) sélectionné(s)'}" />
+                <Button Grid.Column="1" Classes="act small" Content="Tout décocher" Margin="0,0,8,0"
+                        Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
+                <Button Grid.Column="2" Classes="act primary small" Content="Mettre à jour la sélection"
+                        Command="{Binding BatchUpgradeCommand}" IsEnabled="{Binding !IsBusy}" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
             <!-- Master : liste des obsolètes -->
             <ListBox x:Name="List" Grid.Column="0" Classes="rows" Margin="10,0,10,10"
                      SelectionMode="Single"
-                     SelectedItem="{Binding SelectedPackage}"
+                     SelectedItem="{Binding SelectedItem}"
                      ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
                 <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="models:Package">
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                            <Border Classes="badge" Grid.Column="0">
+                    <DataTemplate x:DataType="vm:SelectablePackage">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                            <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
+                                      IsChecked="{Binding IsChecked}"
+                                      ToolTip.Tip="Sélectionner pour une mise à jour par lot" />
+                            <Border Classes="badge" Grid.Column="1">
                                 <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextMuted}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Classes="body" Text="{Binding Name}" />
                                 <TextBlock Classes="muted" Text="{Binding KindLabel}" />
                             </StackPanel>
-                            <Border Grid.Column="2" Classes="chip" Margin="0,0,10,0">
+                            <Border Grid.Column="3" Classes="chip" Margin="0,0,10,0">
                                 <TextBlock FontSize="11.5" FontWeight="SemiBold"
                                            Foreground="{StaticResource Warning}"
                                            Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
                             </Border>
-                            <Button Grid.Column="3" Classes="act primary small" Content="Mettre à jour"
+                            <Button Grid.Column="4" Classes="act primary small" Content="Mettre à jour"
                                     Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
-                                    CommandParameter="{Binding}" />
+                                    CommandParameter="{Binding Package}" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
