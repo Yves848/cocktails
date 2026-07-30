@@ -50,10 +50,15 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     `OnFirstActivatedAsync` pour le chargement paresseux). Le master-detail
     (sélection → `Details` via `GetInfoAsync`, chargement local `IsLoadingDetails`
     sans overlay global) est mutualisé dans `PackageListViewModel`. Écrans :
-    `Installed` et `Search` (master-detail, volet partagé `Views/PackageDetailView`),
-    `Outdated`, + `Maintenance` / `Settings` (placeholders P2). Les vues
-    (`Views/XxxView.axaml`) sont résolues par le `ViewLocator` (mapping
-    `ViewModels.XxxViewModel` → `Views.XxxView`).
+    `Installed` (filtre texte + segmented Formulae/Casks + tri) et `Search`
+    (master-detail, volet partagé `Views/PackageDetailView` — avec icône via
+    `AppIcon` et bouton « Ouvrir la page »), `Outdated`, `Maintenance` (cleanup/
+    autoremove/doctor) et `Settings`. Les vues (`Views/XxxView.axaml`) sont résolues
+    par le `ViewLocator` (mapping `ViewModels.XxxViewModel` → `Views.XxxView`).
+  - **Confirmation & réglages** : `ScreenViewModel.RequestConfirmation` + dialogue modal
+    (cf. `ConfirmationRequest`) ; `AppSettings` (instance partagée créée par le shell)
+    porte p. ex. `ConfirmBeforeUninstall`. Actions destructives (désinstaller, autoremove)
+    passent par une confirmation.
   - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
     opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
   - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`), récupéré via
