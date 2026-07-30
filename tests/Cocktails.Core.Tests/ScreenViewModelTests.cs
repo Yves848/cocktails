@@ -52,6 +52,15 @@ public class ScreenViewModelTests
             return Task.CompletedTask;
         }
 
+        public List<string> Dependents { get; init; } = [];
+        public List<string> Leaves { get; init; } = [];
+
+        public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>(Dependents);
+
+        public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>(Leaves);
+
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             Maintenance.Add("update");
@@ -172,6 +181,8 @@ public class ScreenViewModelTests
 
         public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
 
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
@@ -359,6 +370,37 @@ public class ScreenViewModelTests
         var result = Assert.Single(vm.Packages);
         Assert.True(result.IsInstalled);
         Assert.Contains("déjà installé", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task Installed_Selecting_LoadsDependents()
+    {
+        var fake = new FakeHomebrewService { Installed = { "openssl@3" }, Dependents = { "bat", "node" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.SelectedPackage = vm.Packages[0];
+
+        Assert.Equal(["bat", "node"], vm.Dependents);
+    }
+
+    [Fact]
+    public async Task Installed_LeavesOnly_FiltersToLeaves()
+    {
+        var fake = new FakeHomebrewService
+        {
+            Installed = { "git", "openssl@3", "pcre2" },
+            Leaves = { "git" },   // seul git est une racine
+        };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+        Assert.Equal(3, vm.Packages.Count);
+
+        vm.LeavesOnly = true;
+        Assert.Equal(["git"], vm.Packages.Select(p => p.Name));
+
+        vm.LeavesOnly = false;
+        Assert.Equal(3, vm.Packages.Count);
     }
 
     [Fact]

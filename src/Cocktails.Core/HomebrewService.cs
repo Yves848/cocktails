@@ -64,6 +64,18 @@ public sealed class HomebrewService : IHomebrewService
     public async Task UnpinAsync(string name, CancellationToken cancellationToken = default)
         => await RunAsync(["unpin", name], cancellationToken);
 
+    public async Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var result = await RunAsync(["uses", "--installed", name], cancellationToken);
+        return [.. SplitLines(result.StandardOutput)];
+    }
+
+    public async Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await RunAsync(["leaves"], cancellationToken);
+        return [.. SplitLines(result.StandardOutput)];
+    }
+
     public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken, output);
 

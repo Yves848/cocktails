@@ -30,6 +30,12 @@ public interface IHomebrewService
     /// <summary>Désépingle une formula (<c>brew unpin</c>).</summary>
     Task UnpinAsync(string name, CancellationToken cancellationToken = default);
 
+    /// <summary>Paquets installés qui dépendent de <paramref name="name"/> (<c>brew uses --installed</c>).</summary>
+    Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>Formulae installées « à la racine » (aucun autre paquet n'en dépend, <c>brew leaves</c>).</summary>
+    Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
     Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 

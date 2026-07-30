@@ -12,7 +12,6 @@ _(rien pour l'instant)_
 ## Manques Homebrew (priorisés)
 
 - [ ] **`reinstall`** — bouton dans le détail.
-- [ ] **`uses` / `leaves`** — dépendants (avant désinstallation) + « installés explicitement ».
 - [ ] **`deps --tree`** — arbre de dépendances dans le détail.
 - [ ] **`missing`** — dépendances manquantes, alerte Maintenance.
 - [ ] **`fetch`** — préchargement (niche).
@@ -52,3 +51,4 @@ _(rien pour l'instant)_
 - [x] **`pin` / `unpin`** — boutons Épingler/Désépingler dans le détail Installés.
 - [x] Fenêtre : boutons **réduire / agrandir** (min/max) dans l'en-tête.
 - [x] **Taps** — écran dédié : lister, ajouter, retirer, faire confiance (`brew trust`).
+- [x] **`uses` / `leaves`** — dépendants dans le détail Installés + filtre « Racines ».

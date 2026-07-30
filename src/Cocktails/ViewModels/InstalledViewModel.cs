@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
@@ -23,7 +24,13 @@ public partial class InstalledViewModel : PackageListViewModel
     {
     }
 
+    private System.Collections.Generic.HashSet<string> _leaves = new(System.StringComparer.Ordinal);
+
     public override string Title => "Installés";
+
+    /// <summary>N'afficher que les paquets « racines » (installés explicitement, brew leaves).</summary>
+    [ObservableProperty]
+    public partial bool LeavesOnly { get; set; }
 
     protected override Task OnFirstActivatedAsync() => LoadAsync();
 
@@ -33,9 +40,20 @@ public partial class InstalledViewModel : PackageListViewModel
     private Task LoadAsync() => RunAsync("Chargement des packages installés…", async () =>
     {
         var installed = await Homebrew.GetInstalledAsync();
+        _leaves = new System.Collections.Generic.HashSet<string>(
+            await Homebrew.GetLeavesAsync(), System.StringComparer.Ordinal);
         Replace(installed);
         StatusMessage = $"{installed.Count} package(s) installé(s).";
     });
+
+    partial void OnLeavesOnlyChanged(bool value)
+    {
+        ExtraFilter = value ? p => _leaves.Contains(p.Name) : null;
+        ApplyFilter();
+    }
+
+    protected override Task<System.Collections.Generic.IReadOnlyList<string>> LoadDependentsAsync(Package package)
+        => Homebrew.GetDependentsAsync(package.Name);
 
     /// <summary>Demande confirmation ; la désinstallation réelle a lieu au « Confirmer ».</summary>
     [RelayCommand]

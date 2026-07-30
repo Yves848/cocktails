@@ -36,6 +36,12 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
     public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
+    public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>(["ripgrep", "node"]);
+
+    public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>(["git", "ripgrep"]);
+
     public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
         => Task.FromResult(new PackageDetails(
             name, PackageKind.Formula,

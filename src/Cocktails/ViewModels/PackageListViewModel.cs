@@ -65,6 +65,12 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     [ObservableProperty]
     public partial bool IsLoadingDetails { get; set; }
 
+    /// <summary>Paquets installés qui dépendent du package sélectionné (via <c>brew uses</c>).</summary>
+    public ObservableCollection<string> Dependents { get; } = [];
+
+    /// <summary>Prédicat de filtre additionnel optionnel (ex. « racines seulement »).</summary>
+    protected Func<Package, bool>? ExtraFilter { get; set; }
+
     /// <summary>Remplace le jeu complet puis applique filtre + tri.</summary>
     protected void Replace(IReadOnlyList<Package> items)
     {
@@ -75,7 +81,7 @@ public abstract partial class PackageListViewModel : ScreenViewModel
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
 
-    private void ApplyFilter()
+    protected void ApplyFilter()
     {
         var filter = FilterText.Trim();
         IEnumerable<Package> query = _all;
@@ -91,6 +97,11 @@ public abstract partial class PackageListViewModel : ScreenViewModel
             _ => query,
         };
 
+        if (ExtraFilter is { } extra)
+        {
+            query = query.Where(extra);
+        }
+
         Packages.Clear();
         foreach (var p in query.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
         {
@@ -103,9 +114,14 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     {
         SelectedPackage = null;
         Details = null;
+        Dependents.Clear();
     }
 
     partial void OnSelectedPackageChanged(Package? value) => _ = LoadDetailsAsync(value);
+
+    /// <summary>Dépendants installés à charger pour le détail (aucun par défaut).</summary>
+    protected virtual Task<IReadOnlyList<string>> LoadDependentsAsync(Package package)
+        => Task.FromResult<IReadOnlyList<string>>([]);
 
     private async Task LoadDetailsAsync(Package? package)
     {
@@ -113,6 +129,7 @@ public abstract partial class PackageListViewModel : ScreenViewModel
         if (package is null)
         {
             Details = null;
+            Dependents.Clear();
             return;
         }
 
@@ -120,9 +137,15 @@ public abstract partial class PackageListViewModel : ScreenViewModel
         try
         {
             var details = await Homebrew.GetInfoAsync(package.Name);
+            var dependents = await LoadDependentsAsync(package);
             if (token == _detailToken)
             {
                 Details = details;
+                Dependents.Clear();
+                foreach (var d in dependents)
+                {
+                    Dependents.Add(d);
+                }
             }
         }
         catch (Exception)
@@ -130,6 +153,7 @@ public abstract partial class PackageListViewModel : ScreenViewModel
             if (token == _detailToken)
             {
                 Details = null;
+                Dependents.Clear();
             }
         }
         finally
