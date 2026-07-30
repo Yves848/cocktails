@@ -11,6 +11,7 @@
         x:DataType="vm:MainViewModel"
         Title="Cocktails"
         Width="860" Height="600" MinWidth="620" MinHeight="420"
+        CanResize="True"
         WindowStartupLocation="CenterScreen"
         WindowDecorations="None"
         Background="Transparent"
@@ -122,6 +123,25 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+
+            <!-- Poignées de redimensionnement (fenêtre sans chrome) : bords + coins,
+                 transparentes, câblées à BeginResizeDrag dans MainWindow.axaml.cs. -->
+            <Rectangle x:Name="ResizeT" Height="5" VerticalAlignment="Top"
+                       HorizontalAlignment="Stretch" Fill="Transparent" Cursor="SizeNorthSouth" />
+            <Rectangle x:Name="ResizeB" Height="5" VerticalAlignment="Bottom"
+                       HorizontalAlignment="Stretch" Fill="Transparent" Cursor="SizeNorthSouth" />
+            <Rectangle x:Name="ResizeL" Width="5" HorizontalAlignment="Left"
+                       VerticalAlignment="Stretch" Fill="Transparent" Cursor="SizeWestEast" />
+            <Rectangle x:Name="ResizeR" Width="5" HorizontalAlignment="Right"
+                       VerticalAlignment="Stretch" Fill="Transparent" Cursor="SizeWestEast" />
+            <Rectangle x:Name="ResizeTL" Width="12" Height="12" HorizontalAlignment="Left"
+                       VerticalAlignment="Top" Fill="Transparent" Cursor="TopLeftCorner" />
+            <Rectangle x:Name="ResizeTR" Width="12" Height="12" HorizontalAlignment="Right"
+                       VerticalAlignment="Top" Fill="Transparent" Cursor="TopRightCorner" />
+            <Rectangle x:Name="ResizeBL" Width="12" Height="12" HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" Fill="Transparent" Cursor="BottomLeftCorner" />
+            <Rectangle x:Name="ResizeBR" Width="12" Height="12" HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom" Fill="Transparent" Cursor="BottomRightCorner" />
         </Panel>
     </Border>
 </Window>
