@@ -1,0 +1,52 @@
+# Reste à faire — Cocktails
+
+Backlog vivant : on coche au fur et à mesure. Détail des commandes dans
+[`homebrew-couverture.md`](analyse/homebrew-couverture.md).
+
+Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait.
+
+## En cours
+
+- [~] **Brewfile** (`brew bundle dump`/`install`) — export/import de config.
+
+## Manques Homebrew (priorisés)
+
+- [ ] **Services** (`brew services list/start/stop/restart`) — écran Services (maquetté).
+- [ ] **`pin` / `unpin`** — l'UI affiche déjà l'état ; câbler les actions dans le détail.
+- [ ] **`reinstall`** — bouton dans le détail.
+- [ ] **`uses` / `leaves`** — dépendants (avant désinstallation) + « installés explicitement ».
+- [ ] **`deps --tree`** — arbre de dépendances dans le détail.
+- [ ] **Taps** (`tap`/`untap`/`trust`/`tap-info`) — écran Taps (répond à l'avert. `obs`).
+- [ ] **`missing`** — dépendances manquantes, alerte Maintenance.
+- [ ] **`fetch`** — préchargement (niche).
+- [ ] **`vulns`** — vulnérabilités connues, info sécurité dans le détail (à considérer).
+
+## Réglages à enrichir
+
+- [ ] `config` + chemins réels (`--prefix`/`--cellar`/`--caskroom`/`--cache`).
+- [ ] Version de brew réelle dans la barre d'état.
+- [ ] Toggle `analytics` (télémétrie Homebrew on/off).
+
+## Packaging / distribution
+
+- [ ] Notarisation **Developer ID** (`SIGN_ID` + notarytool) pour distribution large.
+- [ ] **Universal binary** (arm64 + x64).
+- [ ] Lancement au login (option).
+
+## Raffinements
+
+- [ ] Auto-rafraîchir les écrans quand le moniteur détecte un changement.
+- [ ] Raccourcis clavier (navigation, rechercher).
+- [ ] Persistance de la fenêtre (taille/position).
+
+## Fait
+
+- [x] Socle : rechercher, installer, désinstaller, mettre à jour, détail (`info`).
+- [x] Mises à jour + monitoring arrière-plan + badge + notifications natives.
+- [x] Maintenance : `cleanup` / `autoremove` / `doctor`.
+- [x] Détail : icône (proxy favicons), « Ouvrir la page », dépendances directes.
+- [x] Filtre texte + segmented Formulae/Casks + tri ; marquage des installés en recherche.
+- [x] Confirmation avant désinstallation ; log `brew` en direct (auto-scroll).
+- [x] Réglages persistés (`~/.config/Cocktails/settings.json`).
+- [x] Empaquetage `.app` (icône, signature ad-hoc), menu « Cocktails ».
+- [x] **`update`** — bouton « Actualiser l'index » (brew update) sur Mises à jour.

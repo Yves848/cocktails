@@ -28,6 +28,8 @@ public class UpdateMonitorTests
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
+        public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;

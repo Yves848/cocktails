@@ -38,6 +38,12 @@ public class ScreenViewModelTests
                 name, PackageKind.Formula, "desc", "https://example.org",
                 "1.0", "1.0", ["dep1", "dep2"], false, "homebrew/core"));
 
+        public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("update");
+            return Task.CompletedTask;
+        }
+
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             InstallCalls.Add(name);
@@ -89,6 +95,9 @@ public class ScreenViewModelTests
 
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
+
+        public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
 
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => throw new HomebrewException(
@@ -314,6 +323,19 @@ public class ScreenViewModelTests
 
         await vm.ConfirmCommand.ExecuteAsync(null);
         Assert.Equal(["autoremove"], fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Outdated_UpdateIndex_CallsUpdateThenReloads()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new OutdatedViewModel(fake);
+
+        await vm.UpdateIndexCommand.ExecuteAsync(null);
+
+        Assert.Contains("update", fake.Maintenance);
+        Assert.False(vm.IsBusy);
+        Assert.Contains("Index à jour", vm.StatusMessage);
     }
 
     [Fact]

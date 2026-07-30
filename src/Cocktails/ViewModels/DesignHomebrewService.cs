@@ -30,6 +30,9 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<Package>>([Sample[0]]);
 
+    public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
     public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
         => Task.FromResult(new PackageDetails(
             name, PackageKind.Formula,

@@ -24,6 +24,17 @@ public partial class OutdatedViewModel : PackageListViewModel
     [RelayCommand]
     private Task RefreshAsync() => LoadAsync();
 
+    /// <summary>Actualise l'index Homebrew (brew update) puis recharge les obsolètes.</summary>
+    [RelayCommand]
+    private Task UpdateIndexAsync() => RunWithOutputAsync("Actualisation de l'index (brew update)…", async progress =>
+    {
+        await Homebrew.UpdateIndexAsync(progress);
+        await ReloadAsync();
+        StatusMessage = Packages.Count == 0
+            ? "Index à jour — tout est à jour."
+            : $"Index à jour — {Packages.Count} mise(s) à jour disponible(s).";
+    });
+
     private Task LoadAsync() => RunAsync("Recherche des mises à jour…", async () =>
     {
         var outdated = await Homebrew.GetOutdatedAsync();

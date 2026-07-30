@@ -55,6 +55,9 @@ public sealed class HomebrewService : IHomebrewService
         return ParseInfo(result.StandardOutput, name);
     }
 
+    public async Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["update"], cancellationToken, output);
+
     public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken, output);
 

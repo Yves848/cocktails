@@ -18,6 +18,9 @@ public interface IHomebrewService
     /// <summary>Liste les packages installés pour lesquels une mise à jour est disponible.</summary>
     Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Actualise l'index des formules/casks (<c>brew update</c>).</summary>
+    Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
     /// <summary>Récupère le détail enrichi d'un package (description, dépendances, homepage…).</summary>
     Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default);
 

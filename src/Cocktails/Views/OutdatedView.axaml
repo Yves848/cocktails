@@ -15,12 +15,15 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="18,16,18,10">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Classes="act" Content="Rafraîchir" Margin="0,0,8,0"
+            <Button Grid.Column="1" Classes="act" Content="Actualiser l'index" Margin="0,0,8,0"
+                    ToolTip.Tip="brew update — rafraîchit la base des formules/casks"
+                    Command="{Binding UpdateIndexCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="2" Classes="act" Content="Rafraîchir" Margin="0,0,8,0"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="2" Classes="act primary" Content="Tout mettre à jour"
+            <Button Grid.Column="3" Classes="act primary" Content="Tout mettre à jour"
                     Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
