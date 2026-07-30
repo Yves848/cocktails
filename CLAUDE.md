@@ -61,9 +61,11 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     Actions destructives (désinstaller, autoremove) passent par une confirmation.
   - **Monitoring** : `Services/UpdateMonitor` vérifie périodiquement `brew outdated`
     (intervalle réglable), expose `OutdatedCount` (badge sur la nav « Mises à jour ») et
-    notifie les nouveautés via `INotifier` (`MacNotifier` = `osascript display
-    notification`). Composé et démarré dans `App.axaml.cs`. Logique testable via
-    `CheckNowAsync` (le timer est de la glu UI).
+    notifie les nouveautés via `INotifier`. `PlatformNotifier.Create` choisit
+    `MacUserNotifier` (natif `UNUserNotificationCenter`, interop objc, identité
+    « Cocktails ») en bundle `.app`, sinon `MacNotifier` (osascript) en dev. Composé et
+    démarré dans `App.axaml.cs`. Logique testable via `CheckNowAsync` (timer = glu UI).
+    Empaquetage : `packaging/` (le bundle est signé ad-hoc, requis pour les notifs natives).
   - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
     opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
   - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`), récupéré via

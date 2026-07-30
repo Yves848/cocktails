@@ -19,13 +19,19 @@ Variables surchargeables : `RID` (défaut `osx-arm64`), `CONFIG` (`Release`),
 - `make-icon.py` — génère l'icône (shaker bleu sur fond sombre) via PIL, puis
   `sips` + `iconutil` produisent `Cocktails.icns` (committé, régénéré si absent).
 
+## Notifications
+
+En bundle `.app`, l'app utilise les **notifications natives**
+(`UNUserNotificationCenter`, cf. `Services/MacUserNotifier`) : elles s'affichent sous
+l'identité **« Cocktails »** (nom + icône). Le script **signe le bundle en ad-hoc**
+(`codesign --sign -`), ce qui est nécessaire pour que macOS demande l'autorisation et
+affiche les notifications. Au 1er lancement, macOS demande l'autorisation « Cocktails ».
+
+Hors bundle (exécution en dev via `dotnet run`), l'app retombe sur `osascript`
+(attribué à « Script Editor ») — cf. `Services/PlatformNotifier`.
+
 ## Limites connues
 
-- **Non signé / non notarisé** : au premier lancement, macOS peut demander un
-  clic droit → « Ouvrir » (le script retire l'attribut de quarantaine en local).
-  Pour distribuer largement : signer (`codesign`) + notariser avec un compte
-  développeur Apple.
-- **Notifications** : elles passent par `osascript` (`display notification`), donc
-  s'affichent attribuées à « Script Editor », pas à « Cocktails », même bundlé.
-  Une vraie identité de notification nécessiterait l'API native
-  `UNUserNotificationCenter` (interop Objective-C) — évolution possible.
+- **Ad-hoc, non notarisé** : au premier lancement, macOS peut demander un clic droit →
+  « Ouvrir » (le script retire l'attribut de quarantaine en local). Pour distribuer
+  largement : signer avec une identité **Developer ID** (`SIGN_ID=...`) + notariser.

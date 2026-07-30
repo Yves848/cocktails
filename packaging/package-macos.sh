@@ -78,6 +78,14 @@ PLIST
 
 chmod +x "$APP/Contents/MacOS/$APP_NAME"
 
+# Signature ad-hoc : indispensable pour que les notifications natives
+# (UNUserNotificationCenter) demandent l'autorisation et s'affichent sous l'identité
+# « Cocktails ». SIGN_ID surchargeable pour une vraie identité Developer ID.
+SIGN_ID="${SIGN_ID:--}"
+echo "==> Signature ($SIGN_ID)"
+codesign --force --deep --sign "$SIGN_ID" "$APP" >/dev/null 2>&1 \
+    && echo "    signé" || echo "    (signature échouée — notifications natives possiblement inactives)"
+
 # Un bundle non signé traîne parfois l'attribut de quarantaine : on le retire en local.
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 

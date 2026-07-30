@@ -28,8 +28,10 @@ public partial class App : Application
             var settings = settingsStore.Load();
             settings.PropertyChanged += (_, _) => settingsStore.Save(settings);
 
-            // Monitoring des mises à jour + notifications système (macOS via osascript).
-            var monitor = new UpdateMonitor(homebrew, settings, new MacNotifier(runner));
+            // Monitoring des mises à jour + notifications système (natives en bundle .app,
+            // osascript en dev — cf. PlatformNotifier).
+            var notifier = PlatformNotifier.Create(runner);
+            var monitor = new UpdateMonitor(homebrew, settings, notifier);
 
             desktop.MainWindow = new MainWindow
             {
