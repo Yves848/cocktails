@@ -48,7 +48,13 @@
                                 <TextBlock Classes="body" Text="{Binding Name}" />
                                 <TextBlock Classes="muted" Text="{Binding KindLabel}" />
                             </StackPanel>
+                            <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center"
+                                    IsVisible="{Binding IsInstalled}">
+                                <TextBlock FontSize="11.5" FontWeight="SemiBold"
+                                           Foreground="{StaticResource Success}" Text="installé" />
+                            </Border>
                             <Button Grid.Column="2" Classes="act primary small" Content="Installer"
+                                    IsVisible="{Binding !IsInstalled}"
                                     Command="{Binding #List.((vm:SearchViewModel)DataContext).InstallCommand}"
                                     CommandParameter="{Binding}" />
                         </Grid>
@@ -69,8 +75,14 @@
                             <views:PackageDetailView DataContext="{Binding Details}" />
                             <Button Classes="act primary small" Content="Installer"
                                     HorizontalAlignment="Left"
+                                    IsVisible="{Binding !SelectedPackage.IsInstalled}"
                                     Command="{Binding InstallCommand}"
                                     CommandParameter="{Binding SelectedPackage}" />
+                            <Border Classes="chip" HorizontalAlignment="Left"
+                                    IsVisible="{Binding SelectedPackage.IsInstalled}">
+                                <TextBlock FontSize="11.5" FontWeight="SemiBold"
+                                           Foreground="{StaticResource Success}" Text="déjà installé" />
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
 

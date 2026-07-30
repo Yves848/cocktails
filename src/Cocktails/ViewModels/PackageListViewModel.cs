@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
@@ -10,10 +11,14 @@ namespace Cocktails.ViewModels;
 
 /// <summary>
 /// Écran présentant une liste de packages avec un volet de détail (master-detail) :
-/// sélectionner une ligne charge son détail (<c>brew info</c>).
+/// sélectionner une ligne charge son détail (<c>brew info</c>). Gère aussi un filtre
+/// texte et un tri alphabétique sur la liste affichée.
 /// </summary>
 public abstract partial class PackageListViewModel : ScreenViewModel
 {
+    // Jeu complet (non filtré) ; Packages est la vue filtrée+triée liée à l'UI.
+    private readonly List<Package> _all = [];
+
     // Séquence pour ignorer les résultats de détail obsolètes (sélection rapide).
     private int _detailToken;
 
@@ -21,7 +26,12 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     {
     }
 
+    /// <summary>Vue affichée (filtrée par <see cref="FilterText"/>, triée par nom).</summary>
     public ObservableCollection<Package> Packages { get; } = [];
+
+    /// <summary>Filtre texte (sous-chaîne du nom, insensible à la casse).</summary>
+    [ObservableProperty]
+    public partial string FilterText { get; set; } = string.Empty;
 
     /// <summary>Package sélectionné dans la liste (pilote le volet de détail).</summary>
     [ObservableProperty]
@@ -35,11 +45,27 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     [ObservableProperty]
     public partial bool IsLoadingDetails { get; set; }
 
-    /// <summary>Remplace le contenu de la liste par <paramref name="items"/>.</summary>
+    /// <summary>Remplace le jeu complet puis applique filtre + tri.</summary>
     protected void Replace(IReadOnlyList<Package> items)
     {
+        _all.Clear();
+        _all.AddRange(items);
+        ApplyFilter();
+    }
+
+    partial void OnFilterTextChanged(string value) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        var filter = FilterText.Trim();
+        IEnumerable<Package> query = _all;
+        if (filter.Length > 0)
+        {
+            query = query.Where(p => p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
         Packages.Clear();
-        foreach (var p in items)
+        foreach (var p in query.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
         {
             Packages.Add(p);
         }

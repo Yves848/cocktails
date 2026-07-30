@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cocktails.Core;
@@ -122,6 +123,37 @@ public class ScreenViewModelTests
         Assert.Equal("git", vm.Details!.Name);
         Assert.Equal(2, vm.Details.Dependencies.Count);
         Assert.False(vm.IsLoadingDetails);
+    }
+
+    [Fact]
+    public async Task Installed_Filter_NarrowsAndListIsSorted()
+    {
+        var fake = new FakeHomebrewService { Installed = { "wget", "git", "gnupg" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        // Tri alphabétique appliqué à l'affichage.
+        Assert.Equal(["git", "gnupg", "wget"], vm.Packages.Select(p => p.Name));
+
+        vm.FilterText = "gn";
+        Assert.Equal(["gnupg"], vm.Packages.Select(p => p.Name));
+
+        vm.FilterText = "";
+        Assert.Equal(3, vm.Packages.Count);
+    }
+
+    [Fact]
+    public async Task Search_MarksAlreadyInstalledResults()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new SearchViewModel(fake);
+        vm.SearchQuery = "git";
+
+        await vm.SearchCommand.ExecuteAsync(null);
+
+        var result = Assert.Single(vm.Packages);
+        Assert.True(result.IsInstalled);
+        Assert.Contains("déjà installé", vm.StatusMessage);
     }
 
     [Fact]

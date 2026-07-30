@@ -15,10 +15,13 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="18,16,18,10">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
-                       FontWeight="SemiBold" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Classes="act" Content="Rafraîchir"
+                       FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
+            <TextBox Grid.Column="1" Classes="medit" MaxWidth="260" HorizontalAlignment="Left"
+                     PlaceholderText="Filtrer (nom)…"
+                     Text="{Binding FilterText}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="2" Classes="act" Content="Rafraîchir" Margin="8,0,0,0"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 

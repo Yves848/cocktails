@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
@@ -36,8 +38,22 @@ public partial class SearchViewModel : PackageListViewModel
         return RunAsync($"Recherche de « {query} »…", async () =>
         {
             var results = await Homebrew.SearchAsync(query);
-            Replace(results);
-            StatusMessage = $"{results.Count} résultat(s) pour « {query} ».";
+
+            // Marque les résultats déjà installés (brew search ne donne pas cet état) :
+            // on croise avec la liste des installés pour reporter leur version.
+            var installedVersions = (await Homebrew.GetInstalledAsync())
+                .ToDictionary(p => p.Name, p => p.InstalledVersion);
+            var marked = results
+                .Select(r => installedVersions.TryGetValue(r.Name, out var v) && v is not null
+                    ? r with { InstalledVersion = v }
+                    : r)
+                .ToList();
+
+            Replace(marked);
+            var installedCount = marked.Count(p => p.IsInstalled);
+            StatusMessage = installedCount > 0
+                ? $"{marked.Count} résultat(s) — {installedCount} déjà installé(s)."
+                : $"{marked.Count} résultat(s) pour « {query} ».";
         });
     }
 
