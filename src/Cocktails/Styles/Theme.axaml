@@ -156,6 +156,35 @@
     <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
   </Style>
 
+  <!-- Segmented (filtre par type) -->
+  <Style Selector="Border.seg">
+    <Setter Property="Background" Value="#33000000" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.segbtn">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="11,5" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.segbtn:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#0DFFFFFF" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="Button.segbtn.on">
+    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+  </Style>
+  <Style Selector="Button.segbtn.on /template/ ContentPresenter">
+    <Setter Property="Background" Value="#1FFFFFFF" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+
   <!-- Puce (pill) : type / catégorie -->
   <Style Selector="Border.chip">
     <Setter Property="Background" Value="{StaticResource AccentSoft}" />

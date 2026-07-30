@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
@@ -32,6 +33,25 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     /// <summary>Filtre texte (sous-chaîne du nom, insensible à la casse).</summary>
     [ObservableProperty]
     public partial string FilterText { get; set; } = string.Empty;
+
+    /// <summary>Filtre par type (Tout / Formulae / Casks).</summary>
+    [ObservableProperty]
+    public partial PackageKindFilter KindFilter { get; set; } = PackageKindFilter.All;
+
+    public bool IsKindAll => KindFilter == PackageKindFilter.All;
+    public bool IsKindFormula => KindFilter == PackageKindFilter.Formula;
+    public bool IsKindCask => KindFilter == PackageKindFilter.Cask;
+
+    [RelayCommand]
+    private void SetKindFilter(PackageKindFilter kind) => KindFilter = kind;
+
+    partial void OnKindFilterChanged(PackageKindFilter value)
+    {
+        OnPropertyChanged(nameof(IsKindAll));
+        OnPropertyChanged(nameof(IsKindFormula));
+        OnPropertyChanged(nameof(IsKindCask));
+        ApplyFilter();
+    }
 
     /// <summary>Package sélectionné dans la liste (pilote le volet de détail).</summary>
     [ObservableProperty]
@@ -63,6 +83,13 @@ public abstract partial class PackageListViewModel : ScreenViewModel
         {
             query = query.Where(p => p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase));
         }
+
+        query = KindFilter switch
+        {
+            PackageKindFilter.Formula => query.Where(p => p.Kind == PackageKind.Formula),
+            PackageKindFilter.Cask => query.Where(p => p.Kind == PackageKind.Cask),
+            _ => query,
+        };
 
         Packages.Clear();
         foreach (var p in query.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))

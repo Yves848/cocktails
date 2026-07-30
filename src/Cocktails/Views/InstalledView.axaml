@@ -15,13 +15,26 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="18,16,18,10">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
-            <TextBox Grid.Column="1" Classes="medit" MaxWidth="260" HorizontalAlignment="Left"
+            <TextBox Grid.Column="1" Classes="medit" MaxWidth="220" HorizontalAlignment="Left"
                      PlaceholderText="Filtrer (nom)…"
                      Text="{Binding FilterText}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="2" Classes="act" Content="Rafraîchir" Margin="8,0,0,0"
+            <Border Grid.Column="2" Classes="seg" Margin="8,0,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="segbtn" Classes.on="{Binding IsKindAll}" Content="Tout"
+                            Command="{Binding SetKindFilterCommand}"
+                            CommandParameter="{x:Static vm:PackageKindFilter.All}" />
+                    <Button Classes="segbtn" Classes.on="{Binding IsKindFormula}" Content="Formulae"
+                            Command="{Binding SetKindFilterCommand}"
+                            CommandParameter="{x:Static vm:PackageKindFilter.Formula}" />
+                    <Button Classes="segbtn" Classes.on="{Binding IsKindCask}" Content="Casks"
+                            Command="{Binding SetKindFilterCommand}"
+                            CommandParameter="{x:Static vm:PackageKindFilter.Cask}" />
+                </StackPanel>
+            </Border>
+            <Button Grid.Column="3" Classes="act" Content="Rafraîchir" Margin="8,0,0,0"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 

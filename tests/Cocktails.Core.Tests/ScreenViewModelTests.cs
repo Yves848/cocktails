@@ -15,14 +15,16 @@ public class ScreenViewModelTests
     private sealed class FakeHomebrewService : IHomebrewService
     {
         public List<string> Installed { get; init; } = [];
+        public List<string> Casks { get; init; } = [];
         public List<string> InstallCalls { get; } = [];
         public List<string> UninstallCalls { get; } = [];
 
         public Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
         {
-            IReadOnlyList<Package> list = Installed
-                .ConvertAll(n => new Package(n, PackageKind.Formula, InstalledVersion: "1.0"));
-            return Task.FromResult(list);
+            var list = new List<Package>();
+            list.AddRange(Installed.Select(n => new Package(n, PackageKind.Formula, InstalledVersion: "1.0")));
+            list.AddRange(Casks.Select(n => new Package(n, PackageKind.Cask, InstalledVersion: "1.0")));
+            return Task.FromResult<IReadOnlyList<Package>>(list);
         }
 
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
@@ -162,6 +164,22 @@ public class ScreenViewModelTests
 
         vm.FilterText = "";
         Assert.Equal(3, vm.Packages.Count);
+    }
+
+    [Fact]
+    public async Task Installed_KindFilter_ShowsOnlySelectedType()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" }, Casks = { "firefox" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+        Assert.Equal(2, vm.Packages.Count);
+
+        vm.SetKindFilterCommand.Execute(PackageKindFilter.Cask);
+        Assert.Equal(["firefox"], vm.Packages.Select(p => p.Name));
+        Assert.True(vm.IsKindCask);
+
+        vm.SetKindFilterCommand.Execute(PackageKindFilter.All);
+        Assert.Equal(2, vm.Packages.Count);
     }
 
     [Fact]
