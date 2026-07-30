@@ -137,6 +137,20 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Search_SelectingResult_LoadsDetails()
+    {
+        var vm = new SearchViewModel(new FakeHomebrewService());
+        vm.SearchQuery = "ripgrep";
+        await vm.SearchCommand.ExecuteAsync(null);
+
+        vm.SelectedPackage = vm.Packages[0];
+
+        Assert.NotNull(vm.Details);
+        Assert.Equal("ripgrep", vm.Details!.Name);
+        Assert.False(vm.IsLoadingDetails);
+    }
+
+    [Fact]
     public async Task Search_Install_CallsService()
     {
         var fake = new FakeHomebrewService();

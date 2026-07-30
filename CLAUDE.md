@@ -44,13 +44,18 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
   - **Navigation** : `ViewModels/MainViewModel` est le **shell** (nav latérale
     `NavItems` + `SelectedNav` + `CurrentScreen`). Chaque écran est un
     `ScreenViewModel` (base : `IsBusy`, `StatusMessage`, `RunAsync` pour occupé/erreurs,
-    `OnFirstActivatedAsync` pour le chargement paresseux). Écrans : `Installed`
-    (master-detail : sélection → `Details` via `GetInfoAsync`, chargement local
-    `IsLoadingDetails` sans overlay global), `Search`, `Outdated`, + `Maintenance` /
-    `Settings` (placeholders P2). Les vues (`Views/XxxView.axaml`) sont résolues par le
-    `ViewLocator` (mapping `ViewModels.XxxViewModel` → `Views.XxxView`).
+    `OnFirstActivatedAsync` pour le chargement paresseux). Le master-detail
+    (sélection → `Details` via `GetInfoAsync`, chargement local `IsLoadingDetails`
+    sans overlay global) est mutualisé dans `PackageListViewModel`. Écrans :
+    `Installed` et `Search` (master-detail, volet partagé `Views/PackageDetailView`),
+    `Outdated`, + `Maintenance` / `Settings` (placeholders P2). Les vues
+    (`Views/XxxView.axaml`) sont résolues par le `ViewLocator` (mapping
+    `ViewModels.XxxViewModel` → `Views.XxxView`).
   - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
     opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
+  - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`) téléchargé
+    (appel réseau externe, mis en cache), avec repli sur l'initiale du type. C'est le
+    seul point du code UI qui sort sur le réseau en dehors de `brew`.
   - `Converters/StringToGeometryConverter` : parse les icônes (path SVG) à l'affichage,
     pour garder les VMs indépendants de la plateforme (testables).
   - `ViewModels/DesignHomebrewService` : stub **design-time uniquement** (previewer
