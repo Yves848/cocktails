@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
@@ -25,6 +26,10 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = "Prêt.";
+
+    /// <summary>Demande de confirmation en attente (non nulle → dialogue affiché).</summary>
+    [ObservableProperty]
+    public partial ConfirmationRequest? Confirmation { get; set; }
 
     /// <summary>Dernières lignes du log brew de l'opération en cours (tail affiché dans l'overlay).</summary>
     public ObservableCollection<string> OutputLog { get; } = [];
@@ -49,6 +54,24 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
     /// <summary>Chargement initial de l'écran (aucun par défaut).</summary>
     protected virtual Task OnFirstActivatedAsync() => Task.CompletedTask;
+
+    /// <summary>Demande confirmation avant d'exécuter <paramref name="onConfirm"/>.</summary>
+    protected void RequestConfirmation(string title, string message, string confirmLabel, Func<Task> onConfirm)
+        => Confirmation = new ConfirmationRequest(title, message, confirmLabel, onConfirm);
+
+    [RelayCommand]
+    private async Task ConfirmAsync()
+    {
+        var request = Confirmation;
+        Confirmation = null;
+        if (request is not null)
+        {
+            await request.OnConfirm();
+        }
+    }
+
+    [RelayCommand]
+    private void CancelConfirmation() => Confirmation = null;
 
     /// <summary>Exécute une opération en gérant l'état occupé et les erreurs Homebrew.</summary>
     protected async Task RunAsync(string busyMessage, Func<Task> action)

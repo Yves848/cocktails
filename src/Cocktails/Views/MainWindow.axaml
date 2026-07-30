@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Cocktails.ViewModels"
         xmlns:conv="using:Cocktails.Converters"
+        xmlns:ac="using:Avalonia.Data.Converters"
         xmlns:controls="using:Cocktails.Controls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -141,6 +142,42 @@
                                    HorizontalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
+            </Border>
+
+            <!-- Dialogue de confirmation (superposé, modal) -->
+            <Border CornerRadius="10" Background="#B3040509"
+                    IsVisible="{Binding CurrentScreen.Confirmation, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
+                <Border Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="#F2101018" BorderBrush="{StaticResource CardBorder}"
+                        BorderThickness="1" CornerRadius="14"
+                        BoxShadow="0 24 60 -12 #B0000000">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,20,20,10">
+                            <Border Width="34" Height="34" CornerRadius="9" Background="#33FF5F6D"
+                                    VerticalAlignment="Top">
+                                <Path Width="18" Height="18" Stretch="Uniform"
+                                      Stroke="{StaticResource Danger}" StrokeThickness="2"
+                                      StrokeLineCap="Round" StrokeJoin="Round"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z M12 9v4 M12 17h.01" />
+                            </Border>
+                            <StackPanel Spacing="5">
+                                <TextBlock Classes="title" TextWrapping="Wrap"
+                                           Text="{Binding CurrentScreen.Confirmation.Title}" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="280"
+                                           Text="{Binding CurrentScreen.Confirmation.Message}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                    Spacing="8" Margin="20,6,20,18">
+                            <Button Classes="act" Content="Annuler"
+                                    Command="{Binding CurrentScreen.CancelConfirmationCommand}" />
+                            <Button Classes="act danger"
+                                    Content="{Binding CurrentScreen.Confirmation.ConfirmLabel}"
+                                    Command="{Binding CurrentScreen.ConfirmCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </Border>
 
             <!-- Poignées de redimensionnement (fenêtre sans chrome) : bords + coins,

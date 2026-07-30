@@ -34,15 +34,24 @@ public partial class InstalledViewModel : PackageListViewModel
         StatusMessage = $"{installed.Count} package(s) installé(s).";
     });
 
+    /// <summary>Demande confirmation ; la désinstallation réelle a lieu au « Confirmer ».</summary>
     [RelayCommand]
-    private Task UninstallAsync(Package? package)
+    private void Uninstall(Package? package)
     {
         if (package is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return RunWithOutputAsync($"Désinstallation de « {package.Name} »…", async progress =>
+        RequestConfirmation(
+            "Désinstaller ce paquet ?",
+            $"La désinstallation de « {package.Name} » est irréversible. Les paquets qui en dépendent pourraient cesser de fonctionner.",
+            "Désinstaller",
+            () => DoUninstallAsync(package));
+    }
+
+    private Task DoUninstallAsync(Package package)
+        => RunWithOutputAsync($"Désinstallation de « {package.Name} »…", async progress =>
         {
             await Homebrew.UninstallAsync(package.Name, progress);
             ClearSelection();
@@ -50,5 +59,4 @@ public partial class InstalledViewModel : PackageListViewModel
             Replace(installed);
             StatusMessage = $"« {package.Name} » désinstallé.";
         });
-    }
 }

@@ -96,18 +96,40 @@ public class ScreenViewModelTests
     }
 
     [Fact]
-    public async Task Installed_Uninstall_CallsServiceAndReloads()
+    public async Task Installed_Uninstall_ConfirmThenCallsServiceAndReloads()
     {
         var fake = new FakeHomebrewService { Installed = { "git", "wget" } };
         var vm = new InstalledViewModel(fake);
         await vm.ActivateAsync();
 
-        await vm.UninstallCommand.ExecuteAsync(new Package("git", PackageKind.Formula, InstalledVersion: "1.0"));
+        // 1er clic : demande confirmation, rien n'est fait.
+        vm.UninstallCommand.Execute(new Package("git", PackageKind.Formula, InstalledVersion: "1.0"));
+        Assert.NotNull(vm.Confirmation);
+        Assert.Empty(fake.UninstallCalls);
 
+        // Confirmation : désinstallation réelle + rechargement.
+        await vm.ConfirmCommand.ExecuteAsync(null);
+
+        Assert.Null(vm.Confirmation);
         Assert.Equal(["git"], fake.UninstallCalls);
         Assert.DoesNotContain(vm.Packages, p => p.Name == "git");
         Assert.Contains(vm.Packages, p => p.Name == "wget");
         Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Installed_Uninstall_Cancel_DoesNothing()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.UninstallCommand.Execute(vm.Packages[0]);
+        vm.CancelConfirmationCommand.Execute(null);
+
+        Assert.Null(vm.Confirmation);
+        Assert.Empty(fake.UninstallCalls);
+        Assert.Contains(vm.Packages, p => p.Name == "git");
     }
 
     [Fact]
