@@ -36,6 +36,9 @@ public partial class MainWindow : Window
         };
 
         CloseBtn.Click += (_, _) => Close();
+        MinBtn.Click += (_, _) => WindowState = WindowState.Minimized;
+        MaxBtn.Click += (_, _) => WindowState =
+            WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
         // Redimensionnement manuel : BeginResizeDrag n'est pas fiable sur une fenêtre
         // sans chrome (macOS), on gère donc la taille nous-mêmes via capture du pointeur.

@@ -36,8 +36,11 @@
                       Margin="16,13" Background="Transparent">
                     <TextBlock Grid.Column="0" Classes="title" Text="Cocktails"
                                VerticalAlignment="Center" />
-                    <Button x:Name="CloseBtn" Grid.Column="1" Classes="icon" Content="✕"
-                            ToolTip.Tip="Fermer" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                        <Button x:Name="MinBtn" Classes="icon" Content="‒" ToolTip.Tip="Réduire" />
+                        <Button x:Name="MaxBtn" Classes="icon" Content="◻" ToolTip.Tip="Agrandir / restaurer" />
+                        <Button x:Name="CloseBtn" Classes="icon" Content="✕" ToolTip.Tip="Fermer" />
+                    </StackPanel>
                 </Grid>
 
                 <Border Grid.Row="1" Classes="hairline" />
