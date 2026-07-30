@@ -25,26 +25,37 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
   seul endroit qui connaît la CLI `brew`.
   - `IHomebrewService` / `HomebrewService` : opérations brew de haut niveau
     (`GetInstalled`, `Search`, `GetOutdated`, `Install`, `Uninstall`, `Upgrade`).
-    Les méthodes de parsing (`ParseInstalled`, `ParseSearch`, `ParseOutdated`) sont
-    **statiques et publiques** afin d'être testées sur des sorties `brew` capturées,
-    sans lancer de processus.
+    Les méthodes de parsing (`ParseInstalled`, `ParseSearch`, `ParseOutdated`,
+    `ParseInfo`) sont **statiques et publiques** afin d'être testées sur des sorties
+    `brew` capturées, sans lancer de processus.
   - `IProcessRunner` / `ProcessRunner` : abstraction de `System.Diagnostics.Process`.
     C'est le point d'injection qui rend `HomebrewService` testable — les tests
     fournissent un runner factice, la prod utilise le vrai.
-  - `Models/Package` : record exposé à l'UI (`Name`, `Kind`, `InstalledVersion`,
-    `LatestVersion`, propriétés dérivées `IsInstalled` / `IsOutdated`).
+  - `Models/Package` : record de liste (`Name`, `Kind`, `InstalledVersion`,
+    `LatestVersion`, dérivés `IsInstalled` / `IsOutdated` / `KindLabel` / `KindBadge`).
+    `Models/PackageDetails` : détail enrichi (`GetInfoAsync` → `brew info --json=v2`)
+    avec description, homepage, dépendances, versions, pinned.
   - `HomebrewException` : levée quand une commande `brew` renvoie un code non nul.
 - **`src/Cocktails`** — app Avalonia (MVVM). Ne dépend **que** de `IHomebrewService`,
   jamais de `Process` ni du format de sortie de brew.
   - `App.axaml.cs` compose la racine : `new HomebrewService(new ProcessRunner())`
     injecté dans `MainViewModel`. (Pas de conteneur DI pour l'instant — instanciation
     manuelle ; c'est le point à faire évoluer si le graphe de dépendances grossit.)
-  - `ViewModels/MainViewModel` : commandes `[RelayCommand]` async, état `IsBusy`,
-    `StatusMessage`, collection observable `Packages`. Le helper `RunAsync` centralise
-    la gestion occupé/erreurs (attrape `HomebrewException`).
+  - **Navigation** : `ViewModels/MainViewModel` est le **shell** (nav latérale
+    `NavItems` + `SelectedNav` + `CurrentScreen`). Chaque écran est un
+    `ScreenViewModel` (base : `IsBusy`, `StatusMessage`, `RunAsync` pour occupé/erreurs,
+    `OnFirstActivatedAsync` pour le chargement paresseux). Écrans : `Installed`
+    (master-detail : sélection → `Details` via `GetInfoAsync`, chargement local
+    `IsLoadingDetails` sans overlay global), `Search`, `Outdated`, + `Maintenance` /
+    `Settings` (placeholders P2). Les vues (`Views/XxxView.axaml`) sont résolues par le
+    `ViewLocator` (mapping `ViewModels.XxxViewModel` → `Views.XxxView`).
+  - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
+    opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
+  - `Converters/StringToGeometryConverter` : parse les icônes (path SVG) à l'affichage,
+    pour garder les VMs indépendants de la plateforme (testables).
   - `ViewModels/DesignHomebrewService` : stub **design-time uniquement** (previewer
-    XAML et ctor sans argument du VM) ; jamais utilisé à l'exécution réelle.
-- **`tests/Cocktails.Core.Tests`** — xUnit. Cible surtout les parsers de `HomebrewService`.
+    XAML et ctors sans argument des VMs) ; jamais utilisé à l'exécution réelle.
+- **`tests/Cocktails.Core.Tests`** — xUnit. Parsers de `HomebrewService` + VMs d'écran.
 
 ### Conventions importantes
 

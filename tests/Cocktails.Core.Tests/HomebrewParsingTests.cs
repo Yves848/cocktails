@@ -101,4 +101,79 @@ public class HomebrewParsingTests
         Assert.Empty(HomebrewService.ParseOutdated(""));
         Assert.Empty(HomebrewService.ParseOutdated("   "));
     }
+
+    [Fact]
+    public void ParseInfo_Formula_ReadsDescriptionDependenciesAndVersions()
+    {
+        const string json = """
+            {
+              "formulae": [
+                {
+                  "name": "git",
+                  "tap": "homebrew/core",
+                  "desc": "Distributed revision control system",
+                  "homepage": "https://git-scm.com",
+                  "versions": { "stable": "2.45.2" },
+                  "installed": [ { "version": "2.45.1" } ],
+                  "dependencies": ["gettext", "pcre2"],
+                  "pinned": true
+                }
+              ],
+              "casks": []
+            }
+            """;
+
+        var d = HomebrewService.ParseInfo(json, "git");
+
+        Assert.Equal("git", d.Name);
+        Assert.Equal(PackageKind.Formula, d.Kind);
+        Assert.Equal("Distributed revision control system", d.Description);
+        Assert.Equal("https://git-scm.com", d.Homepage);
+        Assert.Equal("2.45.2", d.StableVersion);
+        Assert.Equal("2.45.1", d.InstalledVersion);
+        Assert.Equal(["gettext", "pcre2"], d.Dependencies);
+        Assert.True(d.IsPinned);
+        Assert.True(d.IsOutdated);
+        Assert.Equal("homebrew/core", d.Tap);
+    }
+
+    [Fact]
+    public void ParseInfo_Cask_ReadsTokenVersionAndDependsOn()
+    {
+        const string json = """
+            {
+              "formulae": [],
+              "casks": [
+                {
+                  "token": "firefox",
+                  "name": ["Firefox"],
+                  "desc": "Web browser",
+                  "homepage": "https://mozilla.org",
+                  "version": "128.0",
+                  "installed": "127.0",
+                  "tap": "homebrew/cask",
+                  "depends_on": { "formula": ["gnupg"], "cask": ["rosetta"] }
+                }
+              ]
+            }
+            """;
+
+        var d = HomebrewService.ParseInfo(json, "firefox");
+
+        Assert.Equal("firefox", d.Name);
+        Assert.Equal(PackageKind.Cask, d.Kind);
+        Assert.Equal("128.0", d.StableVersion);
+        Assert.Equal("127.0", d.InstalledVersion);
+        Assert.Equal(["gnupg", "rosetta"], d.Dependencies);
+        Assert.False(d.IsPinned);
+    }
+
+    [Fact]
+    public void ParseInfo_BlankOrUnknown_ReturnsFallback()
+    {
+        var d = HomebrewService.ParseInfo("", "mystery");
+        Assert.Equal("mystery", d.Name);
+        Assert.Empty(d.Dependencies);
+        Assert.Null(d.Description);
+    }
 }

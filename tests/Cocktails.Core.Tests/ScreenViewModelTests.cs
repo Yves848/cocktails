@@ -29,6 +29,11 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
+        public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PackageDetails(
+                name, PackageKind.Formula, "desc", "https://example.org",
+                "1.0", "1.0", ["dep1", "dep2"], false, "homebrew/core"));
+
         public Task InstallAsync(string name, CancellationToken cancellationToken = default)
         {
             InstallCalls.Add(name);
@@ -57,6 +62,9 @@ public class ScreenViewModelTests
 
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
+
+        public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
         public Task InstallAsync(string name, CancellationToken cancellationToken = default)
             => throw new HomebrewException(
@@ -98,6 +106,34 @@ public class ScreenViewModelTests
         Assert.DoesNotContain(vm.Packages, p => p.Name == "git");
         Assert.Contains(vm.Packages, p => p.Name == "wget");
         Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Installed_SelectingPackage_LoadsDetails()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.SelectedPackage = vm.Packages[0];
+
+        Assert.NotNull(vm.Details);
+        Assert.Equal("git", vm.Details!.Name);
+        Assert.Equal(2, vm.Details.Dependencies.Count);
+        Assert.False(vm.IsLoadingDetails);
+    }
+
+    [Fact]
+    public async Task Installed_ClearingSelection_ClearsDetails()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+        vm.SelectedPackage = vm.Packages[0];
+
+        vm.SelectedPackage = null;
+
+        Assert.Null(vm.Details);
     }
 
     [Fact]

@@ -49,6 +49,12 @@ public sealed class HomebrewService : IHomebrewService
         return ParseOutdated(result.StandardOutput);
     }
 
+    public async Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var result = await RunAsync(["info", "--json=v2", name], cancellationToken);
+        return ParseInfo(result.StandardOutput, name);
+    }
+
     public async Task InstallAsync(string name, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken);
 
@@ -175,6 +181,100 @@ public sealed class HomebrewService : IHomebrewService
             yield return new Package(name, kind, InstalledVersion: installed, LatestVersion: latest);
         }
     }
+
+    /// <summary>
+    /// Parse la sortie JSON de <c>brew info --json=v2 &lt;name&gt;</c>. Le premier élément
+    /// de la section <c>formulae</c> (sinon <c>casks</c>) est retenu.
+    /// </summary>
+    public static PackageDetails ParseInfo(string json, string fallbackName)
+    {
+        if (!string.IsNullOrWhiteSpace(json))
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("formulae", out var formulae)
+                && formulae.ValueKind == JsonValueKind.Array && formulae.GetArrayLength() > 0)
+            {
+                return ParseFormulaInfo(formulae[0], fallbackName);
+            }
+
+            if (root.TryGetProperty("casks", out var casks)
+                && casks.ValueKind == JsonValueKind.Array && casks.GetArrayLength() > 0)
+            {
+                return ParseCaskInfo(casks[0], fallbackName);
+            }
+        }
+
+        return new PackageDetails(fallbackName, PackageKind.Formula, null, null, null, null, [], false, null);
+    }
+
+    private static PackageDetails ParseFormulaInfo(JsonElement f, string fallbackName)
+    {
+        string? stable = null;
+        if (f.TryGetProperty("versions", out var versions) && versions.ValueKind == JsonValueKind.Object)
+        {
+            stable = GetString(versions, "stable");
+        }
+
+        string? installed = null;
+        if (f.TryGetProperty("installed", out var inst)
+            && inst.ValueKind == JsonValueKind.Array && inst.GetArrayLength() > 0)
+        {
+            installed = GetString(inst[inst.GetArrayLength() - 1], "version");
+        }
+
+        var deps = new List<string>();
+        if (f.TryGetProperty("dependencies", out var d) && d.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var e in d.EnumerateArray())
+            {
+                if (e.GetString() is { } s)
+                {
+                    deps.Add(s);
+                }
+            }
+        }
+
+        var pinned = f.TryGetProperty("pinned", out var p) && p.ValueKind == JsonValueKind.True;
+
+        return new PackageDetails(
+            GetString(f, "name") ?? fallbackName, PackageKind.Formula,
+            GetString(f, "desc"), GetString(f, "homepage"),
+            stable, installed, deps, pinned, GetString(f, "tap"));
+    }
+
+    private static PackageDetails ParseCaskInfo(JsonElement c, string fallbackName)
+    {
+        var deps = new List<string>();
+        if (c.TryGetProperty("depends_on", out var dep) && dep.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var key in (ReadOnlySpan<string>)["formula", "cask"])
+            {
+                if (dep.TryGetProperty(key, out var arr) && arr.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var e in arr.EnumerateArray())
+                    {
+                        if (e.GetString() is { } s)
+                        {
+                            deps.Add(s);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new PackageDetails(
+            GetString(c, "token") ?? fallbackName, PackageKind.Cask,
+            GetString(c, "desc"), GetString(c, "homepage"),
+            GetString(c, "version"), GetString(c, "installed"),
+            deps, false, GetString(c, "tap"));
+    }
+
+    private static string? GetString(JsonElement element, string property)
+        => element.TryGetProperty(property, out var v) && v.ValueKind == JsonValueKind.String
+            ? v.GetString()
+            : null;
 
     private static IEnumerable<string> SplitLines(string text) =>
         text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

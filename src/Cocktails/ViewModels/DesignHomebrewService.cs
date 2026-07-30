@@ -29,6 +29,13 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<Package>>([Sample[0]]);
 
+    public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
+        => Task.FromResult(new PackageDetails(
+            name, PackageKind.Formula,
+            "Système de gestion de versions distribué.",
+            "https://git-scm.com", "2.45.2", "2.45.2",
+            ["gettext", "pcre2", "openssl@3"], false, "homebrew/core"));
+
     public Task InstallAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public Task UninstallAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
