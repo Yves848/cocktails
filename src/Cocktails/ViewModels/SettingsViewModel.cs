@@ -3,14 +3,15 @@ using Cocktails.Core;
 namespace Cocktails.ViewModels;
 
 /// <summary>
-/// Écran « Réglages » (P2) : surveillance des mises à jour, notifications, chemin de
-/// brew, thème. Aperçu statique pour l'instant.
+/// Écran « Réglages ». Le toggle « confirmer avant désinstallation » est fonctionnel
+/// (partagé avec l'écran Installés). Surveillance et notifications viendront (P2).
 /// </summary>
 public sealed class SettingsViewModel : ScreenViewModel
 {
-    public SettingsViewModel(IHomebrewService homebrew) : base(homebrew)
+    public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
     {
-        StatusMessage = "Réglages — aperçu.";
+        Settings = settings ?? new AppSettings();
+        StatusMessage = "Réglages.";
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
@@ -20,6 +21,5 @@ public sealed class SettingsViewModel : ScreenViewModel
 
     public override string Title => "Réglages";
 
-    /// <summary>Chemin de l'exécutable brew (Apple Silicon par défaut).</summary>
-    public string BrewPath => "/opt/homebrew/bin/brew";
+    public AppSettings Settings { get; }
 }

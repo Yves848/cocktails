@@ -11,8 +11,11 @@ namespace Cocktails.ViewModels;
 /// </summary>
 public partial class InstalledViewModel : PackageListViewModel
 {
-    public InstalledViewModel(IHomebrewService homebrew) : base(homebrew)
+    private readonly AppSettings _settings;
+
+    public InstalledViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
     {
+        _settings = settings ?? new AppSettings();
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
@@ -40,6 +43,12 @@ public partial class InstalledViewModel : PackageListViewModel
     {
         if (package is null)
         {
+            return;
+        }
+
+        if (!_settings.ConfirmBeforeUninstall)
+        {
+            _ = DoUninstallAsync(package);
             return;
         }
 

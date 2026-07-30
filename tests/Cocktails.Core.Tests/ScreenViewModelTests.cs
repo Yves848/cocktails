@@ -149,6 +149,20 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Installed_Uninstall_SkipsConfirmationWhenSettingOff()
+    {
+        var settings = new AppSettings { ConfirmBeforeUninstall = false };
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake, settings);
+        await vm.ActivateAsync();
+
+        vm.UninstallCommand.Execute(vm.Packages[0]);
+
+        Assert.Null(vm.Confirmation);               // pas de dialogue
+        Assert.Equal(["git"], fake.UninstallCalls); // désinstallé directement
+    }
+
+    [Fact]
     public async Task Installed_Uninstall_Cancel_DoesNothing()
     {
         var fake = new FakeHomebrewService { Installed = { "git" } };

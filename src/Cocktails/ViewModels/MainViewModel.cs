@@ -25,13 +25,14 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(IHomebrewService homebrew)
     {
+        var settings = new AppSettings();
         NavItems =
         [
-            new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew)),
+            new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew, settings)),
             new NavItem("Rechercher", IconSearch, new SearchViewModel(homebrew)),
             new NavItem("Mises à jour", IconUpdates, new OutdatedViewModel(homebrew)),
             new NavItem("Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
-            new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew)),
+            new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew, settings)),
         ];
         SelectedNav = NavItems[0];
     }
