@@ -14,7 +14,6 @@ _(rien pour l'instant)_
 - [ ] **`reinstall`** — bouton dans le détail.
 - [ ] **`uses` / `leaves`** — dépendants (avant désinstallation) + « installés explicitement ».
 - [ ] **`deps --tree`** — arbre de dépendances dans le détail.
-- [ ] **Taps** (`tap`/`untap`/`trust`/`tap-info`) — écran Taps (répond à l'avert. `obs`).
 - [ ] **`missing`** — dépendances manquantes, alerte Maintenance.
 - [ ] **`fetch`** — préchargement (niche).
 - [ ] **`vulns`** — vulnérabilités connues, info sécurité dans le détail (à considérer).
@@ -52,3 +51,4 @@ _(rien pour l'instant)_
 - [x] **Services** (`brew services`) — écran dédié : liste + démarrer/arrêter/redémarrer.
 - [x] **`pin` / `unpin`** — boutons Épingler/Désépingler dans le détail Installés.
 - [x] Fenêtre : boutons **réduire / agrandir** (min/max) dans l'en-tête.
+- [x] **Taps** — écran dédié : lister, ajouter, retirer, faire confiance (`brew trust`).

@@ -44,6 +44,10 @@ public class UpdateMonitorTests
         public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewTap>>([]);
+        public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class RecordingNotifier : INotifier

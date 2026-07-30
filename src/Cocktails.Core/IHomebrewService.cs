@@ -68,4 +68,16 @@ public interface IHomebrewService
 
     /// <summary>Redémarre un service (<c>brew services restart</c>).</summary>
     Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Liste les taps installés (<c>brew tap-info --installed --json</c>).</summary>
+    Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Ajoute un tap (<c>brew tap</c>).</summary>
+    Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Retire un tap (<c>brew untap</c>).</summary>
+    Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Fait confiance à un tap non officiel (<c>brew trust</c>).</summary>
+    Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 }

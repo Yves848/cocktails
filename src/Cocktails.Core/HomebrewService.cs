@@ -110,6 +110,21 @@ public sealed class HomebrewService : IHomebrewService
     public async Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["services", "restart", name], cancellationToken, output);
 
+    public async Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await RunAsync(["tap-info", "--installed", "--json"], cancellationToken);
+        return ParseTaps(result.StandardOutput);
+    }
+
+    public async Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["tap", name], cancellationToken, output);
+
+    public async Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["untap", name], cancellationToken, output);
+
+    public async Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["trust", name], cancellationToken, output);
+
     private async Task<ProcessResult> RunAsync(
         string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
     {
@@ -347,6 +362,48 @@ public sealed class HomebrewService : IHomebrewService
 
         return services;
     }
+
+    /// <summary>Parse la sortie JSON de <c>brew tap-info --installed --json</c>.</summary>
+    public static IReadOnlyList<BrewTap> ParseTaps(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var taps = new List<BrewTap>();
+        foreach (var item in doc.RootElement.EnumerateArray())
+        {
+            var name = GetString(item, "name");
+            if (name is null)
+            {
+                continue;
+            }
+
+            taps.Add(new BrewTap(
+                name,
+                IsTrue(item, "official"),
+                ArrayLength(item, "formula_names"),
+                ArrayLength(item, "cask_tokens"),
+                IsTrue(item, "custom_remote")));
+        }
+
+        return taps;
+    }
+
+    private static bool IsTrue(JsonElement element, string property)
+        => element.TryGetProperty(property, out var v) && v.ValueKind == JsonValueKind.True;
+
+    private static int ArrayLength(JsonElement element, string property)
+        => element.TryGetProperty(property, out var v) && v.ValueKind == JsonValueKind.Array
+            ? v.GetArrayLength()
+            : 0;
 
     private static string? GetString(JsonElement element, string property)
         => element.TryGetProperty(property, out var v) && v.ValueKind == JsonValueKind.String

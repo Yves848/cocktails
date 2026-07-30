@@ -129,6 +129,31 @@ public class ScreenViewModelTests
             Maintenance.Add("restart:" + name);
             return Task.CompletedTask;
         }
+
+        public List<BrewTap> TapsList { get; init; } = [];
+
+        public Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<BrewTap>>(TapsList);
+
+        public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("tap:" + name);
+            TapsList.Add(new BrewTap(name, false, 0, 0, false));
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("untap:" + name);
+            TapsList.RemoveAll(t => t.Name == name);
+            return Task.CompletedTask;
+        }
+
+        public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("trust:" + name);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingHomebrewService : IHomebrewService
@@ -183,6 +208,10 @@ public class ScreenViewModelTests
         public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewTap>>([]);
+        public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     [Fact]
@@ -481,11 +510,62 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Taps_Add_ValidatesFormatAndAdds()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new TapsViewModel(fake);
+        await vm.ActivateAsync();
+
+        // Nom invalide (pas de « / ») → refusé.
+        vm.NewTapName = "pasbon";
+        await vm.AddCommand.ExecuteAsync(null);
+        Assert.Empty(fake.Maintenance);
+        Assert.Contains("invalide", vm.StatusMessage);
+
+        // Nom valide → ajouté.
+        vm.NewTapName = "felixkratz/formulae";
+        await vm.AddCommand.ExecuteAsync(null);
+        Assert.Contains("tap:felixkratz/formulae", fake.Maintenance);
+        Assert.Contains(vm.Taps, t => t.Name == "felixkratz/formulae");
+        Assert.Equal(string.Empty, vm.NewTapName);
+    }
+
+    [Fact]
+    public async Task Taps_Remove_ConfirmsThenUntaps()
+    {
+        var fake = new FakeHomebrewService
+        {
+            TapsList = { new BrewTap("felixkratz/formulae", false, 2, 0, false) },
+        };
+        var vm = new TapsViewModel(fake);
+        await vm.ActivateAsync();
+
+        await vm.RemoveCommand.ExecuteAsync(vm.Taps[0]);
+        Assert.NotNull(vm.Confirmation);
+        Assert.DoesNotContain("untap:felixkratz/formulae", fake.Maintenance);
+
+        await vm.ConfirmCommand.ExecuteAsync(null);
+        Assert.Contains("untap:felixkratz/formulae", fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Taps_Remove_OfficialTap_DoesNothing()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new TapsViewModel(fake);
+
+        await vm.RemoveCommand.ExecuteAsync(new BrewTap("homebrew/core", true, 7000, 0, false));
+
+        Assert.Null(vm.Confirmation);
+        Assert.Empty(fake.Maintenance);
+    }
+
+    [Fact]
     public void Shell_DefaultsToInstalledScreen()
     {
         var vm = new MainViewModel(new FakeHomebrewService());
 
-        Assert.Equal(6, vm.NavItems.Count);
+        Assert.Equal(7, vm.NavItems.Count);
         Assert.Equal("Installés", vm.SelectedNav?.Title);
         Assert.IsType<InstalledViewModel>(vm.CurrentScreen);
     }

@@ -203,4 +203,32 @@ public class HomebrewParsingTests
     [Fact]
     public void ParseServices_BlankReturnsEmpty()
         => Assert.Empty(HomebrewService.ParseServices(""));
+
+    [Fact]
+    public void ParseTaps_ReadsNameOfficialAndCounts()
+    {
+        const string json = """
+            [
+              { "name": "homebrew/core", "official": true, "custom_remote": false,
+                "formula_names": ["a","b","c"], "cask_tokens": [] },
+              { "name": "felixkratz/formulae", "official": false, "custom_remote": false,
+                "formula_names": ["sketchybar","borders"], "cask_tokens": ["x"] }
+            ]
+            """;
+
+        var taps = HomebrewService.ParseTaps(json);
+
+        Assert.Equal(2, taps.Count);
+        Assert.True(taps[0].Official);
+        Assert.Equal("officiel", taps[0].KindLabel);
+        Assert.Equal(3, taps[0].FormulaCount);
+
+        Assert.False(taps[1].Official);
+        Assert.Equal(2, taps[1].FormulaCount);
+        Assert.Equal(1, taps[1].CaskCount);
+    }
+
+    [Fact]
+    public void ParseTaps_BlankReturnsEmpty()
+        => Assert.Empty(HomebrewService.ParseTaps(""));
 }

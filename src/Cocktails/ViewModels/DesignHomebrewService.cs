@@ -77,4 +77,15 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<IReadOnlyList<BrewTap>> GetTapsAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<BrewTap>>(
+        [
+            new("homebrew/core", true, 7000, 0, false),
+            new("felixkratz/formulae", false, 2, 0, false),
+        ]);
+
+    public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
