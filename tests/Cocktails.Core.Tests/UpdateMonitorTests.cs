@@ -29,6 +29,8 @@ public class UpdateMonitorTests
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;

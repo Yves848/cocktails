@@ -11,7 +11,6 @@ _(rien pour l'instant)_
 
 ## Manques Homebrew (priorisés)
 
-- [ ] **`pin` / `unpin`** — l'UI affiche déjà l'état ; câbler les actions dans le détail.
 - [ ] **`reinstall`** — bouton dans le détail.
 - [ ] **`uses` / `leaves`** — dépendants (avant désinstallation) + « installés explicitement ».
 - [ ] **`deps --tree`** — arbre de dépendances dans le détail.
@@ -51,3 +50,5 @@ _(rien pour l'instant)_
 - [x] **`update`** — bouton « Actualiser l'index » (brew update) sur Mises à jour.
 - [x] **Brewfile** — export/import (`brew bundle dump`/`install`) dans Maintenance.
 - [x] **Services** (`brew services`) — écran dédié : liste + démarrer/arrêter/redémarrer.
+- [x] **`pin` / `unpin`** — boutons Épingler/Désépingler dans le détail Installés.
+- [x] Fenêtre : boutons **réduire / agrandir** (min/max) dans l'en-tête.

@@ -24,6 +24,12 @@ public interface IHomebrewService
     /// <summary>Récupère le détail enrichi d'un package (description, dépendances, homepage…).</summary>
     Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default);
 
+    /// <summary>Épingle une formula à sa version (<c>brew pin</c>).</summary>
+    Task PinAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>Désépingle une formula (<c>brew unpin</c>).</summary>
+    Task UnpinAsync(string name, CancellationToken cancellationToken = default);
+
     /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
     Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 

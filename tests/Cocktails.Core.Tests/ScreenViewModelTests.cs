@@ -33,10 +33,24 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
+        public HashSet<string> Pinned { get; } = [];
+
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(
                 name, PackageKind.Formula, "desc", "https://example.org",
-                "1.0", "1.0", ["dep1", "dep2"], false, "homebrew/core"));
+                "1.0", "1.0", ["dep1", "dep2"], Pinned.Contains(name), "homebrew/core"));
+
+        public Task PinAsync(string name, CancellationToken cancellationToken = default)
+        {
+            Pinned.Add(name);
+            return Task.CompletedTask;
+        }
+
+        public Task UnpinAsync(string name, CancellationToken cancellationToken = default)
+        {
+            Pinned.Remove(name);
+            return Task.CompletedTask;
+        }
 
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
@@ -131,6 +145,9 @@ public class ScreenViewModelTests
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
+        public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
@@ -203,6 +220,25 @@ public class ScreenViewModelTests
         Assert.DoesNotContain(vm.Packages, p => p.Name == "git");
         Assert.Contains(vm.Packages, p => p.Name == "wget");
         Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Installed_Pin_CallsServiceAndReloadsDetail()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+        vm.SelectedPackage = vm.Packages[0];
+        Assert.False(vm.Details!.IsPinned);
+
+        await vm.PinCommand.ExecuteAsync(vm.SelectedPackage);
+
+        Assert.Contains("git", fake.Pinned);
+        Assert.True(vm.Details!.IsPinned);   // détail rechargé
+
+        await vm.UnpinCommand.ExecuteAsync(vm.SelectedPackage);
+        Assert.DoesNotContain("git", fake.Pinned);
+        Assert.False(vm.Details!.IsPinned);
     }
 
     [Fact]

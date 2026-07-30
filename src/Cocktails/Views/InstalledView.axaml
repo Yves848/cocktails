@@ -81,10 +81,19 @@
                     <ScrollViewer IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
                         <StackPanel Spacing="16">
                             <views:PackageDetailView DataContext="{Binding Details}" />
-                            <Button Classes="act danger small" Content="Désinstaller"
-                                    HorizontalAlignment="Left"
-                                    Command="{Binding UninstallCommand}"
-                                    CommandParameter="{Binding SelectedPackage}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="act small" Content="Épingler"
+                                        IsVisible="{Binding !Details.IsPinned}"
+                                        Command="{Binding PinCommand}"
+                                        CommandParameter="{Binding SelectedPackage}" />
+                                <Button Classes="act small" Content="Désépingler"
+                                        IsVisible="{Binding Details.IsPinned}"
+                                        Command="{Binding UnpinCommand}"
+                                        CommandParameter="{Binding SelectedPackage}" />
+                                <Button Classes="act danger small" Content="Désinstaller"
+                                        Command="{Binding UninstallCommand}"
+                                        CommandParameter="{Binding SelectedPackage}" />
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
 

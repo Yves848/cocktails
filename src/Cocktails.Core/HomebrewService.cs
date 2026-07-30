@@ -58,6 +58,12 @@ public sealed class HomebrewService : IHomebrewService
     public async Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["update"], cancellationToken, output);
 
+    public async Task PinAsync(string name, CancellationToken cancellationToken = default)
+        => await RunAsync(["pin", name], cancellationToken);
+
+    public async Task UnpinAsync(string name, CancellationToken cancellationToken = default)
+        => await RunAsync(["unpin", name], cancellationToken);
+
     public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken, output);
 

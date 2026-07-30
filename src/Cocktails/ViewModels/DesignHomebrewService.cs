@@ -33,6 +33,9 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
+    public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
     public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
         => Task.FromResult(new PackageDetails(
             name, PackageKind.Formula,

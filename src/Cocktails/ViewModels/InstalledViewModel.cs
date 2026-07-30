@@ -59,6 +59,37 @@ public partial class InstalledViewModel : PackageListViewModel
             () => DoUninstallAsync(package));
     }
 
+    [RelayCommand]
+    private Task Pin(Package? package) => TogglePinAsync(package, pin: true);
+
+    [RelayCommand]
+    private Task Unpin(Package? package) => TogglePinAsync(package, pin: false);
+
+    private Task TogglePinAsync(Package? package, bool pin)
+    {
+        if (package is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var verb = pin ? "Épinglage" : "Désépinglage";
+        return RunAsync($"{verb} de « {package.Name} »…", async () =>
+        {
+            if (pin)
+            {
+                await Homebrew.PinAsync(package.Name);
+            }
+            else
+            {
+                await Homebrew.UnpinAsync(package.Name);
+            }
+
+            // Recharge le détail pour refléter le nouvel état épinglé.
+            Details = await Homebrew.GetInfoAsync(package.Name);
+            StatusMessage = pin ? $"« {package.Name} » épinglé." : $"« {package.Name} » désépinglé.";
+        });
+    }
+
     private Task DoUninstallAsync(Package package)
         => RunWithOutputAsync($"Désinstallation de « {package.Name} »…", async progress =>
         {
