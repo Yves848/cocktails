@@ -57,7 +57,7 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     par le `ViewLocator` (mapping `ViewModels.XxxViewModel` → `Views.XxxView`).
   - **Confirmation & réglages** : `ScreenViewModel.RequestConfirmation` + dialogue modal
     (cf. `ConfirmationRequest`) ; `AppSettings` (instance partagée créée par le shell,
-    persistée par `Services/SettingsStore` dans `~/.config/Cocktails/settings.json`).
+    persistée par `Services/SettingsStore` dans `~/Library/Application Support/Cocktails/settings.json`).
     Actions destructives (désinstaller, autoremove) passent par une confirmation.
   - **Monitoring** : `Services/UpdateMonitor` vérifie périodiquement `brew outdated`
     (intervalle réglable), expose `OutdatedCount` (badge sur la nav « Mises à jour ») et

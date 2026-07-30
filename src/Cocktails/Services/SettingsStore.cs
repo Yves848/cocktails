@@ -6,8 +6,9 @@ using Cocktails.ViewModels;
 namespace Cocktails.Services;
 
 /// <summary>
-/// Persistance des réglages dans un fichier JSON
-/// (<c>~/.config/Cocktails/settings.json</c> par défaut). Tolérant aux erreurs :
+/// Persistance des réglages dans un fichier JSON, sous le dossier de données de l'app
+/// (<see cref="Environment.SpecialFolder.ApplicationData"/> → sur macOS
+/// <c>~/Library/Application Support/Cocktails/settings.json</c>). Tolérant aux erreurs :
 /// un fichier manquant ou corrompu retombe sur les valeurs par défaut, et les échecs
 /// d'écriture sont ignorés (les réglages restent au moins valides en mémoire).
 /// </summary>
@@ -41,6 +42,11 @@ public sealed class SettingsStore
                         MonitoringEnabled = dto.MonitoringEnabled,
                         NotificationsEnabled = dto.NotificationsEnabled,
                         MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
+                        WindowWidth = dto.WindowWidth,
+                        WindowHeight = dto.WindowHeight,
+                        WindowX = dto.WindowX,
+                        WindowY = dto.WindowY,
+                        WindowMaximized = dto.WindowMaximized,
                     };
                 }
             }
@@ -65,6 +71,11 @@ public sealed class SettingsStore
                 MonitoringEnabled = settings.MonitoringEnabled,
                 NotificationsEnabled = settings.NotificationsEnabled,
                 MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
+                WindowWidth = settings.WindowWidth,
+                WindowHeight = settings.WindowHeight,
+                WindowX = settings.WindowX,
+                WindowY = settings.WindowY,
+                WindowMaximized = settings.WindowMaximized,
             };
             File.WriteAllText(_path, JsonSerializer.Serialize(dto, JsonOptions));
         }
@@ -81,5 +92,10 @@ public sealed class SettingsStore
         public bool MonitoringEnabled { get; set; } = true;
         public bool NotificationsEnabled { get; set; } = true;
         public int MonitoringIntervalMinutes { get; set; } = 360;
+        public double? WindowWidth { get; set; }
+        public double? WindowHeight { get; set; }
+        public int? WindowX { get; set; }
+        public int? WindowY { get; set; }
+        public bool WindowMaximized { get; set; }
     }
 }

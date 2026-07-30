@@ -23,6 +23,11 @@ public class SettingsStoreTests
                 MonitoringEnabled = false,
                 NotificationsEnabled = false,
                 MonitoringIntervalMinutes = 60,
+                WindowWidth = 1024,
+                WindowHeight = 720,
+                WindowX = 100,
+                WindowY = 50,
+                WindowMaximized = true,
             });
 
             Assert.True(File.Exists(path));
@@ -31,6 +36,10 @@ public class SettingsStoreTests
             Assert.False(loaded.MonitoringEnabled);
             Assert.False(loaded.NotificationsEnabled);
             Assert.Equal(60, loaded.MonitoringIntervalMinutes);
+            Assert.Equal(1024, loaded.WindowWidth);
+            Assert.Equal(720, loaded.WindowHeight);
+            Assert.Equal(100, loaded.WindowX);
+            Assert.True(loaded.WindowMaximized);
         }
         finally
         {

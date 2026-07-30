@@ -26,4 +26,11 @@ public partial class AppSettings : ObservableObject
 
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";
+
+    // Géométrie de la fenêtre (restaurée au démarrage). Null = valeurs par défaut.
+    public double? WindowWidth { get; set; }
+    public double? WindowHeight { get; set; }
+    public int? WindowX { get; set; }
+    public int? WindowY { get; set; }
+    public bool WindowMaximized { get; set; }
 }

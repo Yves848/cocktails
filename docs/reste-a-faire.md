@@ -30,7 +30,6 @@ _(fait — voir « Fait »)_
 
 - [ ] Auto-rafraîchir les écrans quand le moniteur détecte un changement.
 - [ ] Raccourcis clavier (navigation, rechercher).
-- [ ] Persistance de la fenêtre (taille/position).
 
 ## Fait
 
@@ -40,7 +39,7 @@ _(fait — voir « Fait »)_
 - [x] Détail : icône (proxy favicons), « Ouvrir la page », dépendances directes.
 - [x] Filtre texte + segmented Formulae/Casks + tri ; marquage des installés en recherche.
 - [x] Confirmation avant désinstallation ; log `brew` en direct (auto-scroll).
-- [x] Réglages persistés (`~/.config/Cocktails/settings.json`).
+- [x] Réglages persistés (`~/Library/Application Support/Cocktails/settings.json`).
 - [x] Empaquetage `.app` (icône, signature ad-hoc), menu « Cocktails ».
 - [x] **`update`** — bouton « Actualiser l'index » (brew update) sur Mises à jour.
 - [x] **Brewfile** — export/import (`brew bundle dump`/`install`) dans Maintenance.
@@ -51,3 +50,4 @@ _(fait — voir « Fait »)_
 - [x] **`uses` / `leaves`** — dépendants dans le détail Installés + filtre « Racines ».
 - [x] **`reinstall`** — bouton « Réinstaller » dans le détail Installés.
 - [x] **Réglages enrichis** — version/préfixe/cache réels (`brew config`/`--cache`) + toggle analytics.
+- [x] **Persistance de la fenêtre** — taille/position/maximisé restaurés au démarrage.
