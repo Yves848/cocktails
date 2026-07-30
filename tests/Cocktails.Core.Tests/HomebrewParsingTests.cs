@@ -176,4 +176,31 @@ public class HomebrewParsingTests
         Assert.Empty(d.Dependencies);
         Assert.Null(d.Description);
     }
+
+    [Fact]
+    public void ParseServices_ReadsNameStatusUserFile()
+    {
+        const string json = """
+            [
+              { "name": "postgresql@16", "status": "started", "user": "yves", "file": "/opt/homebrew/x/pg.plist", "exit_code": null },
+              { "name": "sketchybar", "status": "none", "user": null, "file": "/opt/homebrew/x/sb.plist" }
+            ]
+            """;
+
+        var services = HomebrewService.ParseServices(json);
+
+        Assert.Equal(2, services.Count);
+        Assert.Equal("postgresql@16", services[0].Name);
+        Assert.True(services[0].IsRunning);
+        Assert.Equal("yves", services[0].User);
+        Assert.Equal("actif", services[0].StatusLabel);
+
+        Assert.False(services[1].IsRunning);
+        Assert.Null(services[1].User);
+        Assert.Equal("inactif", services[1].StatusLabel);
+    }
+
+    [Fact]
+    public void ParseServices_BlankReturnsEmpty()
+        => Assert.Empty(HomebrewService.ParseServices(""));
 }

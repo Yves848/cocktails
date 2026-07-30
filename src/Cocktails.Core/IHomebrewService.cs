@@ -50,4 +50,16 @@ public interface IHomebrewService
 
     /// <summary>Installe depuis un Brewfile (<c>brew bundle install</c>).</summary>
     Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Liste les services gérés par Homebrew (<c>brew services list</c>).</summary>
+    Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Démarre un service (<c>brew services start</c>).</summary>
+    Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Arrête un service (<c>brew services stop</c>).</summary>
+    Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Redémarre un service (<c>brew services restart</c>).</summary>
+    Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 }

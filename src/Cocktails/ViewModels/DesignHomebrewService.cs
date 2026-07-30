@@ -63,4 +63,15 @@ internal sealed class DesignHomebrewService : IHomebrewService
 
     public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
+
+    public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<BrewService>>(
+        [
+            new("postgresql@16", "started", "yves", "/opt/homebrew/.../postgresql@16.plist"),
+            new("redis", "stopped", null, "/opt/homebrew/.../redis.plist"),
+        ]);
+
+    public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

@@ -11,7 +11,6 @@ _(rien pour l'instant)_
 
 ## Manques Homebrew (priorisés)
 
-- [ ] **Services** (`brew services list/start/stop/restart`) — écran Services (maquetté).
 - [ ] **`pin` / `unpin`** — l'UI affiche déjà l'état ; câbler les actions dans le détail.
 - [ ] **`reinstall`** — bouton dans le détail.
 - [ ] **`uses` / `leaves`** — dépendants (avant désinstallation) + « installés explicitement ».
@@ -51,3 +50,4 @@ _(rien pour l'instant)_
 - [x] Empaquetage `.app` (icône, signature ad-hoc), menu « Cocktails ».
 - [x] **`update`** — bouton « Actualiser l'index » (brew update) sur Mises à jour.
 - [x] **Brewfile** — export/import (`brew bundle dump`/`install`) dans Maintenance.
+- [x] **Services** (`brew services`) — écran dédié : liste + démarrer/arrêter/redémarrer.

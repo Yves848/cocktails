@@ -22,6 +22,8 @@ public partial class MainViewModel : ViewModelBase
         "M12 3v12 M8 11l4 4 4-4 M3 21h18";
     private const string IconMaintenance =
         "M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z";
+    private const string IconServices =
+        "M22 12h-4l-3 9L9 3l-3 9H2";
     private const string IconSettings =
         "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6";
 
@@ -37,6 +39,7 @@ public partial class MainViewModel : ViewModelBase
             new NavItem("Rechercher", IconSearch, new SearchViewModel(homebrew)),
             _updatesNav,
             new NavItem("Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
+            new NavItem("Services", IconServices, new ServicesViewModel(homebrew)),
             new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew, settings)),
         ];
 

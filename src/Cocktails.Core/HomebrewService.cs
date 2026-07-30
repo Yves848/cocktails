@@ -89,6 +89,21 @@ public sealed class HomebrewService : IHomebrewService
     public async Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output);
 
+    public async Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await RunAsync(["services", "list", "--json"], cancellationToken);
+        return ParseServices(result.StandardOutput);
+    }
+
+    public async Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["services", "start", name], cancellationToken, output);
+
+    public async Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["services", "stop", name], cancellationToken, output);
+
+    public async Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["services", "restart", name], cancellationToken, output);
+
     private async Task<ProcessResult> RunAsync(
         string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
     {
@@ -292,6 +307,39 @@ public sealed class HomebrewService : IHomebrewService
             GetString(c, "desc"), GetString(c, "homepage"),
             GetString(c, "version"), GetString(c, "installed"),
             deps, false, GetString(c, "tap"));
+    }
+
+    /// <summary>Parse la sortie JSON de <c>brew services list --json</c> (tableau d'objets).</summary>
+    public static IReadOnlyList<BrewService> ParseServices(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var services = new List<BrewService>();
+        foreach (var item in doc.RootElement.EnumerateArray())
+        {
+            var name = GetString(item, "name");
+            if (name is null)
+            {
+                continue;
+            }
+
+            services.Add(new BrewService(
+                name,
+                GetString(item, "status") ?? "unknown",
+                GetString(item, "user"),
+                GetString(item, "file")));
+        }
+
+        return services;
     }
 
     private static string? GetString(JsonElement element, string property)

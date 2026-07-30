@@ -92,6 +92,29 @@ public class ScreenViewModelTests
             Maintenance.Add("bundle-install:" + path);
             return Task.CompletedTask;
         }
+
+        public List<BrewService> ServicesList { get; init; } = [];
+
+        public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<BrewService>>(ServicesList);
+
+        public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("start:" + name);
+            return Task.CompletedTask;
+        }
+
+        public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("stop:" + name);
+            return Task.CompletedTask;
+        }
+
+        public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("restart:" + name);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingHomebrewService : IHomebrewService
@@ -136,6 +159,13 @@ public class ScreenViewModelTests
 
         public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<BrewService>>([]);
+
+        public Task StartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task StopServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task RestartServiceAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     [Fact]
@@ -383,11 +413,43 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Services_Activate_LoadsList()
+    {
+        var fake = new FakeHomebrewService
+        {
+            ServicesList = { new BrewService("redis", "started", "yves", "/x/redis.plist") },
+        };
+        var vm = new ServicesViewModel(fake);
+
+        await vm.ActivateAsync();
+
+        var s = Assert.Single(vm.Services);
+        Assert.Equal("redis", s.Name);
+        Assert.True(s.IsRunning);
+    }
+
+    [Fact]
+    public async Task Services_Stop_CallsServiceAndReloads()
+    {
+        var fake = new FakeHomebrewService
+        {
+            ServicesList = { new BrewService("redis", "started", "yves", null) },
+        };
+        var vm = new ServicesViewModel(fake);
+        await vm.ActivateAsync();
+
+        await vm.StopCommand.ExecuteAsync(vm.Services[0]);
+
+        Assert.Contains("stop:redis", fake.Maintenance);
+        Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
     public void Shell_DefaultsToInstalledScreen()
     {
         var vm = new MainViewModel(new FakeHomebrewService());
 
-        Assert.Equal(5, vm.NavItems.Count);
+        Assert.Equal(6, vm.NavItems.Count);
         Assert.Equal("Installés", vm.SelectedNav?.Title);
         Assert.IsType<InstalledViewModel>(vm.CurrentScreen);
     }
