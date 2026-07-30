@@ -12,6 +12,18 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     public partial bool ConfirmBeforeUninstall { get; set; } = true;
 
+    /// <summary>Surveiller périodiquement les mises à jour en arrière-plan.</summary>
+    [ObservableProperty]
+    public partial bool MonitoringEnabled { get; set; } = true;
+
+    /// <summary>Notifier via le centre de notifications quand de nouvelles maj arrivent.</summary>
+    [ObservableProperty]
+    public partial bool NotificationsEnabled { get; set; } = true;
+
+    /// <summary>Intervalle entre deux vérifications automatiques (minutes).</summary>
+    [ObservableProperty]
+    public partial int MonitoringIntervalMinutes { get; set; } = 360;
+
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";
 }

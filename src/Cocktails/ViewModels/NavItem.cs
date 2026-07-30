@@ -1,7 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Cocktails.ViewModels;
 
-/// <summary>Entrée de la navigation latérale : libellé, icône et écran associé.</summary>
-public sealed class NavItem
+/// <summary>Entrée de la navigation latérale : libellé, icône, écran, et compteur optionnel.</summary>
+public sealed partial class NavItem : ObservableObject
 {
     public NavItem(string title, string icon, ScreenViewModel screen)
     {
@@ -20,4 +22,8 @@ public sealed class NavItem
     public string Icon { get; }
 
     public ScreenViewModel Screen { get; }
+
+    /// <summary>Compteur affiché en badge (0 = pas de badge). Ex. mises à jour disponibles.</summary>
+    [ObservableProperty]
+    public partial int Count { get; set; }
 }

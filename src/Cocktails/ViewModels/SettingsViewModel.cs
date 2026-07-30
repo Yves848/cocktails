@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
 using Cocktails.Core;
 
 namespace Cocktails.ViewModels;
 
-/// <summary>
-/// Écran « Réglages ». Le toggle « confirmer avant désinstallation » est fonctionnel
-/// (partagé avec l'écran Installés). Surveillance et notifications viendront (P2).
-/// </summary>
+/// <summary>Une option de fréquence de vérification (libellé + intervalle en minutes).</summary>
+public sealed record FrequencyOption(string Label, int Minutes);
+
+/// <summary>Écran « Réglages » : confirmation, surveillance des mises à jour, notifications.</summary>
 public sealed class SettingsViewModel : ScreenViewModel
 {
     public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
@@ -22,4 +24,25 @@ public sealed class SettingsViewModel : ScreenViewModel
     public override string Title => "Réglages";
 
     public AppSettings Settings { get; }
+
+    public IReadOnlyList<FrequencyOption> Frequencies { get; } =
+    [
+        new("Toutes les heures", 60),
+        new("Toutes les 6 heures", 360),
+        new("Une fois par jour", 1440),
+    ];
+
+    public FrequencyOption SelectedFrequency
+    {
+        get => Frequencies.FirstOrDefault(f => f.Minutes == Settings.MonitoringIntervalMinutes)
+               ?? Frequencies[1];
+        set
+        {
+            if (value is not null && value.Minutes != Settings.MonitoringIntervalMinutes)
+            {
+                Settings.MonitoringIntervalMinutes = value.Minutes;
+                OnPropertyChanged();
+            }
+        }
+    }
 }

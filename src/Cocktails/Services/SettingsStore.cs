@@ -35,7 +35,13 @@ public sealed class SettingsStore
                 var dto = JsonSerializer.Deserialize<SettingsDto>(File.ReadAllText(_path));
                 if (dto is not null)
                 {
-                    return new AppSettings { ConfirmBeforeUninstall = dto.ConfirmBeforeUninstall };
+                    return new AppSettings
+                    {
+                        ConfirmBeforeUninstall = dto.ConfirmBeforeUninstall,
+                        MonitoringEnabled = dto.MonitoringEnabled,
+                        NotificationsEnabled = dto.NotificationsEnabled,
+                        MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
+                    };
                 }
             }
         }
@@ -53,7 +59,13 @@ public sealed class SettingsStore
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-            var dto = new SettingsDto { ConfirmBeforeUninstall = settings.ConfirmBeforeUninstall };
+            var dto = new SettingsDto
+            {
+                ConfirmBeforeUninstall = settings.ConfirmBeforeUninstall,
+                MonitoringEnabled = settings.MonitoringEnabled,
+                NotificationsEnabled = settings.NotificationsEnabled,
+                MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
+            };
             File.WriteAllText(_path, JsonSerializer.Serialize(dto, JsonOptions));
         }
         catch (Exception)
@@ -66,5 +78,8 @@ public sealed class SettingsStore
     private sealed class SettingsDto
     {
         public bool ConfirmBeforeUninstall { get; set; } = true;
+        public bool MonitoringEnabled { get; set; } = true;
+        public bool NotificationsEnabled { get; set; } = true;
+        public int MonitoringIntervalMinutes { get; set; } = 360;
     }
 }

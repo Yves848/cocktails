@@ -17,10 +17,20 @@ public class SettingsStoreTests
         try
         {
             var store = new SettingsStore(path);
-            store.Save(new AppSettings { ConfirmBeforeUninstall = false });
+            store.Save(new AppSettings
+            {
+                ConfirmBeforeUninstall = false,
+                MonitoringEnabled = false,
+                NotificationsEnabled = false,
+                MonitoringIntervalMinutes = 60,
+            });
 
             Assert.True(File.Exists(path));
-            Assert.False(store.Load().ConfirmBeforeUninstall);
+            var loaded = store.Load();
+            Assert.False(loaded.ConfirmBeforeUninstall);
+            Assert.False(loaded.MonitoringEnabled);
+            Assert.False(loaded.NotificationsEnabled);
+            Assert.Equal(60, loaded.MonitoringIntervalMinutes);
         }
         finally
         {

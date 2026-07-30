@@ -20,6 +20,51 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="Surveillance des mises à jour" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="Vérifier périodiquement les paquets obsolètes en arrière-plan." />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                  OnContent="" OffContent=""
+                                  IsChecked="{Binding Settings.MonitoringEnabled}" />
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="Fréquence de vérification" />
+                        <TextBlock Classes="muted" Text="Intervalle entre deux contrôles automatiques." />
+                    </StackPanel>
+                    <ComboBox Grid.Column="1" VerticalAlignment="Center" MinWidth="170"
+                              IsEnabled="{Binding Settings.MonitoringEnabled}"
+                              ItemsSource="{Binding Frequencies}"
+                              SelectedItem="{Binding SelectedFrequency}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FrequencyOption">
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="Notifications système" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="Prévenir via le centre de notifications quand de nouvelles mises à jour arrivent." />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                  OnContent="" OffContent=""
+                                  IsChecked="{Binding Settings.NotificationsEnabled}" />
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
                         <TextBlock Classes="body" Text="Confirmer avant désinstallation" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
                                    Text="Demander une confirmation pour les actions irréversibles." />
@@ -42,11 +87,6 @@
                                Text="{Binding Settings.BrewPath}" />
                 </Grid>
 
-                <Border Classes="hairline" />
-
-                <TextBlock Classes="muted" TextWrapping="Wrap" Margin="0,14,0,0" MaxWidth="440"
-                           HorizontalAlignment="Left"
-                           Text="Surveillance des mises à jour en arrière-plan et notifications système : à venir (phase 2)." />
             </StackPanel>
         </ScrollViewer>
     </Grid>

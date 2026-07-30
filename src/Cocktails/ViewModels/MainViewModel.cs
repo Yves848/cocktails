@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Cocktails.Core;
+using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Cocktails.ViewModels;
@@ -23,18 +25,38 @@ public partial class MainViewModel : ViewModelBase
     private const string IconSettings =
         "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6";
 
-    public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null)
+    private readonly NavItem _updatesNav;
+
+    public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null)
     {
         settings ??= new AppSettings();
+        _updatesNav = new NavItem("Mises à jour", IconUpdates, new OutdatedViewModel(homebrew));
         NavItems =
         [
             new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew, settings)),
             new NavItem("Rechercher", IconSearch, new SearchViewModel(homebrew)),
-            new NavItem("Mises à jour", IconUpdates, new OutdatedViewModel(homebrew)),
+            _updatesNav,
             new NavItem("Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
             new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew, settings)),
         ];
+
+        // Le badge « Mises à jour » suit le compteur du moniteur.
+        Monitor = monitor ?? new UpdateMonitor(homebrew, settings, new NullNotifier());
+        Monitor.PropertyChanged += OnMonitorChanged;
+        _updatesNav.Count = Monitor.OutdatedCount;
+
         SelectedNav = NavItems[0];
+    }
+
+    /// <summary>Moniteur de mises à jour (démarré par la racine de composition).</summary>
+    public UpdateMonitor Monitor { get; }
+
+    private void OnMonitorChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(UpdateMonitor.OutdatedCount))
+        {
+            _updatesNav.Count = Monitor.OutdatedCount;
+        }
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
