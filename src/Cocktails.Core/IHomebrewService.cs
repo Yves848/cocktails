@@ -39,6 +39,9 @@ public interface IHomebrewService
     /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
     Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
+    /// <summary>Réinstalle un package (<c>brew reinstall</c>).</summary>
+    Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
     /// <summary>Désinstalle un package installé. <paramref name="output"/> reçoit le log brew.</summary>
     Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 

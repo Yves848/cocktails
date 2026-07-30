@@ -74,6 +74,12 @@ public class ScreenViewModelTests
             return Task.CompletedTask;
         }
 
+        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("reinstall:" + name);
+            return Task.CompletedTask;
+        }
+
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             UninstallCalls.Add(name);
@@ -187,6 +193,9 @@ public class ScreenViewModelTests
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
+        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => throw new HomebrewException(
                 "install " + name,
@@ -259,6 +268,19 @@ public class ScreenViewModelTests
         Assert.Equal(["git"], fake.UninstallCalls);
         Assert.DoesNotContain(vm.Packages, p => p.Name == "git");
         Assert.Contains(vm.Packages, p => p.Name == "wget");
+        Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Installed_Reinstall_CallsService()
+    {
+        var fake = new FakeHomebrewService { Installed = { "git" } };
+        var vm = new InstalledViewModel(fake);
+        await vm.ActivateAsync();
+
+        await vm.ReinstallCommand.ExecuteAsync(vm.Packages[0]);
+
+        Assert.Contains("reinstall:git", fake.Maintenance);
         Assert.False(vm.IsBusy);
     }
 

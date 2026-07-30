@@ -52,6 +52,9 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
+    public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
     public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 

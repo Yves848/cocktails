@@ -78,6 +78,22 @@ public partial class InstalledViewModel : PackageListViewModel
     }
 
     [RelayCommand]
+    private Task Reinstall(Package? package)
+    {
+        if (package is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunWithOutputAsync($"Réinstallation de « {package.Name} »…", async progress =>
+        {
+            await Homebrew.ReinstallAsync(package.Name, progress);
+            Replace(await Homebrew.GetInstalledAsync());
+            StatusMessage = $"« {package.Name} » réinstallé.";
+        });
+    }
+
+    [RelayCommand]
     private Task Pin(Package? package) => TogglePinAsync(package, pin: true);
 
     [RelayCommand]

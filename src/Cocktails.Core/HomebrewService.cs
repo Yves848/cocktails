@@ -79,6 +79,9 @@ public sealed class HomebrewService : IHomebrewService
     public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken, output);
 
+    public async Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["reinstall", name], cancellationToken, output);
+
     public async Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["uninstall", name], cancellationToken, output);
 

@@ -35,6 +35,7 @@ public class UpdateMonitorTests
         public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
 
         public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
