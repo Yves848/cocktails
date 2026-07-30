@@ -54,6 +54,26 @@ public class ScreenViewModelTests
 
         public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public List<string> Maintenance { get; } = [];
+
+        public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("cleanup");
+            return Task.CompletedTask;
+        }
+
+        public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("autoremove");
+            return Task.CompletedTask;
+        }
+
+        public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("doctor");
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingHomebrewService : IHomebrewService
@@ -79,6 +99,15 @@ public class ScreenViewModelTests
             => Task.CompletedTask;
 
         public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 
@@ -245,6 +274,32 @@ public class ScreenViewModelTests
 
         Assert.Contains("Erreur", vm.StatusMessage);
         Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Maintenance_CleanupAndDoctor_CallService()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new MaintenanceViewModel(fake);
+
+        await vm.CleanupCommand.ExecuteAsync(null);
+        await vm.DoctorCommand.ExecuteAsync(null);
+
+        Assert.Equal(["cleanup", "doctor"], fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Maintenance_Autoremove_ConfirmsFirst()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new MaintenanceViewModel(fake);
+
+        vm.AutoremoveCommand.Execute(null);
+        Assert.NotNull(vm.Confirmation);
+        Assert.Empty(fake.Maintenance);
+
+        await vm.ConfirmCommand.ExecuteAsync(null);
+        Assert.Equal(["autoremove"], fake.Maintenance);
     }
 
     [Fact]

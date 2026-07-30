@@ -12,14 +12,55 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
-                   Margin="18,16,18,10" />
-        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Spacing="8" MaxWidth="360">
-            <TextBlock Classes="body" HorizontalAlignment="Center"
-                       Text="Nettoyage &amp; diagnostic" />
-            <TextBlock Classes="muted" TextAlignment="Center" TextWrapping="Wrap"
-                       Text="Nettoyage du cache, retrait des dépendances orphelines, diagnostic (brew doctor) et gestion des services. À venir (phase 2)." />
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="18,16,18,10">
+            <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+            <TextBlock Classes="muted" Text="Nettoyage &amp; diagnostic" VerticalAlignment="Center" />
         </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Margin="18,4,18,18" Spacing="12">
+
+                <Border Classes="mcard">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                            <TextBlock Classes="body" Text="Nettoyage du cache" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Supprime les téléchargements en cache et les anciennes versions (brew cleanup)." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="act primary" Content="Nettoyer"
+                                VerticalAlignment="Center"
+                                Command="{Binding CleanupCommand}" IsEnabled="{Binding !IsBusy}" />
+                    </Grid>
+                </Border>
+
+                <Border Classes="mcard">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                            <TextBlock Classes="body" Text="Dépendances orphelines" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Retire les formulae installées automatiquement et devenues inutiles (brew autoremove)." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="act" Content="Retirer"
+                                VerticalAlignment="Center"
+                                Command="{Binding AutoremoveCommand}" IsEnabled="{Binding !IsBusy}" />
+                    </Grid>
+                </Border>
+
+                <Border Classes="mcard">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                            <TextBlock Classes="body" Text="Diagnostic" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Vérifie l'intégrité de l'installation Homebrew (brew doctor)." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="act" Content="Lancer brew doctor"
+                                VerticalAlignment="Center"
+                                Command="{Binding DoctorCommand}" IsEnabled="{Binding !IsBusy}" />
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

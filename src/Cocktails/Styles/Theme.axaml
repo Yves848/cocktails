@@ -156,6 +156,15 @@
     <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
   </Style>
 
+  <!-- Carte de maintenance / réglages -->
+  <Style Selector="Border.mcard">
+    <Setter Property="Background" Value="#08FFFFFF" />
+    <Setter Property="BorderBrush" Value="{StaticResource Hairline}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
   <!-- Segmented (filtre par type) -->
   <Style Selector="Border.seg">
     <Setter Property="Background" Value="#33000000" />

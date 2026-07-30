@@ -67,6 +67,19 @@ public sealed class HomebrewService : IHomebrewService
         await RunAsync(args, cancellationToken, output);
     }
 
+    public async Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["cleanup"], cancellationToken, output);
+
+    public async Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["autoremove"], cancellationToken, output);
+
+    public async Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+    {
+        // brew doctor sort en code non nul quand il trouve des avertissements (normal) :
+        // on ne passe pas par RunAsync (qui lèverait), on diffuse juste la sortie.
+        await _runner.RunAsync(_brewPath, ["doctor"], output, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<ProcessResult> RunAsync(
         string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
     {

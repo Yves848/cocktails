@@ -45,4 +45,13 @@ internal sealed class DesignHomebrewService : IHomebrewService
 
     public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
+
+    public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
+    public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
+    public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }

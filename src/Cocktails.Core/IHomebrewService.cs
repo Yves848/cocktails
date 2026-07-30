@@ -32,4 +32,13 @@ public interface IHomebrewService
     /// <paramref name="name"/> est <c>null</c>. <paramref name="output"/> reçoit le log brew.
     /// </summary>
     Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Nettoie le cache et les anciennes versions (<c>brew cleanup</c>).</summary>
+    Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Retire les dépendances installées automatiquement et devenues inutiles (<c>brew autoremove</c>).</summary>
+    Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Diagnostic de l'installation (<c>brew doctor</c>). Ne lève pas sur avertissements.</summary>
+    Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
 }
