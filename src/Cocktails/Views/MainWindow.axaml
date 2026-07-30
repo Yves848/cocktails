@@ -99,6 +99,29 @@
                 </StackPanel>
 
             </Grid>
+
+            <!-- Splash d'ouverture : shaker animé + wordmark, s'estompe après le
+                 démarrage (piloté par MainWindow.axaml.cs). -->
+            <Border x:Name="Splash" CornerRadius="10" IsHitTestVisible="False"
+                    Background="#F2070912">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.45" />
+                    </Transitions>
+                </Border.Transitions>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                    <Viewbox Width="150" Height="150" HorizontalAlignment="Center">
+                        <controls:ShakerLoader />
+                    </Viewbox>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Cocktails" FontSize="24" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Classes="muted" Text="Votre bar à paquets Homebrew"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </Panel>
     </Border>
 </Window>
