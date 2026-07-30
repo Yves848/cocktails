@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:models="using:Cocktails.Core.Models"
+             xmlns:views="using:Cocktails.Views"
+             xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -22,34 +24,60 @@
                     Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
-        <ListBox x:Name="List" Grid.Row="1" Classes="rows" Margin="10,0,10,10"
-                 ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="models:Package">
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                        <Border Classes="badge" Grid.Column="0">
-                            <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextMuted}"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Classes="body" Text="{Binding Name}" />
-                            <TextBlock Classes="muted" Text="{Binding KindLabel}" />
+        <Grid Grid.Row="1" ColumnDefinitions="*,300">
+
+            <!-- Master : liste des obsolètes -->
+            <ListBox x:Name="List" Grid.Column="0" Classes="rows" Margin="10,0,10,10"
+                     SelectionMode="Single"
+                     SelectedItem="{Binding SelectedPackage}"
+                     ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Package">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <Border Classes="badge" Grid.Column="0">
+                                <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextMuted}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Classes="body" Text="{Binding Name}" />
+                                <TextBlock Classes="muted" Text="{Binding KindLabel}" />
+                            </StackPanel>
+                            <Border Grid.Column="2" Classes="chip" Margin="0,0,10,0">
+                                <TextBlock FontSize="11.5" FontWeight="SemiBold"
+                                           Foreground="{StaticResource Warning}"
+                                           Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
+                            </Border>
+                            <Button Grid.Column="3" Classes="act primary small" Content="Mettre à jour"
+                                    Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
+                                    CommandParameter="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Detail : volet du paquet sélectionné -->
+            <Border Grid.Column="1" BorderBrush="{StaticResource Hairline}" BorderThickness="1,0,0,0">
+                <Panel Margin="18,4,18,14">
+                    <TextBlock Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="200"
+                               Text="Sélectionnez un paquet pour voir son détail."
+                               IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNull}}" />
+
+                    <ScrollViewer IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
+                        <StackPanel Spacing="16">
+                            <views:PackageDetailView DataContext="{Binding Details}" />
+                            <Button Classes="act primary small" Content="Mettre à jour"
+                                    HorizontalAlignment="Left"
+                                    Command="{Binding UpgradeCommand}"
+                                    CommandParameter="{Binding SelectedPackage}" />
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center"
-                                   Margin="0,0,8,0" Opacity="0.7"
-                                   Text="{Binding InstalledVersion}" />
-                        <Border Grid.Column="3" Classes="chip" Margin="0,0,10,0">
-                            <TextBlock FontSize="11.5" FontWeight="SemiBold"
-                                       Foreground="{StaticResource Warning}"
-                                       Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
-                        </Border>
-                        <Button Grid.Column="4" Classes="act primary small" Content="Mettre à jour"
-                                Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
-                                CommandParameter="{Binding}" />
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                    </ScrollViewer>
+
+                    <ProgressBar IsIndeterminate="True" Height="3" VerticalAlignment="Top"
+                                 IsVisible="{Binding IsLoadingDetails}" />
+                </Panel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
