@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Cocktails.Core;
 using Cocktails.Core.Process;
+using Cocktails.Services;
 using Cocktails.ViewModels;
 using Cocktails.Views;
 
@@ -20,9 +21,15 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var homebrew = new HomebrewService(new ProcessRunner());
+
+            // Réglages : chargés du disque, ré-enregistrés à chaque changement.
+            var settingsStore = new SettingsStore();
+            var settings = settingsStore.Load();
+            settings.PropertyChanged += (_, _) => settingsStore.Save(settings);
+
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel(homebrew),
+                DataContext = new MainViewModel(homebrew, settings),
             };
         }
 

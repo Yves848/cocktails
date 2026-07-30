@@ -23,9 +23,9 @@ public partial class MainViewModel : ViewModelBase
     private const string IconSettings =
         "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6";
 
-    public MainViewModel(IHomebrewService homebrew)
+    public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null)
     {
-        var settings = new AppSettings();
+        settings ??= new AppSettings();
         NavItems =
         [
             new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew, settings)),
