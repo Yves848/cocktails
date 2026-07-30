@@ -42,6 +42,12 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<string>>(["git", "ripgrep"]);
 
+    public Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(new BrewEnvironment("6.0.13", "/opt/homebrew", "~/Library/Caches/Homebrew"));
+
+    public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(true);
+    public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
     public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
         => Task.FromResult(new PackageDetails(
             name, PackageKind.Formula,

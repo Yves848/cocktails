@@ -76,6 +76,27 @@ public sealed class HomebrewService : IHomebrewService
         return [.. SplitLines(result.StandardOutput)];
     }
 
+    public async Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default)
+    {
+        var config = await RunAsync(["config"], cancellationToken);
+        var values = ParseConfig(config.StandardOutput);
+        var cache = await RunAsync(["--cache"], cancellationToken);
+
+        return new BrewEnvironment(
+            values.GetValueOrDefault("HOMEBREW_VERSION", "?"),
+            values.GetValueOrDefault("HOMEBREW_PREFIX", _brewPath),
+            cache.StandardOutput.Trim());
+    }
+
+    public async Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _runner.RunAsync(_brewPath, ["analytics"], null, cancellationToken).ConfigureAwait(false);
+        return result.StandardOutput.Contains("are enabled", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public async Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default)
+        => await RunAsync(["analytics", enabled ? "on" : "off"], cancellationToken);
+
     public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["install", name], cancellationToken, output);
 
@@ -410,6 +431,22 @@ public sealed class HomebrewService : IHomebrewService
         }
 
         return taps;
+    }
+
+    /// <summary>Parse la sortie « CLÉ: valeur » de <c>brew config</c>.</summary>
+    public static IReadOnlyDictionary<string, string> ParseConfig(string output)
+    {
+        var values = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var line in SplitLines(output))
+        {
+            var idx = line.IndexOf(": ", StringComparison.Ordinal);
+            if (idx > 0)
+            {
+                values[line[..idx].Trim()] = line[(idx + 2)..].Trim();
+            }
+        }
+
+        return values;
     }
 
     private static bool IsTrue(JsonElement element, string property)

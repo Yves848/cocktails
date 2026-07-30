@@ -231,4 +231,21 @@ public class HomebrewParsingTests
     [Fact]
     public void ParseTaps_BlankReturnsEmpty()
         => Assert.Empty(HomebrewService.ParseTaps(""));
+
+    [Fact]
+    public void ParseConfig_ReadsKeyValuePairs()
+    {
+        const string output = """
+            HOMEBREW_VERSION: 6.0.13
+            ORIGIN: https://github.com/Homebrew/brew
+            HOMEBREW_PREFIX: /opt/homebrew
+            """;
+
+        var config = HomebrewService.ParseConfig(output);
+
+        Assert.Equal("6.0.13", config["HOMEBREW_VERSION"]);
+        Assert.Equal("/opt/homebrew", config["HOMEBREW_PREFIX"]);
+        // La valeur peut contenir « : » (URL) sans casser le parsing.
+        Assert.Equal("https://github.com/Homebrew/brew", config["ORIGIN"]);
+    }
 }

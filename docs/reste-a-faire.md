@@ -18,9 +18,7 @@ _(rien pour l'instant)_
 
 ## Réglages à enrichir
 
-- [ ] `config` + chemins réels (`--prefix`/`--cellar`/`--caskroom`/`--cache`).
-- [ ] Version de brew réelle dans la barre d'état.
-- [ ] Toggle `analytics` (télémétrie Homebrew on/off).
+_(fait — voir « Fait »)_
 
 ## Packaging / distribution
 
@@ -52,3 +50,4 @@ _(rien pour l'instant)_
 - [x] **Taps** — écran dédié : lister, ajouter, retirer, faire confiance (`brew trust`).
 - [x] **`uses` / `leaves`** — dépendants dans le détail Installés + filtre « Racines ».
 - [x] **`reinstall`** — bouton « Réinstaller » dans le détail Installés.
+- [x] **Réglages enrichis** — version/préfixe/cache réels (`brew config`/`--cache`) + toggle analytics.

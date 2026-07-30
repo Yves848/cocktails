@@ -36,6 +36,15 @@ public interface IHomebrewService
     /// <summary>Formulae installées « à la racine » (aucun autre paquet n'en dépend, <c>brew leaves</c>).</summary>
     Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Environnement Homebrew (version, préfixe, cache).</summary>
+    Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>État de la télémétrie Homebrew (<c>brew analytics</c>).</summary>
+    Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Active/désactive la télémétrie Homebrew (<c>brew analytics on/off</c>).</summary>
+    Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default);
+
     /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
     Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 

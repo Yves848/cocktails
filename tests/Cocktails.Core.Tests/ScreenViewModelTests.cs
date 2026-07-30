@@ -61,6 +61,21 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<string>>(Leaves);
 
+        public bool Analytics { get; set; } = true;
+
+        public Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new BrewEnvironment("6.0.13", "/opt/homebrew", "/cache"));
+
+        public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(Analytics);
+
+        public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default)
+        {
+            Analytics = enabled;
+            Maintenance.Add("analytics:" + (enabled ? "on" : "off"));
+            return Task.CompletedTask;
+        }
+
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             Maintenance.Add("update");
@@ -189,6 +204,9 @@ public class ScreenViewModelTests
         public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
         public Task<IReadOnlyList<string>> GetLeavesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<BrewEnvironment> GetEnvironmentAsync(CancellationToken cancellationToken = default) => Task.FromResult(new BrewEnvironment("?", "/opt/homebrew", "/cache"));
+        public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
@@ -622,6 +640,32 @@ public class ScreenViewModelTests
 
         Assert.Null(vm.Confirmation);
         Assert.Empty(fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Settings_Activate_LoadsEnvironmentAndAnalytics()
+    {
+        var fake = new FakeHomebrewService { Analytics = true };
+        var vm = new SettingsViewModel(fake);
+
+        await vm.ActivateAsync();
+
+        Assert.NotNull(vm.Environment);
+        Assert.Equal("6.0.13", vm.Environment!.Version);
+        Assert.True(vm.AnalyticsEnabled);
+    }
+
+    [Fact]
+    public async Task Settings_ToggleAnalytics_CallsBrew()
+    {
+        var fake = new FakeHomebrewService { Analytics = true };
+        var vm = new SettingsViewModel(fake);
+        await vm.ActivateAsync();
+
+        vm.AnalyticsEnabled = false;   // déclenche brew analytics off
+
+        Assert.Contains("analytics:off", fake.Maintenance);
+        Assert.False(fake.Analytics);
     }
 
     [Fact]

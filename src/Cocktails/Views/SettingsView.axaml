@@ -78,13 +78,39 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Chemin de l'exécutable brew" />
-                        <TextBlock Classes="muted" Text="Détecté selon l'architecture." />
+                        <TextBlock Classes="body" Text="Statistiques anonymes Homebrew" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="Télémétrie de Homebrew (brew analytics). Modifiée directement dans brew." />
                     </StackPanel>
+                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                  OnContent="" OffContent=""
+                                  IsChecked="{Binding AnalyticsEnabled}" IsEnabled="{Binding !IsBusy}" />
+                </Grid>
+
+                <TextBlock Classes="section" Text="HOMEBREW" Margin="2,14,0,4" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,10">
+                    <TextBlock Grid.Column="0" Classes="body" Text="Version" />
                     <TextBlock Grid.Column="1" VerticalAlignment="Center"
                                FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
                                Foreground="{StaticResource TextMuted}"
-                               Text="{Binding Settings.BrewPath}" />
+                               Text="{Binding Environment.Version}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" Margin="0,10">
+                    <TextBlock Grid.Column="0" Classes="body" Text="Préfixe" Margin="0,0,16,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{StaticResource TextMuted}"
+                               Text="{Binding Environment.Prefix}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" Margin="0,10">
+                    <TextBlock Grid.Column="0" Classes="body" Text="Cache" Margin="0,0,16,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{StaticResource TextMuted}"
+                               Text="{Binding Environment.Cache}" />
                 </Grid>
 
             </StackPanel>
