@@ -7,7 +7,7 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait.
 
 ## En cours
 
-- [~] **Brewfile** (`brew bundle dump`/`install`) — export/import de config.
+_(rien pour l'instant)_
 
 ## Manques Homebrew (priorisés)
 
@@ -50,3 +50,4 @@ Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait.
 - [x] Réglages persistés (`~/.config/Cocktails/settings.json`).
 - [x] Empaquetage `.app` (icône, signature ad-hoc), menu « Cocktails ».
 - [x] **`update`** — bouton « Actualiser l'index » (brew update) sur Mises à jour.
+- [x] **Brewfile** — export/import (`brew bundle dump`/`install`) dans Maintenance.

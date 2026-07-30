@@ -44,4 +44,10 @@ public interface IHomebrewService
 
     /// <summary>Diagnostic de l'installation (<c>brew doctor</c>). Ne lève pas sur avertissements.</summary>
     Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Exporte l'installé dans un Brewfile (<c>brew bundle dump</c>).</summary>
+    Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Installe depuis un Brewfile (<c>brew bundle install</c>).</summary>
+    Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 }

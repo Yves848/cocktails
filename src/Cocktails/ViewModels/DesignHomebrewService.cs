@@ -57,4 +57,10 @@ internal sealed class DesignHomebrewService : IHomebrewService
 
     public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
+
+    public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
+    public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }

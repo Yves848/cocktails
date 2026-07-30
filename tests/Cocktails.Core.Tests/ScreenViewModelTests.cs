@@ -80,6 +80,18 @@ public class ScreenViewModelTests
             Maintenance.Add("doctor");
             return Task.CompletedTask;
         }
+
+        public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("dump:" + path);
+            return Task.CompletedTask;
+        }
+
+        public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("bundle-install:" + path);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingHomebrewService : IHomebrewService
@@ -117,6 +129,12 @@ public class ScreenViewModelTests
             => Task.CompletedTask;
 
         public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 
@@ -336,6 +354,32 @@ public class ScreenViewModelTests
         Assert.Contains("update", fake.Maintenance);
         Assert.False(vm.IsBusy);
         Assert.Contains("Index à jour", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task Maintenance_ExportBrewfile_CallsDump()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new MaintenanceViewModel(fake);
+
+        await vm.ExportBrewfileAsync("/tmp/Brewfile");
+
+        Assert.Contains("dump:/tmp/Brewfile", fake.Maintenance);
+        Assert.Contains("exporté", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task Maintenance_ImportBrewfile_ConfirmsThenInstalls()
+    {
+        var fake = new FakeHomebrewService();
+        var vm = new MaintenanceViewModel(fake);
+
+        vm.ImportBrewfile("/tmp/Brewfile");
+        Assert.NotNull(vm.Confirmation);
+        Assert.Empty(fake.Maintenance);
+
+        await vm.ConfirmCommand.ExecuteAsync(null);
+        Assert.Contains("bundle-install:/tmp/Brewfile", fake.Maintenance);
     }
 
     [Fact]

@@ -38,4 +38,24 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
     [RelayCommand]
     private Task Doctor()
         => RunWithOutputAsync("Diagnostic (brew doctor)…", p => Homebrew.DoctorAsync(p));
+
+    /// <summary>Exporte l'installé vers <paramref name="path"/> (Brewfile). Appelé après le sélecteur.</summary>
+    public Task ExportBrewfileAsync(string path)
+        => RunWithOutputAsync("Export du Brewfile…", async progress =>
+        {
+            await Homebrew.BundleDumpAsync(path, progress);
+            StatusMessage = "Brewfile exporté.";
+        });
+
+    /// <summary>Installe depuis <paramref name="path"/> (Brewfile) — confirmé (installe des paquets).</summary>
+    public void ImportBrewfile(string path)
+        => RequestConfirmation(
+            "Importer ce Brewfile ?",
+            "Les entrées manquantes (taps, formulae, casks) seront installées. Cela peut être long.",
+            "Importer",
+            () => RunWithOutputAsync("Import du Brewfile…", async progress =>
+            {
+                await Homebrew.BundleInstallAsync(path, progress);
+                StatusMessage = "Brewfile importé.";
+            }));
 }

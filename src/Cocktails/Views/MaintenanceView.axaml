@@ -60,6 +60,32 @@
                     </Grid>
                 </Border>
 
+                <TextBlock Classes="section" Text="SAUVEGARDE (BREWFILE)" Margin="2,10,0,0" />
+
+                <Border Classes="mcard">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                            <TextBlock Classes="body" Text="Exporter la configuration" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Écrit un Brewfile (taps, formulae, casks) — instantané versionnable, utile pour migrer de machine (brew bundle dump)." />
+                        </StackPanel>
+                        <Button x:Name="ExportBrewfileButton" Grid.Column="1" Classes="act primary"
+                                Content="Exporter…" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                    </Grid>
+                </Border>
+
+                <Border Classes="mcard">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                            <TextBlock Classes="body" Text="Importer une configuration" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Installe tout ce qui manque d'après un Brewfile (brew bundle install)." />
+                        </StackPanel>
+                        <Button x:Name="ImportBrewfileButton" Grid.Column="1" Classes="act"
+                                Content="Importer…" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                    </Grid>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>

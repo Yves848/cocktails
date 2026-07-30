@@ -83,6 +83,12 @@ public sealed class HomebrewService : IHomebrewService
         await _runner.RunAsync(_brewPath, ["doctor"], output, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["bundle", "dump", "--file=" + path, "--force"], cancellationToken, output);
+
+    public async Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output);
+
     private async Task<ProcessResult> RunAsync(
         string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
     {
