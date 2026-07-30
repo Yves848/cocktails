@@ -13,14 +13,17 @@ namespace Cocktails.Controls;
 
 /// <summary>
 /// Affiche l'icône d'un package. Comme Homebrew ne fournit pas d'icône, on récupère
-/// le favicon du site officiel (<c>Homepage</c>). En cas d'absence ou d'échec, on
-/// retombe sur une pastille avec l'initiale du type (<c>FallbackText</c>).
-///
-/// Note : cela déclenche un appel réseau vers un service de favicons externe. Le
-/// résultat est mis en cache par domaine pour la durée de la session.
+/// le favicon du site officiel (<c>Homepage</c>) via le proxy favicons de
+/// yg-devworks.com. En cas d'absence ou d'échec (non-2xx), on retombe sur une pastille
+/// avec l'initiale du type (<c>FallbackText</c>). Le résultat est mis en cache par
+/// domaine pour la durée de la session. Contrat du proxy : cf. docs/proxy-favicons.md.
 /// </summary>
 public class AppIcon : UserControl
 {
+    /// <summary>Base du proxy favicons (cf. docs/proxy-favicons.md).</summary>
+    private const string FaviconProxy = "https://favicons.yg-devworks.com";
+    private const int IconSize = 64;
+
     public static readonly StyledProperty<string?> HomepageProperty =
         AvaloniaProperty.Register<AppIcon, string?>(nameof(Homepage));
 
@@ -88,7 +91,7 @@ public class AppIcon : UserControl
             return;
         }
 
-        var url = $"https://www.google.com/s2/favicons?sz=64&domain={domain}";
+        var url = $"{FaviconProxy}/{Uri.EscapeDataString(domain)}?sz={IconSize}";
         if (!Cache.TryGetValue(url, out var bitmap))
         {
             try

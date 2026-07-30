@@ -53,9 +53,10 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     `ViewModels.XxxViewModel` → `Views.XxxView`).
   - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
     opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
-  - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`) téléchargé
-    (appel réseau externe, mis en cache), avec repli sur l'initiale du type. C'est le
-    seul point du code UI qui sort sur le réseau en dehors de `brew`.
+  - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`), récupéré via
+    le **proxy `favicons.yg-devworks.com`** (contrat : `docs/proxy-favicons.md`), mis en
+    cache, avec repli sur l'initiale du type. Seul point du code UI qui sort sur le réseau
+    en dehors de `brew` (et il ne parle qu'à `yg-devworks.com`).
   - `Converters/StringToGeometryConverter` : parse les icônes (path SVG) à l'affichage,
     pour garder les VMs indépendants de la plateforme (testables).
   - `ViewModels/DesignHomebrewService` : stub **design-time uniquement** (previewer
