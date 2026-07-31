@@ -9,11 +9,43 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Cocktails.ViewModels;
 
-/// <summary>Une option de fréquence de vérification (libellé + intervalle en minutes).</summary>
-public sealed record FrequencyOption(string Label, int Minutes);
+/// <summary>
+/// Une option de fréquence : intervalle en minutes + libellé <b>traduit à la volée</b>
+/// (l'instance est stable ; seul <see cref="Display"/> change de langue → pas de
+/// reconstruction de l'ItemsSource, qui casserait la sélection du ComboBox).
+/// </summary>
+public sealed partial class FrequencyOption : ObservableObject
+{
+    private readonly string _key;
 
-/// <summary>Une option de langue (libellé affiché + valeur).</summary>
-public sealed record LanguageOption(string Label, AppLanguage Value);
+    public FrequencyOption(string labelKey, int minutes)
+    {
+        _key = labelKey;
+        Minutes = minutes;
+        Localizer.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(Display));
+    }
+
+    public int Minutes { get; }
+
+    public string Display => Localizer.Instance[_key];
+}
+
+/// <summary>Une option de langue : valeur + libellé affiché (endonyme, ou « Système » traduit).</summary>
+public sealed partial class LanguageOption : ObservableObject
+{
+    private readonly string? _endonym;
+
+    public LanguageOption(AppLanguage value, string? endonym)
+    {
+        Value = value;
+        _endonym = endonym;
+        Localizer.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(Display));
+    }
+
+    public AppLanguage Value { get; }
+
+    public string Display => _endonym ?? Localizer.Instance["Lang.System"];
+}
 
 /// <summary>Écran « Réglages » : confirmation, surveillance, notifications, environnement Homebrew.</summary>
 public sealed partial class SettingsViewModel : ScreenViewModel
@@ -34,26 +66,17 @@ public sealed partial class SettingsViewModel : ScreenViewModel
 
     protected override string TitleKey => "Nav.Settings";
 
-    protected override void OnLanguageChanged()
-    {
-        Frequencies = BuildFrequencies();
-        Languages = BuildLanguages();
-        OnPropertyChanged(nameof(Frequencies));
-        OnPropertyChanged(nameof(SelectedFrequency));
-        OnPropertyChanged(nameof(Languages));
-        OnPropertyChanged(nameof(SelectedLanguage));
-    }
-
-    /// <summary>Langues proposées (Système + langues concrètes en endonymes).</summary>
-    public IReadOnlyList<LanguageOption> Languages { get; private set; } = BuildLanguages();
-
-    private static IReadOnlyList<LanguageOption> BuildLanguages() =>
+    /// <summary>
+    /// Langues proposées (Système + endonymes). Liste <b>stable</b> : les instances ne
+    /// changent jamais, seuls leurs libellés se traduisent (cf. <see cref="LanguageOption"/>).
+    /// </summary>
+    public IReadOnlyList<LanguageOption> Languages { get; } =
     [
-        new(L["Lang.System"], AppLanguage.System),
-        new("English", AppLanguage.English),
-        new("Français", AppLanguage.French),
-        new("Español", AppLanguage.Spanish),
-        new("Deutsch", AppLanguage.German),
+        new(AppLanguage.System, null),
+        new(AppLanguage.English, "English"),
+        new(AppLanguage.French, "Français"),
+        new(AppLanguage.Spanish, "Español"),
+        new(AppLanguage.German, "Deutsch"),
     ];
 
     public LanguageOption SelectedLanguage
@@ -88,13 +111,12 @@ public sealed partial class SettingsViewModel : ScreenViewModel
         }
     }
 
-    public IReadOnlyList<FrequencyOption> Frequencies { get; private set; } = BuildFrequencies();
-
-    private static IReadOnlyList<FrequencyOption> BuildFrequencies() =>
+    /// <summary>Fréquences proposées (liste stable, libellés traduits à la volée).</summary>
+    public IReadOnlyList<FrequencyOption> Frequencies { get; } =
     [
-        new(L["Freq.Hourly"], 60),
-        new(L["Freq.6h"], 360),
-        new(L["Freq.Daily"], 1440),
+        new("Freq.Hourly", 60),
+        new("Freq.6h", 360),
+        new("Freq.Daily", 1440),
     ];
 
     public FrequencyOption SelectedFrequency
@@ -112,7 +134,7 @@ public sealed partial class SettingsViewModel : ScreenViewModel
     }
 
     protected override Task OnFirstActivatedAsync()
-        => RunAsync("Lecture de la configuration Homebrew…", async () =>
+        => RunAsync(L["Status.LoadingConfig"], async () =>
         {
             Environment = await Homebrew.GetEnvironmentAsync();
             _analyticsEnabled = await Homebrew.GetAnalyticsEnabledAsync();

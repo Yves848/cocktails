@@ -756,6 +756,42 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public void Settings_LanguageSelector_ChangesRepeatedly_WithStableList()
+    {
+        try
+        {
+            var settings = new AppSettings();
+            var vm = new SettingsViewModel(new FakeHomebrewService(), settings);
+            // Le shell relie normalement le changement de réglage au Localizer ; on le simule.
+            settings.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(AppSettings.Language))
+                {
+                    Cocktails.Localization.Localizer.Instance.SetLanguage(settings.Language);
+                }
+            };
+
+            var german = vm.Languages.First(o => o.Value == Cocktails.Localization.AppLanguage.German);
+            vm.SelectedLanguage = german;
+            Assert.Equal(Cocktails.Localization.AppLanguage.German, settings.Language);
+
+            // Le bug historique : une fois en allemand, on ne pouvait plus rechanger.
+            vm.SelectedLanguage = vm.Languages.First(o => o.Value == Cocktails.Localization.AppLanguage.French);
+            Assert.Equal(Cocktails.Localization.AppLanguage.French, settings.Language);
+
+            vm.SelectedLanguage = vm.Languages.First(o => o.Value == Cocktails.Localization.AppLanguage.English);
+            Assert.Equal(Cocktails.Localization.AppLanguage.English, settings.Language);
+
+            // La liste n'est jamais reconstruite : mêmes instances (ce qui garde le ComboBox sain).
+            Assert.Same(german, vm.Languages.First(o => o.Value == Cocktails.Localization.AppLanguage.German));
+        }
+        finally
+        {
+            Cocktails.Localization.Localizer.Instance.SetLanguage(Cocktails.Localization.AppLanguage.French);
+        }
+    }
+
+    [Fact]
     public void Shell_DefaultsToInstalledScreen()
     {
         var vm = new MainViewModel(new FakeHomebrewService());
