@@ -30,6 +30,13 @@ affiche les notifications. Au 1er lancement, macOS demande l'autorisation « Coc
 Hors bundle (exécution en dev via `dotnet run`), l'app retombe sur `osascript`
 (attribué à « Script Editor ») — cf. `Services/PlatformNotifier`.
 
+## Distribution via Homebrew (Cask)
+
+La publication sur Homebrew se fait via un **Cask** dans le tap `homebrew-cocktails`,
+alimenté par `release-macos.sh` (bundle notarisé → zip + sha256, met à jour le Cask) et
+`release-gitlab.sh` (release GitLab + téléversement). Guide complet :
+[`homebrew/README.md`](homebrew/README.md).
+
 ## Limites connues
 
 - **Ad-hoc, non notarisé** : au premier lancement, macOS peut demander un clic droit →
