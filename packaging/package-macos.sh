@@ -72,22 +72,51 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key>     <string>11.0</string>
     <key>NSHighResolutionCapable</key>    <true/>
     <key>LSApplicationCategoryType</key>  <string>public.app-category.developer-tools</string>
+    <!-- Agent de barre de menu : pas d'icône Dock ni de menu applicatif ;
+         l'app vit dans la barre de menu (cf. TrayIcon). -->
+    <key>LSUIElement</key>                <true/>
 </dict>
 </plist>
 PLIST
 
 chmod +x "$APP/Contents/MacOS/$APP_NAME"
 
-# Signature ad-hoc : indispensable pour que les notifications natives
-# (UNUserNotificationCenter) demandent l'autorisation et s'affichent sous l'identité
-# « Cocktails ». SIGN_ID surchargeable pour une vraie identité Developer ID.
+# Signature. Ad-hoc (« - ») par défaut : indispensable pour que les notifications
+# natives (UNUserNotificationCenter) demandent l'autorisation et s'affichent sous
+# l'identité « Cocktails ». SIGN_ID="Developer ID Application: …" pour une vraie
+# identité (requise pour notariser).
 SIGN_ID="${SIGN_ID:--}"
 echo "==> Signature ($SIGN_ID)"
-codesign --force --deep --sign "$SIGN_ID" "$APP" >/dev/null 2>&1 \
-    && echo "    signé" || echo "    (signature échouée — notifications natives possiblement inactives)"
+CODESIGN_OPTS=(--force --deep --sign "$SIGN_ID")
+if [ "$SIGN_ID" != "-" ]; then
+    # Developer ID : runtime durci + horodatage sécurisé (exigés par la notarisation).
+    CODESIGN_OPTS+=(--options runtime --timestamp)
+fi
+if codesign "${CODESIGN_OPTS[@]}" "$APP" >/dev/null 2>&1; then
+    echo "    signé"
+else
+    echo "    (signature échouée — notifications natives possiblement inactives)"
+fi
 
-# Un bundle non signé traîne parfois l'attribut de quarantaine : on le retire en local.
-xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
+# Notarisation (opt-in) : NOTARIZE=1 + identité Developer ID + profil notarytool stocké
+# via « xcrun notarytool store-credentials ». Voir packaging/notarisation.md.
+if [ "${NOTARIZE:-0}" = "1" ] && [ "$SIGN_ID" != "-" ]; then
+    PROFILE="${NOTARY_PROFILE:-cocktails}"
+    ZIP="$OUT/$APP_NAME-notarize.zip"
+    echo "==> Notarisation (profil trousseau : $PROFILE)"
+    ditto -c -k --keepParent "$APP" "$ZIP"
+    xcrun notarytool submit "$ZIP" --keychain-profile "$PROFILE" --wait
+    echo "==> Agrafage du ticket (stapler)"
+    xcrun stapler staple "$APP"
+    rm -f "$ZIP"
+    xcrun stapler validate "$APP" && echo "    notarisé + agrafé"
+else
+    if [ "${NOTARIZE:-0}" = "1" ]; then
+        echo "==> Notarisation ignorée : SIGN_ID doit être un certificat Developer ID (pas ad-hoc)."
+    fi
+    # Un bundle non notarisé traîne parfois l'attribut de quarantaine : on le retire en local.
+    xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
+fi
 
 echo "==> OK : $APP"
 echo "    Lancer : open \"$APP\""

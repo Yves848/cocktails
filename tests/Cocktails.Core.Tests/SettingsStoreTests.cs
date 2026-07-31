@@ -23,6 +23,7 @@ public class SettingsStoreTests
                 MonitoringEnabled = false,
                 NotificationsEnabled = false,
                 MonitoringIntervalMinutes = 60,
+                KeepRunningInBackground = false,
                 WindowWidth = 1024,
                 WindowHeight = 720,
                 WindowX = 100,
@@ -36,6 +37,7 @@ public class SettingsStoreTests
             Assert.False(loaded.MonitoringEnabled);
             Assert.False(loaded.NotificationsEnabled);
             Assert.Equal(60, loaded.MonitoringIntervalMinutes);
+            Assert.False(loaded.KeepRunningInBackground);
             Assert.Equal(1024, loaded.WindowWidth);
             Assert.Equal(720, loaded.WindowHeight);
             Assert.Equal(100, loaded.WindowX);

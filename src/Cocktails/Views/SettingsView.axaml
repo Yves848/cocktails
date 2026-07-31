@@ -65,6 +65,19 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="Rester actif en arrière-plan" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="Fermer la fenêtre masque l'app (elle continue en tâche de fond, via l'icône de la barre de menu). Sinon, fermer quitte l'app." />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
+                                  OnContent="" OffContent=""
+                                  IsChecked="{Binding Settings.KeepRunningInBackground}" />
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
                         <TextBlock Classes="body" Text="Confirmer avant désinstallation" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
                                    Text="Demander une confirmation pour les actions irréversibles." />

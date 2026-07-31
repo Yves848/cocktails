@@ -20,13 +20,15 @@ _(fait — voir « Fait »)_
 
 ## Packaging / distribution
 
-- [ ] Notarisation **Developer ID** (`SIGN_ID` + notarytool) pour distribution large.
+- [~] Notarisation **Developer ID** — script + doc prêts (`SIGN_ID`/`NOTARIZE`/
+  `NOTARY_PROFILE`, cf. `packaging/notarisation.md`) ; reste à obtenir un certificat
+  Developer ID Application (adhésion payante) pour l'exécuter réellement.
 - [ ] **Universal binary** (arm64 + x64).
 - [ ] Lancement au login (option).
 
 ## Raffinements
 
-- [ ] Auto-rafraîchir les écrans quand le moniteur détecte un changement.
+_(rien pour l'instant)_
 
 ## Fait
 
@@ -54,3 +56,7 @@ _(fait — voir « Fait »)_
   et mise à jour par lot sur la sélection.
 - [x] **`deps --tree`** — arbre de dépendances transitives dans le détail (formulae).
 - [x] **`missing`** — vérification des dépendances manquantes dans Maintenance.
+- [x] **Auto-rafraîchissement** — l'écran Mises à jour se recharge quand le moniteur
+  détecte un changement (`UpdateMonitor.OutdatedChanged` → `ScreenViewModel.Invalidate`).
+- [x] **Barre de menu / arrière-plan** — `TrayIcon` + menu popup ; fermer masque l'app
+  (réglable), agent `LSUIElement` (pas d'icône Dock) en bundle.

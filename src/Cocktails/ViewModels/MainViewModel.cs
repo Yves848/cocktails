@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -53,6 +54,7 @@ public partial class MainViewModel : ViewModelBase
         // Le badge « Mises à jour » suit le compteur du moniteur.
         Monitor = monitor ?? new UpdateMonitor(homebrew, settings, new NullNotifier());
         Monitor.PropertyChanged += OnMonitorChanged;
+        Monitor.OutdatedChanged += OnOutdatedChanged;
         _updatesNav.Count = Monitor.OutdatedCount;
 
         SelectedNav = NavItems[0];
@@ -66,6 +68,25 @@ public partial class MainViewModel : ViewModelBase
         if (e.PropertyName == nameof(UpdateMonitor.OutdatedCount))
         {
             _updatesNav.Count = Monitor.OutdatedCount;
+        }
+    }
+
+    /// <summary>
+    /// Le moniteur a détecté un changement des paquets obsolètes : on invalide l'écran
+    /// « Mises à jour » (rechargé à sa prochaine ouverture) et, s'il est affiché et
+    /// inactif, on le recharge immédiatement — sans écraser une sélection en cours.
+    /// </summary>
+    private void OnOutdatedChanged(object? sender, EventArgs e)
+    {
+        if (_updatesNav.Screen is not OutdatedViewModel outdated)
+        {
+            return;
+        }
+
+        outdated.Invalidate();
+        if (CurrentScreen == outdated && !outdated.IsBusy && !outdated.AnySelected)
+        {
+            _ = outdated.ActivateAsync();
         }
     }
 

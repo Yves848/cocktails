@@ -55,6 +55,12 @@ public abstract partial class ScreenViewModel : ViewModelBase
     /// <summary>Chargement initial de l'écran (aucun par défaut).</summary>
     protected virtual Task OnFirstActivatedAsync() => Task.CompletedTask;
 
+    /// <summary>
+    /// Marque l'écran comme « à recharger » : sa prochaine activation relancera le
+    /// chargement initial (utilisé pour l'auto-rafraîchissement après monitoring).
+    /// </summary>
+    public void Invalidate() => _activated = false;
+
     /// <summary>Demande confirmation avant d'exécuter <paramref name="onConfirm"/>.</summary>
     protected void RequestConfirmation(string title, string message, string confirmLabel, Func<Task> onConfirm)
         => Confirmation = new ConfirmationRequest(title, message, confirmLabel, onConfirm);

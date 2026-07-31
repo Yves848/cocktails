@@ -16,6 +16,9 @@ sealed class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // Agent de barre de menu : pas d'icône Dock (le LSUIElement du bundle seul ne
+            // suffit pas — Avalonia force sinon la politique d'activation « Regular »).
+            .With(new MacOSPlatformOptions { ShowInDock = false })
 #if DEBUG
             .WithDeveloperTools()
 #endif

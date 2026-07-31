@@ -24,6 +24,13 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     public partial int MonitoringIntervalMinutes { get; set; } = 360;
 
+    /// <summary>
+    /// Rester actif en arrière-plan : fermer la fenêtre la masque (l'app continue de
+    /// tourner, accessible via l'icône de la barre de menu). Sinon, fermer quitte l'app.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool KeepRunningInBackground { get; set; } = true;
+
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";
 

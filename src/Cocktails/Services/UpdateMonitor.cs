@@ -29,6 +29,12 @@ public sealed partial class UpdateMonitor : ObservableObject
     [ObservableProperty]
     public partial int OutdatedCount { get; private set; }
 
+    /// <summary>
+    /// Émis quand l'ensemble des paquets obsolètes change (après le premier passage) :
+    /// permet aux écrans concernés de se rafraîchir automatiquement.
+    /// </summary>
+    public event EventHandler? OutdatedChanged;
+
     public UpdateMonitor(IHomebrewService homebrew, AppSettings settings, INotifier notifier)
     {
         _homebrew = homebrew;
@@ -54,6 +60,7 @@ public sealed partial class UpdateMonitor : ObservableObject
 
         OutdatedCount = outdated.Count;
         var names = outdated.Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+        var changed = _firstCheckDone && !names.SetEquals(_known);
 
         // On ne notifie pas au tout premier passage (état initial), ni si désactivé.
         if (_firstCheckDone && _settings.NotificationsEnabled)
@@ -67,6 +74,12 @@ public sealed partial class UpdateMonitor : ObservableObject
 
         _known = names;
         _firstCheckDone = true;
+
+        // Après notification : signale le changement pour rafraîchir les écrans.
+        if (changed)
+        {
+            OutdatedChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>Démarre la surveillance (timer piloté par les réglages).</summary>

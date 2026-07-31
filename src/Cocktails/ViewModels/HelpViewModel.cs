@@ -20,8 +20,9 @@ public sealed class HelpViewModel : ScreenViewModel
             new Shortcut("↑ ↓", "Parcourir la liste sélectionnée"),
         ]),
         new ShortcutGroup("Fenêtre", [
-            new Shortcut("⌘ W", "Fermer la fenêtre"),
+            new Shortcut("⌘ W", "Masquer la fenêtre (l'app reste en arrière-plan)"),
             new Shortcut("⌘ M", "Réduire la fenêtre"),
+            new Shortcut("⌘ Q", "Quitter Cocktails"),
         ]),
         new ShortcutGroup("Recherche & filtres", [
             new Shortcut("⏎", "Lancer la recherche (dans le champ Rechercher)"),

@@ -69,7 +69,12 @@ public partial class MainWindow : Window
         var meta = e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         var vm = DataContext as MainViewModel;
 
-        if (meta && e.Key == Key.W)
+        if (meta && e.Key == Key.Q)
+        {
+            (Application.Current as App)?.Quit();
+            e.Handled = true;
+        }
+        else if (meta && e.Key == Key.W)
         {
             Close();
             e.Handled = true;

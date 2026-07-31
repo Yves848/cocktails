@@ -42,6 +42,7 @@ public sealed class SettingsStore
                         MonitoringEnabled = dto.MonitoringEnabled,
                         NotificationsEnabled = dto.NotificationsEnabled,
                         MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
+                        KeepRunningInBackground = dto.KeepRunningInBackground,
                         WindowWidth = dto.WindowWidth,
                         WindowHeight = dto.WindowHeight,
                         WindowX = dto.WindowX,
@@ -71,6 +72,7 @@ public sealed class SettingsStore
                 MonitoringEnabled = settings.MonitoringEnabled,
                 NotificationsEnabled = settings.NotificationsEnabled,
                 MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
+                KeepRunningInBackground = settings.KeepRunningInBackground,
                 WindowWidth = settings.WindowWidth,
                 WindowHeight = settings.WindowHeight,
                 WindowX = settings.WindowX,
@@ -92,6 +94,7 @@ public sealed class SettingsStore
         public bool MonitoringEnabled { get; set; } = true;
         public bool NotificationsEnabled { get; set; } = true;
         public int MonitoringIntervalMinutes { get; set; } = 360;
+        public bool KeepRunningInBackground { get; set; } = true;
         public double? WindowWidth { get; set; }
         public double? WindowHeight { get; set; }
         public int? WindowX { get; set; }

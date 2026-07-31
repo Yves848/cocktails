@@ -100,6 +100,29 @@ public class UpdateMonitorTests
     }
 
     [Fact]
+    public async Task Check_RaisesOutdatedChanged_OnlyWhenSetChanges()
+    {
+        var stub = new OutdatedStub { Outdated = [Pkg("git")] };
+        var monitor = new UpdateMonitor(stub, new AppSettings { NotificationsEnabled = false }, new RecordingNotifier());
+        var changes = 0;
+        monitor.OutdatedChanged += (_, _) => changes++;
+
+        await monitor.CheckNowAsync();      // premier passage → pas d'événement
+        Assert.Equal(0, changes);
+
+        stub.Outdated = [Pkg("git"), Pkg("node")];
+        await monitor.CheckNowAsync();      // ensemble modifié → un événement
+        Assert.Equal(1, changes);
+
+        await monitor.CheckNowAsync();      // ensemble identique → aucun événement
+        Assert.Equal(1, changes);
+
+        stub.Outdated = [Pkg("git")];
+        await monitor.CheckNowAsync();      // « node » à jour → nouvel événement
+        Assert.Equal(2, changes);
+    }
+
+    [Fact]
     public async Task Check_DoesNotNotify_WhenNotificationsDisabled()
     {
         var stub = new OutdatedStub { Outdated = [Pkg("git")] };

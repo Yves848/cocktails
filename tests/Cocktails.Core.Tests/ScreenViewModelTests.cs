@@ -712,6 +712,26 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Invalidate_CausesReloadOnNextActivation()
+    {
+        var fake = new BatchOutdatedStub { Outdated = { "git" } };
+        var vm = new OutdatedViewModel(fake);
+
+        await vm.ActivateAsync();
+        Assert.Single(vm.Packages);
+
+        // Sans invalidation : ré-activer ne recharge pas (chargement paresseux unique).
+        fake.Outdated.Add("node");
+        await vm.ActivateAsync();
+        Assert.Single(vm.Packages);
+
+        // Après Invalidate : la prochaine activation recharge la liste à jour.
+        vm.Invalidate();
+        await vm.ActivateAsync();
+        Assert.Equal(2, vm.Packages.Count);
+    }
+
+    [Fact]
     public void Shell_DefaultsToInstalledScreen()
     {
         var vm = new MainViewModel(new FakeHomebrewService());

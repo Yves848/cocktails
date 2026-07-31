@@ -73,12 +73,24 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     persistée par `Services/SettingsStore` dans `~/Library/Application Support/Cocktails/settings.json`).
     Actions destructives (désinstaller, autoremove) passent par une confirmation.
   - **Monitoring** : `Services/UpdateMonitor` vérifie périodiquement `brew outdated`
-    (intervalle réglable), expose `OutdatedCount` (badge sur la nav « Mises à jour ») et
-    notifie les nouveautés via `INotifier`. `PlatformNotifier.Create` choisit
-    `MacUserNotifier` (natif `UNUserNotificationCenter`, interop objc, identité
-    « Cocktails ») en bundle `.app`, sinon `MacNotifier` (osascript) en dev. Composé et
-    démarré dans `App.axaml.cs`. Logique testable via `CheckNowAsync` (timer = glu UI).
-    Empaquetage : `packaging/` (le bundle est signé ad-hoc, requis pour les notifs natives).
+    (intervalle réglable), expose `OutdatedCount` (badge sur la nav « Mises à jour »),
+    notifie les nouveautés via `INotifier` et émet `OutdatedChanged` quand l'ensemble des
+    obsolètes change. `PlatformNotifier.Create` choisit `MacUserNotifier` (natif
+    `UNUserNotificationCenter`, interop objc, identité « Cocktails ») en bundle `.app`,
+    sinon `MacNotifier` (osascript) en dev. Composé et démarré dans `App.axaml.cs`.
+    Logique testable via `CheckNowAsync` (timer = glu UI).
+  - **Auto-rafraîchissement** : sur `OutdatedChanged`, le shell invalide l'écran « Mises à
+    jour » (`ScreenViewModel.Invalidate` → rechargé à la prochaine activation) et le
+    recharge tout de suite s'il est affiché et inactif (sans écraser une sélection en cours).
+  - **Barre de menu / arrière-plan** : `App.axaml.cs` installe un `TrayIcon` (icône
+    `Assets/tray.png` + menu popup : ouvrir, aller à Mises à jour/Rechercher, vérifier
+    maintenant, quitter). `ShutdownMode = OnExplicitShutdown` ; fermer la fenêtre la
+    **masque** (l'app tourne en fond) si `AppSettings.KeepRunningInBackground` (défaut),
+    sinon quitte. `Quit()` (menu de l'icône, ⌘Q) arrête réellement. En bundle,
+    `LSUIElement` fait de l'app un **agent de barre de menu** (pas d'icône Dock).
+    Empaquetage : `packaging/` — bundle signé ad-hoc par défaut (requis pour les notifs
+    natives) ; notarisation Developer ID **opt-in** via `SIGN_ID`/`NOTARIZE`/`NOTARY_PROFILE`
+    (cf. `packaging/notarisation.md`).
   - `Controls/ShakerLoader` : loader vectoriel animé (shaker) — overlay pendant les
     opérations (`CurrentScreen.IsBusy`) et splash d'ouverture (cf. `MainWindow.axaml.cs`).
   - `Controls/AppIcon` : icône du package = favicon du site (`Homepage`), récupéré via
