@@ -39,7 +39,10 @@ public sealed class Localizer : INotifyPropertyChanged
         }
 
         Current = resolved;
-        // "Item[]" : notification standard pour rafraîchir toutes les liaisons d'indexeur.
+        // Notifie le changement de langue. Les liaisons {loc:Tr} observent la propriété
+        // Current (via un converter) : une notification de propriété classique rafraîchit
+        // de façon fiable même la vue déjà affichée. "Item[]" couvre les liaisons d'indexeur.
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Current)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         LanguageChanged?.Invoke(this, EventArgs.Empty);
     }
