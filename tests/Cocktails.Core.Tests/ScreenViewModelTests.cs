@@ -125,6 +125,14 @@ public class ScreenViewModelTests
             return Task.CompletedTask;
         }
 
+        public List<MissingDependency> MissingList { get; init; } = [];
+
+        public Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default)
+        {
+            Maintenance.Add("missing");
+            return Task.FromResult<IReadOnlyList<MissingDependency>>(MissingList);
+        }
+
         public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             Maintenance.Add("dump:" + path);
@@ -233,6 +241,9 @@ public class ScreenViewModelTests
 
         public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<MissingDependency>>([]);
 
         public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
@@ -504,6 +515,38 @@ public class ScreenViewModelTests
         await vm.DoctorCommand.ExecuteAsync(null);
 
         Assert.Equal(["cleanup", "doctor"], fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Maintenance_CheckMissing_Healthy_ReportsNothingMissing()
+    {
+        var fake = new FakeHomebrewService();   // MissingList vide
+        var vm = new MaintenanceViewModel(fake);
+
+        await vm.CheckMissingCommand.ExecuteAsync(null);
+
+        Assert.Contains("missing", fake.Maintenance);
+        Assert.True(vm.MissingChecked);
+        Assert.Empty(vm.Missing);
+        Assert.True(vm.MissingIsHealthy);
+        Assert.Contains("Aucune", vm.MissingResult);
+    }
+
+    [Fact]
+    public async Task Maintenance_CheckMissing_SurfacesMissingDeps()
+    {
+        var fake = new FakeHomebrewService
+        {
+            MissingList = { new MissingDependency("wget", ["openssl@3", "libidn2"]) },
+        };
+        var vm = new MaintenanceViewModel(fake);
+
+        await vm.CheckMissingCommand.ExecuteAsync(null);
+
+        var item = Assert.Single(vm.Missing);
+        Assert.Equal("wget", item.Formula);
+        Assert.Equal(["openssl@3", "libidn2"], item.Missing);
+        Assert.False(vm.MissingIsHealthy);
     }
 
     [Fact]
@@ -812,6 +855,7 @@ public class ScreenViewModelTests
         public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<MissingDependency>>([]);
         public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewService>>([]);

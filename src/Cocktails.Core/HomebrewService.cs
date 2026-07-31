@@ -140,6 +140,15 @@ public sealed class HomebrewService : IHomebrewService
         await _runner.RunAsync(_brewPath, ["doctor"], output, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default)
+    {
+        // brew missing sort en code non nul dès qu'il trouve un manque : on lit la sortie
+        // directement (sans RunAsync qui lèverait) et on la parse.
+        var result = await _runner
+            .RunAsync(_brewPath, ["missing"], null, cancellationToken).ConfigureAwait(false);
+        return ParseMissing(result.StandardOutput);
+    }
+
     public async Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["bundle", "dump", "--file=" + path, "--force"], cancellationToken, output);
 
@@ -368,6 +377,33 @@ public sealed class HomebrewService : IHomebrewService
         }
 
         return nodes;
+    }
+
+    /// <summary>
+    /// Parse la sortie de <c>brew missing</c> : une ligne par formule, sous la forme
+    /// <c>formule: dep1 dep2</c> (les dépendances manquantes séparées par des espaces).
+    /// </summary>
+    public static IReadOnlyList<MissingDependency> ParseMissing(string output)
+    {
+        var items = new List<MissingDependency>();
+        foreach (var line in SplitLines(output))
+        {
+            var colon = line.IndexOf(':');
+            if (colon <= 0)
+            {
+                continue;
+            }
+
+            var formula = line[..colon].Trim();
+            var missing = line[(colon + 1)..]
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (formula.Length > 0)
+            {
+                items.Add(new MissingDependency(formula, missing));
+            }
+        }
+
+        return items;
     }
 
     private static PackageDetails ParseFormulaInfo(JsonElement f, string fallbackName)

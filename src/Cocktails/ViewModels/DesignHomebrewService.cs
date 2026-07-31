@@ -76,6 +76,9 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
+    public Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<MissingDependency>>([]);
+
     public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 

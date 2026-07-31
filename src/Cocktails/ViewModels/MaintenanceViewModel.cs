@@ -1,5 +1,8 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Core.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
@@ -38,6 +41,39 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
     [RelayCommand]
     private Task Doctor()
         => RunWithOutputAsync("Diagnostic (brew doctor)…", p => Homebrew.DoctorAsync(p));
+
+    /// <summary>Formules installées auxquelles il manque des dépendances (<c>brew missing</c>).</summary>
+    public ObservableCollection<MissingDependency> Missing { get; } = [];
+
+    /// <summary>Vrai une fois la vérification effectuée (pilote l'affichage du résultat).</summary>
+    [ObservableProperty]
+    public partial bool MissingChecked { get; set; }
+
+    /// <summary>Résumé lisible du résultat de la vérification.</summary>
+    [ObservableProperty]
+    public partial string MissingResult { get; set; } = string.Empty;
+
+    /// <summary>Vrai si aucune dépendance ne manque (après vérification).</summary>
+    public bool MissingIsHealthy => MissingChecked && Missing.Count == 0;
+
+    partial void OnMissingCheckedChanged(bool value) => OnPropertyChanged(nameof(MissingIsHealthy));
+
+    [RelayCommand]
+    private Task CheckMissing() => RunAsync("Vérification des dépendances manquantes…", async () =>
+    {
+        var missing = await Homebrew.GetMissingAsync();
+        Missing.Clear();
+        foreach (var m in missing)
+        {
+            Missing.Add(m);
+        }
+
+        MissingChecked = true;
+        MissingResult = missing.Count == 0
+            ? "Aucune dépendance manquante — tout est complet."
+            : $"{missing.Count} formule(s) avec des dépendances manquantes.";
+        StatusMessage = MissingResult;
+    });
 
     /// <summary>Exporte l'installé vers <paramref name="path"/> (Brewfile). Appelé après le sélecteur.</summary>
     public Task ExportBrewfileAsync(string path)

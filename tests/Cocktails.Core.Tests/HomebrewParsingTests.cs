@@ -296,6 +296,28 @@ public class HomebrewParsingTests
         => Assert.Empty(HomebrewService.ParseDepsTree(""));
 
     [Fact]
+    public void ParseMissing_ReadsFormulaAndMissingDeps()
+    {
+        // Format `brew missing` : « formule: dep1 dep2 » par ligne.
+        const string output = """
+            wget: openssl@3 libidn2
+            curl: openssl@3
+            """;
+
+        var missing = HomebrewService.ParseMissing(output);
+
+        Assert.Equal(2, missing.Count);
+        Assert.Equal("wget", missing[0].Formula);
+        Assert.Equal(["openssl@3", "libidn2"], missing[0].Missing);
+        Assert.Equal("curl", missing[1].Formula);
+        Assert.Equal(["openssl@3"], missing[1].Missing);
+    }
+
+    [Fact]
+    public void ParseMissing_Blank_ReturnsEmpty()
+        => Assert.Empty(HomebrewService.ParseMissing(""));
+
+    [Fact]
     public void ParseConfig_ReadsKeyValuePairs()
     {
         const string output = """

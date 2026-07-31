@@ -44,6 +44,7 @@ public class UpdateMonitorTests
         public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<MissingDependency>>([]);
         public Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<BrewService>>([]);

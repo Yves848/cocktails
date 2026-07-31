@@ -69,6 +69,12 @@ public interface IHomebrewService
     /// <summary>Diagnostic de l'installation (<c>brew doctor</c>). Ne lève pas sur avertissements.</summary>
     Task DoctorAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Formules installées auxquelles il manque des dépendances (<c>brew missing</c>).
+    /// Liste vide = tout est complet. Ne lève pas si des manques sont trouvés.
+    /// </summary>
+    Task<IReadOnlyList<MissingDependency>> GetMissingAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Exporte l'installé dans un Brewfile (<c>brew bundle dump</c>).</summary>
     Task BundleDumpAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 

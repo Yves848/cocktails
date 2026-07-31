@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
+             xmlns:models="using:Cocktails.Core.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -58,6 +59,53 @@
                                 VerticalAlignment="Center"
                                 Command="{Binding DoctorCommand}" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
+                </Border>
+
+                <Border Classes="mcard">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                                <TextBlock Classes="body" Text="Dépendances manquantes" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="Repère les formules installées dont une dépendance n'est plus installée (brew missing)." />
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="act" Content="Vérifier"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding CheckMissingCommand}" IsEnabled="{Binding !IsBusy}" />
+                        </Grid>
+
+                        <!-- Résultat sain -->
+                        <Border Classes="chip" HorizontalAlignment="Left" IsVisible="{Binding MissingIsHealthy}">
+                            <TextBlock FontSize="11.5" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Success}"
+                                       Text="✓ Aucune dépendance manquante" />
+                        </Border>
+
+                        <!-- Manques : formule → dépendances absentes -->
+                        <ItemsControl ItemsSource="{Binding Missing}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:MissingDependency">
+                                    <Grid ColumnDefinitions="Auto,*" Margin="0,3">
+                                        <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Top"
+                                                   Margin="0,3,12,0" Text="{Binding Formula}" />
+                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Missing}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Classes="chip" Margin="0,0,6,6" Background="#33FF5F6D">
+                                                        <TextBlock FontSize="11.5" Foreground="{StaticResource Danger}"
+                                                                   Text="{Binding}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </Border>
 
                 <TextBlock Classes="section" Text="SAUVEGARDE (BREWFILE)" Margin="2,10,0,0" />
