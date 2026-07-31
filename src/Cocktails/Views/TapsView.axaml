@@ -46,13 +46,27 @@
                                 <Border Classes="chip" VerticalAlignment="Center">
                                     <TextBlock FontSize="11" FontWeight="SemiBold" Text="{Binding KindLabel}" />
                                 </Border>
+                                <!-- Indicateur de confiance : vert si Homebrew est autorisé
+                                     à charger le tap, ambre sinon (à approuver). -->
+                                <Border Classes="chip" VerticalAlignment="Center" Background="#2637D67A"
+                                        IsVisible="{Binding Trusted}"
+                                        ToolTip.Tip="Homebrew est autorisé à charger ce tap">
+                                    <TextBlock FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{StaticResource Success}" Text="✓ de confiance" />
+                                </Border>
+                                <Border Classes="chip" VerticalAlignment="Center" Background="#33F5A623"
+                                        IsVisible="{Binding !Trusted}"
+                                        ToolTip.Tip="Tap non approuvé — cliquez « Confiance » pour l'autoriser">
+                                    <TextBlock FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{StaticResource Warning}" Text="à approuver" />
+                                </Border>
                             </StackPanel>
                             <TextBlock Classes="muted" Text="{Binding Summary}" />
                         </StackPanel>
 
-                        <!-- Faire confiance (taps tiers) -->
+                        <!-- Faire confiance : seulement pour un tap tiers pas encore approuvé -->
                         <Button Grid.Column="1" Classes="act small" Content="Confiance" Margin="0,0,6,0"
-                                IsVisible="{Binding !Official}"
+                                IsVisible="{Binding CanTrust}"
                                 ToolTip.Tip="brew trust — autorise Homebrew à charger ce tap"
                                 Command="{Binding #List.((vm:TapsViewModel)DataContext).TrustCommand}"
                                 CommandParameter="{Binding}" />

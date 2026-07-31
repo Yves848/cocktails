@@ -190,6 +190,12 @@ public class ScreenViewModelTests
         public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             Maintenance.Add("trust:" + name);
+            var i = TapsList.FindIndex(t => t.Name == name);
+            if (i >= 0)
+            {
+                TapsList[i] = TapsList[i] with { Trusted = true };
+            }
+
             return Task.CompletedTask;
         }
     }
@@ -671,6 +677,24 @@ public class ScreenViewModelTests
 
         await vm.ConfirmCommand.ExecuteAsync(null);
         Assert.Contains("untap:felixkratz/formulae", fake.Maintenance);
+    }
+
+    [Fact]
+    public async Task Taps_Trust_MarksTapTrustedAfterReload()
+    {
+        var fake = new FakeHomebrewService
+        {
+            TapsList = { new BrewTap("koekeishiya/formulae", false, 3, 0, false, Trusted: false) },
+        };
+        var vm = new TapsViewModel(fake);
+        await vm.ActivateAsync();
+        Assert.True(vm.Taps[0].CanTrust);          // proposé tant que non approuvé
+
+        await vm.TrustCommand.ExecuteAsync(vm.Taps[0]);
+
+        Assert.Contains("trust:koekeishiya/formulae", fake.Maintenance);
+        Assert.True(vm.Taps[0].Trusted);           // indicateur rafraîchi
+        Assert.False(vm.Taps[0].CanTrust);         // bouton « Confiance » retiré
     }
 
     [Fact]

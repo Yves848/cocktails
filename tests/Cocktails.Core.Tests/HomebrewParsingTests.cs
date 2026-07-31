@@ -210,22 +210,31 @@ public class HomebrewParsingTests
         const string json = """
             [
               { "name": "homebrew/core", "official": true, "custom_remote": false,
-                "formula_names": ["a","b","c"], "cask_tokens": [] },
+                "trusted": true, "formula_names": ["a","b","c"], "cask_tokens": [] },
               { "name": "felixkratz/formulae", "official": false, "custom_remote": false,
-                "formula_names": ["sketchybar","borders"], "cask_tokens": ["x"] }
+                "trusted": true, "formula_names": ["sketchybar","borders"], "cask_tokens": ["x"] },
+              { "name": "koekeishiya/formulae", "official": false, "custom_remote": false,
+                "trusted": false, "formula_names": ["yabai"], "cask_tokens": [] }
             ]
             """;
 
         var taps = HomebrewService.ParseTaps(json);
 
-        Assert.Equal(2, taps.Count);
+        Assert.Equal(3, taps.Count);
         Assert.True(taps[0].Official);
         Assert.Equal("officiel", taps[0].KindLabel);
         Assert.Equal(3, taps[0].FormulaCount);
+        Assert.True(taps[0].Trusted);
+        Assert.False(taps[0].CanTrust);               // officiel → rien à approuver
 
         Assert.False(taps[1].Official);
         Assert.Equal(2, taps[1].FormulaCount);
         Assert.Equal(1, taps[1].CaskCount);
+        Assert.True(taps[1].Trusted);                 // tiers déjà de confiance
+        Assert.False(taps[1].CanTrust);
+
+        Assert.False(taps[2].Trusted);                // tiers non approuvé
+        Assert.True(taps[2].CanTrust);                // → bouton « Confiance » proposé
     }
 
     [Fact]

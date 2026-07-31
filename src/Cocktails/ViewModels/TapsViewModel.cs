@@ -91,6 +91,7 @@ public partial class TapsViewModel : ScreenViewModel
         return RunWithOutputAsync($"Confiance accordée à « {tap.Name} »…", async progress =>
         {
             await Homebrew.TrustTapAsync(tap.Name, progress);
+            Replace(await Homebrew.GetTapsAsync());   // rafraîchit l'indicateur de confiance
             StatusMessage = $"« {tap.Name} » approuvé.";
         });
     }

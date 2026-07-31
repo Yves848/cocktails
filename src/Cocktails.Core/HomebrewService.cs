@@ -529,7 +529,8 @@ public sealed class HomebrewService : IHomebrewService
                 IsTrue(item, "official"),
                 ArrayLength(item, "formula_names"),
                 ArrayLength(item, "cask_tokens"),
-                IsTrue(item, "custom_remote")));
+                IsTrue(item, "custom_remote"),
+                IsTrue(item, "trusted")));
         }
 
         return taps;
