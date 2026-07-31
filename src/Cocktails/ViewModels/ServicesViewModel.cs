@@ -19,7 +19,7 @@ public partial class ServicesViewModel : ScreenViewModel
     {
     }
 
-    public override string Title => "Services";
+    protected override string TitleKey => "Nav.Services";
 
     public ObservableCollection<BrewService> Services { get; } = [];
 
@@ -28,7 +28,7 @@ public partial class ServicesViewModel : ScreenViewModel
     [RelayCommand]
     private Task RefreshAsync() => LoadAsync();
 
-    private Task LoadAsync() => RunAsync("Chargement des services…", async () =>
+    private Task LoadAsync() => RunAsync(L["Status.LoadingServices"], async () =>
     {
         var services = await Homebrew.GetServicesAsync();
         Services.Clear();
@@ -37,29 +37,30 @@ public partial class ServicesViewModel : ScreenViewModel
             Services.Add(s);
         }
 
-        StatusMessage = $"{services.Count} service(s).";
+        StatusMessage = L.Format("Status.ServicesCount", services.Count);
     });
 
     [RelayCommand]
     private Task Start(BrewService? service)
-        => Act(service, "Démarrage", (name, p) => Homebrew.StartServiceAsync(name, p));
+        => Act(service, "Verb.Start", (name, p) => Homebrew.StartServiceAsync(name, p));
 
     [RelayCommand]
     private Task Stop(BrewService? service)
-        => Act(service, "Arrêt", (name, p) => Homebrew.StopServiceAsync(name, p));
+        => Act(service, "Verb.Stop", (name, p) => Homebrew.StopServiceAsync(name, p));
 
     [RelayCommand]
     private Task Restart(BrewService? service)
-        => Act(service, "Redémarrage", (name, p) => Homebrew.RestartServiceAsync(name, p));
+        => Act(service, "Verb.Restart", (name, p) => Homebrew.RestartServiceAsync(name, p));
 
-    private Task Act(BrewService? service, string verb, Func<string, IProgress<string>, Task> operation)
+    private Task Act(BrewService? service, string verbKey, Func<string, IProgress<string>, Task> operation)
     {
         if (service is null)
         {
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"{verb} de « {service.Name} »…", async progress =>
+        var verb = L[verbKey];
+        return RunWithOutputAsync(L.Format("Status.ServiceRunning", verb, service.Name), async progress =>
         {
             await operation(service.Name, progress);
             var services = await Homebrew.GetServicesAsync();
@@ -69,7 +70,7 @@ public partial class ServicesViewModel : ScreenViewModel
                 Services.Add(s);
             }
 
-            StatusMessage = $"« {service.Name} » — {verb.ToLowerInvariant()} effectué.";
+            StatusMessage = L.Format("Status.ServiceDone", service.Name, verb.ToLowerInvariant());
         });
     }
 }

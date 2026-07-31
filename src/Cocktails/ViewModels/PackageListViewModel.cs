@@ -42,7 +42,16 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     /// <summary>Vrai dès qu'au moins une ligne est cochée.</summary>
     public bool AnySelected => SelectedCount > 0;
 
-    partial void OnSelectedCountChanged(int value) => OnPropertyChanged(nameof(AnySelected));
+    /// <summary>Libellé traduit « N paquet(s) sélectionné(s) » (barre d'actions par lot).</summary>
+    public string SelectedCountLabel => L.Format("Batch.Selected", SelectedCount);
+
+    partial void OnSelectedCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(AnySelected));
+        OnPropertyChanged(nameof(SelectedCountLabel));
+    }
+
+    protected override void OnLanguageChanged() => OnPropertyChanged(nameof(SelectedCountLabel));
 
     /// <summary>Ligne mise en surbrillance (pilote le volet de détail).</summary>
     [ObservableProperty]

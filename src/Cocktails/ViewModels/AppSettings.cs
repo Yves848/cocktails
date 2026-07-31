@@ -1,3 +1,4 @@
+using Cocktails.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Cocktails.ViewModels;
@@ -30,6 +31,10 @@ public partial class AppSettings : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial bool KeepRunningInBackground { get; set; } = true;
+
+    /// <summary>Langue de l'interface (<see cref="AppLanguage.System"/> = suivre le système).</summary>
+    [ObservableProperty]
+    public partial AppLanguage Language { get; set; } = AppLanguage.System;
 
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";

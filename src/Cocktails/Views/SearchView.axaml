@@ -4,6 +4,7 @@
              xmlns:models="using:Cocktails.Core.Models"
              xmlns:views="using:Cocktails.Views"
              xmlns:ac="using:Avalonia.Data.Converters"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -19,13 +20,13 @@
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
             <TextBox Grid.Column="1" Classes="medit"
-                     PlaceholderText="Rechercher dans Homebrew…"
+                     PlaceholderText="{loc:Tr Placeholder.Search}"
                      Text="{Binding SearchQuery}" IsEnabled="{Binding !IsBusy}">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
-            <Button Grid.Column="2" Classes="act primary" Content="Rechercher" Margin="8,0,0,0"
+            <Button Grid.Column="2" Classes="act primary" Content="{loc:Tr Nav.Search}" Margin="8,0,0,0"
                     Command="{Binding SearchCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
@@ -51,9 +52,9 @@
                             <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center"
                                     IsVisible="{Binding IsInstalled}">
                                 <TextBlock FontSize="11.5" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Success}" Text="installé" />
+                                           Foreground="{StaticResource Success}" Text="{loc:Tr Chip.Installed}" />
                             </Border>
-                            <Button Grid.Column="2" Classes="act primary small" Content="Installer"
+                            <Button Grid.Column="2" Classes="act primary small" Content="{loc:Tr Btn.Install}"
                                     IsVisible="{Binding !IsInstalled}"
                                     Command="{Binding #List.((vm:SearchViewModel)DataContext).InstallCommand}"
                                     CommandParameter="{Binding Package}" />
@@ -67,13 +68,13 @@
                 <Panel Margin="18,4,18,14">
                     <TextBlock Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
                                HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="200"
-                               Text="Sélectionnez un résultat pour voir son détail."
+                               Text="{loc:Tr Detail.SelectResult}"
                                IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNull}}" />
 
                     <ScrollViewer IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
                         <StackPanel Spacing="16">
                             <views:PackageDetailView DataContext="{Binding Details}" />
-                            <Button Classes="act primary small" Content="Installer"
+                            <Button Classes="act primary small" Content="{loc:Tr Btn.Install}"
                                     HorizontalAlignment="Left"
                                     IsVisible="{Binding !SelectedPackage.IsInstalled}"
                                     Command="{Binding InstallCommand}"
@@ -81,7 +82,7 @@
                             <Border Classes="chip" HorizontalAlignment="Left"
                                     IsVisible="{Binding SelectedPackage.IsInstalled}">
                                 <TextBlock FontSize="11.5" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Success}" Text="déjà installé" />
+                                           Foreground="{StaticResource Success}" Text="{loc:Tr Chip.AlreadyInstalled}" />
                             </Border>
                         </StackPanel>
                     </ScrollViewer>

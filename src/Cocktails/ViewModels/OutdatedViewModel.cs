@@ -18,7 +18,7 @@ public partial class OutdatedViewModel : PackageListViewModel
     {
     }
 
-    public override string Title => "Mises à jour";
+    protected override string TitleKey => "Nav.Updates";
 
     protected override Task OnFirstActivatedAsync() => LoadAsync();
 
@@ -27,22 +27,22 @@ public partial class OutdatedViewModel : PackageListViewModel
 
     /// <summary>Actualise l'index Homebrew (brew update) puis recharge les obsolètes.</summary>
     [RelayCommand]
-    private Task UpdateIndexAsync() => RunWithOutputAsync("Actualisation de l'index (brew update)…", async progress =>
+    private Task UpdateIndexAsync() => RunWithOutputAsync(L["Status.IndexUpdating"], async progress =>
     {
         await Homebrew.UpdateIndexAsync(progress);
         await ReloadAsync();
         StatusMessage = Packages.Count == 0
-            ? "Index à jour — tout est à jour."
-            : $"Index à jour — {Packages.Count} mise(s) à jour disponible(s).";
+            ? L["Status.IndexUpToDate"]
+            : L.Format("Status.IndexUpdatesAvailable", Packages.Count);
     });
 
-    private Task LoadAsync() => RunAsync("Recherche des mises à jour…", async () =>
+    private Task LoadAsync() => RunAsync(L["Status.LoadingUpdates"], async () =>
     {
         var outdated = await Homebrew.GetOutdatedAsync();
         Replace(outdated);
         StatusMessage = outdated.Count == 0
-            ? "Tout est à jour."
-            : $"{outdated.Count} mise(s) à jour disponible(s).";
+            ? L["Status.AllUpToDate"]
+            : L.Format("Status.UpdatesAvailable", outdated.Count);
     });
 
     [RelayCommand]
@@ -53,20 +53,20 @@ public partial class OutdatedViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"Mise à jour de « {package.Name} »…", async progress =>
+        return RunWithOutputAsync(L.Format("Status.Upgrading", package.Name), async progress =>
         {
             await Homebrew.UpgradeAsync(package.Name, progress);
             await ReloadAsync();
-            StatusMessage = $"« {package.Name} » à jour.";
+            StatusMessage = L.Format("Status.Upgraded", package.Name);
         });
     }
 
     [RelayCommand]
-    private Task UpgradeAllAsync() => RunWithOutputAsync("Mise à jour de tous les packages…", async progress =>
+    private Task UpgradeAllAsync() => RunWithOutputAsync(L["Status.UpgradingAll"], async progress =>
     {
         await Homebrew.UpgradeAsync(null, progress);
         await ReloadAsync();
-        StatusMessage = "Tous les packages sont à jour.";
+        StatusMessage = L["Status.AllUpgraded"];
     });
 
     /// <summary>Met à jour en une passe toutes les lignes cochées.</summary>
@@ -79,7 +79,7 @@ public partial class OutdatedViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"Mise à jour de {targets.Count} paquet(s)…", async progress =>
+        return RunWithOutputAsync(L.Format("Status.BatchUpgrading", targets.Count), async progress =>
         {
             var done = 0;
             foreach (var package in targets)
@@ -87,11 +87,11 @@ public partial class OutdatedViewModel : PackageListViewModel
                 progress.Report($"$ brew upgrade {package.Name}");
                 await Homebrew.UpgradeAsync(package.Name, progress);
                 done++;
-                StatusMessage = $"Mise à jour… ({done}/{targets.Count})";
+                StatusMessage = L.Format("Status.BatchUpgradeProgress", done, targets.Count);
             }
 
             await ReloadAsync();
-            StatusMessage = $"{targets.Count} paquet(s) à jour.";
+            StatusMessage = L.Format("Status.BatchUpgraded", targets.Count);
         });
     }
 

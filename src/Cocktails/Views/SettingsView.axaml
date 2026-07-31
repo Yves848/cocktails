@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -20,9 +21,27 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Surveillance des mises à jour" />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Language}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{loc:Tr Settings.LanguageDesc}" />
+                    </StackPanel>
+                    <ComboBox Grid.Column="1" VerticalAlignment="Center" MinWidth="170"
+                              ItemsSource="{Binding Languages}"
+                              SelectedItem="{Binding SelectedLanguage}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LanguageOption">
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Monitoring}" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
-                                   Text="Vérifier périodiquement les paquets obsolètes en arrière-plan." />
+                                   Text="{loc:Tr Settings.MonitoringDesc}" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
@@ -33,8 +52,8 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Fréquence de vérification" />
-                        <TextBlock Classes="muted" Text="Intervalle entre deux contrôles automatiques." />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Frequency}" />
+                        <TextBlock Classes="muted" Text="{loc:Tr Settings.FrequencyDesc}" />
                     </StackPanel>
                     <ComboBox Grid.Column="1" VerticalAlignment="Center" MinWidth="170"
                               IsEnabled="{Binding Settings.MonitoringEnabled}"
@@ -52,9 +71,9 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Notifications système" />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Notifications}" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
-                                   Text="Prévenir via le centre de notifications quand de nouvelles mises à jour arrivent." />
+                                   Text="{loc:Tr Settings.NotificationsDesc}" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
@@ -65,9 +84,9 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Rester actif en arrière-plan" />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Background}" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
-                                   Text="Fermer la fenêtre masque l'app (elle continue en tâche de fond, via l'icône de la barre de menu). Sinon, fermer quitte l'app." />
+                                   Text="{loc:Tr Settings.BackgroundDesc}" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
@@ -78,9 +97,9 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Confirmer avant désinstallation" />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Confirm}" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
-                                   Text="Demander une confirmation pour les actions irréversibles." />
+                                   Text="{loc:Tr Settings.ConfirmDesc}" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
@@ -91,26 +110,26 @@
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
-                        <TextBlock Classes="body" Text="Statistiques anonymes Homebrew" />
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.Analytics}" />
                         <TextBlock Classes="muted" TextWrapping="Wrap"
-                                   Text="Télémétrie de Homebrew (brew analytics). Modifiée directement dans brew." />
+                                   Text="{loc:Tr Settings.AnalyticsDesc}" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
                                   IsChecked="{Binding AnalyticsEnabled}" IsEnabled="{Binding !IsBusy}" />
                 </Grid>
 
-                <TextBlock Classes="section" Text="HOMEBREW" Margin="2,14,0,4" />
+                <TextBlock Classes="section" Text="{loc:Tr Settings.HomebrewSection}" Margin="2,14,0,4" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,10">
-                    <TextBlock Grid.Column="0" Classes="body" Text="Version" />
+                    <TextBlock Grid.Column="0" Classes="body" Text="{loc:Tr Settings.Version}" />
                     <TextBlock Grid.Column="1" VerticalAlignment="Center"
                                FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
                                Foreground="{StaticResource TextMuted}"
                                Text="{Binding Environment.Version}" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*" Margin="0,10">
-                    <TextBlock Grid.Column="0" Classes="body" Text="Préfixe" Margin="0,0,16,0" />
+                    <TextBlock Grid.Column="0" Classes="body" Text="{loc:Tr Settings.Prefix}" Margin="0,0,16,0" />
                     <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
                                FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
                                TextTrimming="CharacterEllipsis"
@@ -118,7 +137,7 @@
                                Text="{Binding Environment.Prefix}" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*" Margin="0,10">
-                    <TextBlock Grid.Column="0" Classes="body" Text="Cache" Margin="0,0,16,0" />
+                    <TextBlock Grid.Column="0" Classes="body" Text="{loc:Tr Settings.Cache}" Margin="0,0,16,0" />
                     <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
                                FontFamily="Menlo, Consolas, monospace" FontSize="12.5"
                                TextTrimming="CharacterEllipsis"

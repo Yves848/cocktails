@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -16,16 +17,36 @@ public abstract partial class ScreenViewModel : ViewModelBase
 {
     protected IHomebrewService Homebrew { get; }
 
-    protected ScreenViewModel(IHomebrewService homebrew) => Homebrew = homebrew;
+    protected ScreenViewModel(IHomebrewService homebrew)
+    {
+        Homebrew = homebrew;
+        StatusMessage = L["Status.Ready"];
+        Localizer.Instance.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(Title));
+            OnLanguageChanged();
+        };
+    }
 
-    /// <summary>Titre affiché dans l'en-tête de l'écran.</summary>
-    public abstract string Title { get; }
+    /// <summary>Accès raccourci aux traductions (langue courante).</summary>
+    protected static Localizer L => Localizer.Instance;
+
+    /// <summary>Clé de traduction du titre de l'écran.</summary>
+    protected abstract string TitleKey { get; }
+
+    /// <summary>Titre affiché dans l'en-tête de l'écran (traduit, mis à jour à chaud).</summary>
+    public string Title => L[TitleKey];
+
+    /// <summary>Appelé après un changement de langue (les écrans peuvent reconstruire leurs listes).</summary>
+    protected virtual void OnLanguageChanged()
+    {
+    }
 
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
-    public partial string StatusMessage { get; set; } = "Prêt.";
+    public partial string StatusMessage { get; set; } = string.Empty;
 
     /// <summary>Demande de confirmation en attente (non nulle → dialogue affiché).</summary>
     [ObservableProperty]
@@ -95,11 +116,11 @@ public abstract partial class ScreenViewModel : ViewModelBase
         }
         catch (HomebrewException ex)
         {
-            StatusMessage = $"Erreur brew : {ex.StandardError}".Trim();
+            StatusMessage = L.Format("Error.Brew", ex.StandardError).Trim();
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Erreur : {ex.Message}";
+            StatusMessage = L.Format("Error.Generic", ex.Message);
         }
         finally
         {

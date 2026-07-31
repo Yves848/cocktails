@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:models="using:Cocktails.Core.Models"
+             xmlns:loc="using:Cocktails.Localization"
+             xmlns:conv="using:Cocktails.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -18,7 +20,7 @@
                 <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" />
                 <TextBlock Classes="muted" Text="brew services" VerticalAlignment="Center" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="act" Content="Rafraîchir"
+            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Refresh}"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
@@ -35,19 +37,20 @@
                         </Panel>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                             <TextBlock Classes="body" Text="{Binding Name}" />
-                            <TextBlock Classes="muted" Text="{Binding StatusLabel}" />
+                            <TextBlock Classes="muted"
+                                       Text="{Binding Status, Converter={x:Static conv:ServiceStatusConverter.Instance}}" />
                         </StackPanel>
-                        <Button Grid.Column="2" Classes="act primary small" Content="Démarrer"
+                        <Button Grid.Column="2" Classes="act primary small" Content="{loc:Tr Btn.Start}"
                                 Margin="0,0,6,0"
                                 IsVisible="{Binding !IsRunning}"
                                 Command="{Binding #List.((vm:ServicesViewModel)DataContext).StartCommand}"
                                 CommandParameter="{Binding}" />
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding IsRunning}">
-                            <Button Classes="act small" Content="Redémarrer"
+                            <Button Classes="act small" Content="{loc:Tr Btn.Restart}"
                                     Command="{Binding #List.((vm:ServicesViewModel)DataContext).RestartCommand}"
                                     CommandParameter="{Binding}" />
-                            <Button Classes="act danger small" Content="Arrêter"
+                            <Button Classes="act danger small" Content="{loc:Tr Btn.Stop}"
                                     Command="{Binding #List.((vm:ServicesViewModel)DataContext).StopCommand}"
                                     CommandParameter="{Binding}" />
                         </StackPanel>

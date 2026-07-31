@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:models="using:Cocktails.Core.Models"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -16,7 +17,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="18,16,18,10">
             <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-            <TextBlock Classes="muted" Text="Nettoyage &amp; diagnostic" VerticalAlignment="Center" />
+            <TextBlock Classes="muted" Text="{loc:Tr Maint.Subtitle}" VerticalAlignment="Center" />
         </StackPanel>
 
         <ScrollViewer Grid.Row="1">
@@ -25,11 +26,11 @@
                 <Border Classes="mcard">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                            <TextBlock Classes="body" Text="Nettoyage du cache" />
+                            <TextBlock Classes="body" Text="{loc:Tr Maint.CacheTitle}" />
                             <TextBlock Classes="muted" TextWrapping="Wrap"
-                                       Text="Supprime les téléchargements en cache et les anciennes versions (brew cleanup)." />
+                                       Text="{loc:Tr Maint.CacheDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act primary" Content="Nettoyer"
+                        <Button Grid.Column="1" Classes="act primary" Content="{loc:Tr Btn.Clean}"
                                 VerticalAlignment="Center"
                                 Command="{Binding CleanupCommand}" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
@@ -38,11 +39,11 @@
                 <Border Classes="mcard">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                            <TextBlock Classes="body" Text="Dépendances orphelines" />
+                            <TextBlock Classes="body" Text="{loc:Tr Maint.OrphansTitle}" />
                             <TextBlock Classes="muted" TextWrapping="Wrap"
-                                       Text="Retire les formulae installées automatiquement et devenues inutiles (brew autoremove)." />
+                                       Text="{loc:Tr Maint.OrphansDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act" Content="Retirer"
+                        <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Remove}"
                                 VerticalAlignment="Center"
                                 Command="{Binding AutoremoveCommand}" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
@@ -51,11 +52,11 @@
                 <Border Classes="mcard">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                            <TextBlock Classes="body" Text="Diagnostic" />
+                            <TextBlock Classes="body" Text="{loc:Tr Maint.DiagTitle}" />
                             <TextBlock Classes="muted" TextWrapping="Wrap"
-                                       Text="Vérifie l'intégrité de l'installation Homebrew (brew doctor)." />
+                                       Text="{loc:Tr Maint.DiagDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act" Content="Lancer brew doctor"
+                        <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.RunDoctor}"
                                 VerticalAlignment="Center"
                                 Command="{Binding DoctorCommand}" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
@@ -65,11 +66,11 @@
                     <StackPanel Spacing="12">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                                <TextBlock Classes="body" Text="Dépendances manquantes" />
+                                <TextBlock Classes="body" Text="{loc:Tr Maint.MissingTitle}" />
                                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                                           Text="Repère les formules installées dont une dépendance n'est plus installée (brew missing)." />
+                                           Text="{loc:Tr Maint.MissingDesc}" />
                             </StackPanel>
-                            <Button Grid.Column="1" Classes="act" Content="Vérifier"
+                            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Check}"
                                     VerticalAlignment="Center"
                                     Command="{Binding CheckMissingCommand}" IsEnabled="{Binding !IsBusy}" />
                         </Grid>
@@ -78,7 +79,7 @@
                         <Border Classes="chip" HorizontalAlignment="Left" IsVisible="{Binding MissingIsHealthy}">
                             <TextBlock FontSize="11.5" FontWeight="SemiBold"
                                        Foreground="{StaticResource Success}"
-                                       Text="✓ Aucune dépendance manquante" />
+                                       Text="{loc:Tr Maint.NoMissing}" />
                         </Border>
 
                         <!-- Manques : formule → dépendances absentes -->
@@ -108,29 +109,29 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Classes="section" Text="SAUVEGARDE (BREWFILE)" Margin="2,10,0,0" />
+                <TextBlock Classes="section" Text="{loc:Tr Maint.BackupSection}" Margin="2,10,0,0" />
 
                 <Border Classes="mcard">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                            <TextBlock Classes="body" Text="Exporter la configuration" />
+                            <TextBlock Classes="body" Text="{loc:Tr Maint.ExportTitle}" />
                             <TextBlock Classes="muted" TextWrapping="Wrap"
-                                       Text="Écrit un Brewfile (taps, formulae, casks) — instantané versionnable, utile pour migrer de machine (brew bundle dump)." />
+                                       Text="{loc:Tr Maint.ExportDesc}" />
                         </StackPanel>
                         <Button x:Name="ExportBrewfileButton" Grid.Column="1" Classes="act primary"
-                                Content="Exporter…" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                                Content="{loc:Tr Btn.Export}" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
                 </Border>
 
                 <Border Classes="mcard">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                            <TextBlock Classes="body" Text="Importer une configuration" />
+                            <TextBlock Classes="body" Text="{loc:Tr Maint.ImportTitle}" />
                             <TextBlock Classes="muted" TextWrapping="Wrap"
-                                       Text="Installe tout ce qui manque d'après un Brewfile (brew bundle install)." />
+                                       Text="{loc:Tr Maint.ImportDesc}" />
                         </StackPanel>
                         <Button x:Name="ImportBrewfileButton" Grid.Column="1" Classes="act"
-                                Content="Importer…" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                                Content="{loc:Tr Btn.Import}" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
                     </Grid>
                 </Border>
 

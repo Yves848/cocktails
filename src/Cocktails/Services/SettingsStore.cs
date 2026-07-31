@@ -43,6 +43,7 @@ public sealed class SettingsStore
                         NotificationsEnabled = dto.NotificationsEnabled,
                         MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
                         KeepRunningInBackground = dto.KeepRunningInBackground,
+                        Language = dto.Language,
                         WindowWidth = dto.WindowWidth,
                         WindowHeight = dto.WindowHeight,
                         WindowX = dto.WindowX,
@@ -73,6 +74,7 @@ public sealed class SettingsStore
                 NotificationsEnabled = settings.NotificationsEnabled,
                 MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
                 KeepRunningInBackground = settings.KeepRunningInBackground,
+                Language = settings.Language,
                 WindowWidth = settings.WindowWidth,
                 WindowHeight = settings.WindowHeight,
                 WindowX = settings.WindowX,
@@ -95,6 +97,7 @@ public sealed class SettingsStore
         public bool NotificationsEnabled { get; set; } = true;
         public int MonitoringIntervalMinutes { get; set; } = 360;
         public bool KeepRunningInBackground { get; set; } = true;
+        public Cocktails.Localization.AppLanguage Language { get; set; } = Cocktails.Localization.AppLanguage.System;
         public double? WindowWidth { get; set; }
         public double? WindowHeight { get; set; }
         public int? WindowX { get; set; }

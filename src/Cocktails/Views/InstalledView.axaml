@@ -3,6 +3,7 @@
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:views="using:Cocktails.Views"
              xmlns:ac="using:Avalonia.Data.Converters"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -18,14 +19,14 @@
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
             <TextBox Grid.Column="1" Classes="medit"
-                     PlaceholderText="Filtrer (nom)…"
+                     PlaceholderText="{loc:Tr Placeholder.Filter}"
                      Text="{Binding FilterText}" IsEnabled="{Binding !IsBusy}" />
-            <CheckBox Grid.Column="2" Content="Racines" VerticalAlignment="Center" Margin="8,0,0,0"
-                      ToolTip.Tip="brew leaves — installés explicitement (masque les dépendances auto)"
+            <CheckBox Grid.Column="2" Content="{loc:Tr Filter.Roots}" VerticalAlignment="Center" Margin="8,0,0,0"
+                      ToolTip.Tip="{loc:Tr Tooltip.Leaves}"
                       IsChecked="{Binding LeavesOnly}" IsEnabled="{Binding !IsBusy}" />
             <Border Grid.Column="3" Classes="seg" Margin="8,0,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="2">
-                    <Button Classes="segbtn" Classes.on="{Binding IsKindAll}" Content="Tout"
+                    <Button Classes="segbtn" Classes.on="{Binding IsKindAll}" Content="{loc:Tr Filter.All}"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.All}" />
                     <Button Classes="segbtn" Classes.on="{Binding IsKindFormula}" Content="Formulae"
@@ -36,7 +37,7 @@
                             CommandParameter="{x:Static vm:PackageKindFilter.Cask}" />
                 </StackPanel>
             </Border>
-            <Button Grid.Column="4" Classes="act" Content="Rafraîchir" Margin="8,0,0,0"
+            <Button Grid.Column="4" Classes="act" Content="{loc:Tr Btn.Refresh}" Margin="8,0,0,0"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
@@ -45,10 +46,10 @@
                 IsVisible="{Binding AnySelected}">
             <Grid ColumnDefinitions="*,Auto,Auto">
                 <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
-                           Text="{Binding SelectedCount, StringFormat='{}{0} paquet(s) sélectionné(s)'}" />
-                <Button Grid.Column="1" Classes="act small" Content="Tout décocher" Margin="0,0,8,0"
+                           Text="{Binding SelectedCountLabel}" />
+                <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Batch.UncheckAll}" Margin="0,0,8,0"
                         Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
-                <Button Grid.Column="2" Classes="act danger small" Content="Désinstaller la sélection"
+                <Button Grid.Column="2" Classes="act danger small" Content="{loc:Tr Batch.UninstallSelection}"
                         Command="{Binding BatchUninstallCommand}" IsEnabled="{Binding !IsBusy}" />
             </Grid>
         </Border>
@@ -65,7 +66,7 @@
                         <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                             <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
                                       IsChecked="{Binding IsChecked}"
-                                      ToolTip.Tip="Sélectionner pour une désinstallation par lot" />
+                                      ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
                             <Border Classes="badge" Grid.Column="1">
                                 <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextMuted}"
@@ -77,7 +78,7 @@
                             </StackPanel>
                             <TextBlock Grid.Column="3" Classes="muted" VerticalAlignment="Center"
                                        Margin="0,0,12,0" Text="{Binding InstalledVersion}" />
-                            <Button Grid.Column="4" Classes="act danger small" Content="Désinstaller"
+                            <Button Grid.Column="4" Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
                                     Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
                                     CommandParameter="{Binding Package}" />
                         </Grid>
@@ -92,7 +93,7 @@
                     <!-- Aucun paquet sélectionné -->
                     <TextBlock Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
                                HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="200"
-                               Text="Sélectionnez un paquet pour voir son détail."
+                               Text="{loc:Tr Detail.SelectPackage}"
                                IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNull}}" />
 
                     <!-- Détail -->
@@ -102,9 +103,9 @@
 
                             <!-- Dépendants installés (brew uses) : avertissement avant désinstallation. -->
                             <StackPanel Spacing="8" IsVisible="{Binding Dependents.Count}">
-                                <TextBlock Classes="section" Text="DÉPENDANTS INSTALLÉS" />
+                                <TextBlock Classes="section" Text="{loc:Tr Detail.Dependents}" />
                                 <TextBlock Classes="muted" FontSize="11.5" TextWrapping="Wrap"
-                                           Text="Ces paquets cesseraient de fonctionner si vous le désinstallez." />
+                                           Text="{loc:Tr Detail.DependentsWarn}" />
                                 <ItemsControl ItemsSource="{Binding Dependents}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
@@ -121,18 +122,18 @@
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Classes="act small" Content="Réinstaller"
+                                <Button Classes="act small" Content="{loc:Tr Btn.Reinstall}"
                                         Command="{Binding ReinstallCommand}"
                                         CommandParameter="{Binding SelectedPackage}" />
-                                <Button Classes="act small" Content="Épingler"
+                                <Button Classes="act small" Content="{loc:Tr Btn.Pin}"
                                         IsVisible="{Binding !Details.IsPinned}"
                                         Command="{Binding PinCommand}"
                                         CommandParameter="{Binding SelectedPackage}" />
-                                <Button Classes="act small" Content="Désépingler"
+                                <Button Classes="act small" Content="{loc:Tr Btn.Unpin}"
                                         IsVisible="{Binding Details.IsPinned}"
                                         Command="{Binding UnpinCommand}"
                                         CommandParameter="{Binding SelectedPackage}" />
-                                <Button Classes="act danger small" Content="Désinstaller"
+                                <Button Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
                                         Command="{Binding UninstallCommand}"
                                         CommandParameter="{Binding SelectedPackage}" />
                             </StackPanel>

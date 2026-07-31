@@ -4,6 +4,7 @@
         xmlns:conv="using:Cocktails.Converters"
         xmlns:ac="using:Avalonia.Data.Converters"
         xmlns:controls="using:Cocktails.Controls"
+        xmlns:loc="using:Cocktails.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="860" d:DesignHeight="600"
@@ -37,9 +38,9 @@
                     <TextBlock Grid.Column="0" Classes="title" Text="Cocktails"
                                VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                        <Button x:Name="MinBtn" Classes="icon" Content="‒" ToolTip.Tip="Réduire" />
-                        <Button x:Name="MaxBtn" Classes="icon" Content="◻" ToolTip.Tip="Agrandir / restaurer" />
-                        <Button x:Name="CloseBtn" Classes="icon" Content="✕" ToolTip.Tip="Fermer" />
+                        <Button x:Name="MinBtn" Classes="icon" Content="‒" ToolTip.Tip="{loc:Tr Win.Minimize}" />
+                        <Button x:Name="MaxBtn" Classes="icon" Content="◻" ToolTip.Tip="{loc:Tr Win.Maximize}" />
+                        <Button x:Name="CloseBtn" Classes="icon" Content="✕" ToolTip.Tip="{loc:Tr Win.Close}" />
                     </StackPanel>
                 </Grid>
 
@@ -152,7 +153,7 @@
                         <TextBlock Text="Cocktails" FontSize="24" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimary}"
                                    HorizontalAlignment="Center" />
-                        <TextBlock Classes="muted" Text="Votre bar à paquets Homebrew"
+                        <TextBlock Classes="muted" Text="{loc:Tr App.Tagline}"
                                    HorizontalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
@@ -184,7 +185,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                                     Spacing="8" Margin="20,6,20,18">
-                            <Button Classes="act" Content="Annuler"
+                            <Button Classes="act" Content="{loc:Tr Btn.Cancel}"
                                     Command="{Binding CurrentScreen.CancelConfirmationCommand}" />
                             <Button Classes="act danger"
                                     Content="{Binding CurrentScreen.Confirmation.ConfirmLabel}"

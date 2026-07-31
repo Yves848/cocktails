@@ -3,6 +3,7 @@
              xmlns:models="using:Cocktails.Core.Models"
              xmlns:controls="using:Cocktails.Controls"
              xmlns:conv="using:Cocktails.Converters"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -26,28 +27,28 @@
                    Text="{Binding Description}" />
 
         <Button x:Name="HomepageButton" Classes="act small" HorizontalAlignment="Left"
-                Content="Ouvrir la page ↗"
+                Content="{loc:Tr Btn.OpenPage}"
                 IsVisible="{Binding Homepage, Converter={x:Static ac:ObjectConverters.IsNotNull}}" />
 
         <StackPanel Spacing="7">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Classes="muted" Text="Version installée" />
+                <TextBlock Classes="muted" Text="{loc:Tr Detail.InstalledVersion}" />
                 <TextBlock Grid.Column="1" Classes="body"
                            Text="{Binding InstalledVersion, TargetNullValue='—'}" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Classes="muted" Text="Dernière version" />
+                <TextBlock Classes="muted" Text="{loc:Tr Detail.LatestVersion}" />
                 <TextBlock Grid.Column="1" Classes="body"
                            Text="{Binding StableVersion, TargetNullValue='—'}" />
             </Grid>
         </StackPanel>
 
         <Border Classes="chip" HorizontalAlignment="Left" IsVisible="{Binding IsPinned}">
-            <TextBlock FontSize="11.5" FontWeight="SemiBold" Text="épinglé" />
+            <TextBlock FontSize="11.5" FontWeight="SemiBold" Text="{loc:Tr Chip.Pinned}" />
         </Border>
 
         <StackPanel Spacing="8" IsVisible="{Binding HasDependencies}">
-            <TextBlock Classes="section" Text="DÉPENDANCES" />
+            <TextBlock Classes="section" Text="{loc:Tr Detail.Dependencies}" />
             <ItemsControl ItemsSource="{Binding Dependencies}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
@@ -66,7 +67,7 @@
         <!-- Arbre transitif (brew deps, en mode arbre). Chaque niveau est indenté ; la
              racine (le paquet) est en gras. Défilement horizontal si l'arbre déborde. -->
         <StackPanel Spacing="8" IsVisible="{Binding HasDependencyTree}">
-            <TextBlock Classes="section" Text="ARBRE DES DÉPENDANCES" />
+            <TextBlock Classes="section" Text="{loc:Tr Detail.DependencyTree}" />
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding DependencyTree}">
                     <ItemsControl.ItemsPanel>

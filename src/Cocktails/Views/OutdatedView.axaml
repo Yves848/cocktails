@@ -3,6 +3,7 @@
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:views="using:Cocktails.Views"
              xmlns:ac="using:Avalonia.Data.Converters"
+             xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
@@ -17,12 +18,12 @@
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Classes="act" Content="Actualiser l'index" Margin="0,0,8,0"
-                    ToolTip.Tip="brew update — rafraîchit la base des formules/casks"
+            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.UpdateIndex}" Margin="0,0,8,0"
+                    ToolTip.Tip="{loc:Tr Tooltip.UpdateIndex}"
                     Command="{Binding UpdateIndexCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="2" Classes="act" Content="Rafraîchir" Margin="0,0,8,0"
+            <Button Grid.Column="2" Classes="act" Content="{loc:Tr Btn.Refresh}" Margin="0,0,8,0"
                     Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="3" Classes="act primary" Content="Tout mettre à jour"
+            <Button Grid.Column="3" Classes="act primary" Content="{loc:Tr Btn.UpdateAll}"
                     Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
         </Grid>
 
@@ -31,10 +32,10 @@
                 IsVisible="{Binding AnySelected}">
             <Grid ColumnDefinitions="*,Auto,Auto">
                 <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
-                           Text="{Binding SelectedCount, StringFormat='{}{0} paquet(s) sélectionné(s)'}" />
-                <Button Grid.Column="1" Classes="act small" Content="Tout décocher" Margin="0,0,8,0"
+                           Text="{Binding SelectedCountLabel}" />
+                <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Batch.UncheckAll}" Margin="0,0,8,0"
                         Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
-                <Button Grid.Column="2" Classes="act primary small" Content="Mettre à jour la sélection"
+                <Button Grid.Column="2" Classes="act primary small" Content="{loc:Tr Batch.UpdateSelection}"
                         Command="{Binding BatchUpgradeCommand}" IsEnabled="{Binding !IsBusy}" />
             </Grid>
         </Border>
@@ -51,7 +52,7 @@
                         <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                             <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
                                       IsChecked="{Binding IsChecked}"
-                                      ToolTip.Tip="Sélectionner pour une mise à jour par lot" />
+                                      ToolTip.Tip="{loc:Tr Tooltip.CheckUpdate}" />
                             <Border Classes="badge" Grid.Column="1">
                                 <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextMuted}"
@@ -66,7 +67,7 @@
                                            Foreground="{StaticResource Warning}"
                                            Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
                             </Border>
-                            <Button Grid.Column="4" Classes="act primary small" Content="Mettre à jour"
+                            <Button Grid.Column="4" Classes="act primary small" Content="{loc:Tr Btn.Update}"
                                     Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
                                     CommandParameter="{Binding Package}" />
                         </Grid>
@@ -79,13 +80,13 @@
                 <Panel Margin="18,4,18,14">
                     <TextBlock Classes="muted" TextWrapping="Wrap" TextAlignment="Center"
                                HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="200"
-                               Text="Sélectionnez un paquet pour voir son détail."
+                               Text="{loc:Tr Detail.SelectPackage}"
                                IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNull}}" />
 
                     <ScrollViewer IsVisible="{Binding Details, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
                         <StackPanel Spacing="16">
                             <views:PackageDetailView DataContext="{Binding Details}" />
-                            <Button Classes="act primary small" Content="Mettre à jour"
+                            <Button Classes="act primary small" Content="{loc:Tr Btn.Update}"
                                     HorizontalAlignment="Left"
                                     Command="{Binding UpgradeCommand}"
                                     CommandParameter="{Binding SelectedPackage}" />

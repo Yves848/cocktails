@@ -3,6 +3,7 @@
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="using:Cocktails.Localization"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
              x:Class="Cocktails.Views.HelpView"
              x:DataType="vm:HelpViewModel">
@@ -38,7 +39,7 @@
             <StackPanel Spacing="18" MaxWidth="560" HorizontalAlignment="Left">
 
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Cocktails — interface graphique pour Homebrew. Raccourcis clavier disponibles (⌘ = touche Commande) :" />
+                           Text="{loc:Tr Help.Intro}" />
 
                 <!-- Groupes de raccourcis -->
                 <ItemsControl ItemsSource="{Binding Groups}">
@@ -75,7 +76,7 @@
                 <!-- Opérations par lot -->
                 <Border Classes="mcard">
                     <StackPanel Spacing="10">
-                        <TextBlock Classes="section" Text="OPÉRATIONS PAR LOT" />
+                        <TextBlock Classes="section" Text="{loc:Tr Help.BatchSection}" />
                         <ItemsControl ItemsSource="{Binding BatchTips}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><StackPanel Spacing="7" /></ItemsPanelTemplate>

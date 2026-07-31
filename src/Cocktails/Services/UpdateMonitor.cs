@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Cocktails.Core;
+using Cocktails.Localization;
 using Cocktails.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -120,10 +121,9 @@ public sealed partial class UpdateMonitor : ObservableObject
 
     private static string FormatMessage(IReadOnlyList<string> fresh)
     {
-        var names = string.Join(", ", fresh.Take(3));
-        var suffix = fresh.Count > 3 ? "…" : string.Empty;
+        var names = string.Join(", ", fresh.Take(3)) + (fresh.Count > 3 ? "…" : string.Empty);
         return fresh.Count == 1
-            ? $"Mise à jour disponible : {names}"
-            : $"{fresh.Count} nouvelles mises à jour : {names}{suffix}";
+            ? Localizer.Instance.Format("Notif.OneUpdate", names)
+            : Localizer.Instance.Format("Notif.ManyUpdates", fresh.Count, names);
     }
 }

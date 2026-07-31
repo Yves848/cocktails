@@ -38,17 +38,17 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null)
     {
         settings ??= new AppSettings();
-        _updatesNav = new NavItem("Mises à jour", IconUpdates, new OutdatedViewModel(homebrew));
+        _updatesNav = new NavItem("Nav.Updates", IconUpdates, new OutdatedViewModel(homebrew));
         NavItems =
         [
-            new NavItem("Installés", IconInstalled, new InstalledViewModel(homebrew, settings)),
-            new NavItem("Rechercher", IconSearch, new SearchViewModel(homebrew)),
+            new NavItem("Nav.Installed", IconInstalled, new InstalledViewModel(homebrew, settings)),
+            new NavItem("Nav.Search", IconSearch, new SearchViewModel(homebrew)),
             _updatesNav,
-            new NavItem("Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
-            new NavItem("Services", IconServices, new ServicesViewModel(homebrew)),
-            new NavItem("Taps", IconTaps, new TapsViewModel(homebrew)),
-            new NavItem("Réglages", IconSettings, new SettingsViewModel(homebrew, settings)),
-            new NavItem("Aide", IconHelp, new HelpViewModel()),
+            new NavItem("Nav.Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
+            new NavItem("Nav.Services", IconServices, new ServicesViewModel(homebrew)),
+            new NavItem("Nav.Taps", IconTaps, new TapsViewModel(homebrew)),
+            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings)),
+            new NavItem("Nav.Help", IconHelp, new HelpViewModel()),
         ];
 
         // Le badge « Mises à jour » suit le compteur du moniteur.
@@ -112,10 +112,10 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Sélectionne un écran par son titre (utilisé par les raccourcis clavier).</summary>
-    public void SelectScreen(string title)
+    /// <summary>Sélectionne un écran par sa clé de titre (raccourcis clavier, menu de la barre).</summary>
+    public void SelectScreen(string titleKey)
     {
-        var item = NavItems.FirstOrDefault(n => n.Title == title);
+        var item = NavItems.FirstOrDefault(n => n.TitleKey == titleKey);
         if (item is not null)
         {
             SelectedNav = item;

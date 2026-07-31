@@ -1,3 +1,4 @@
+using Cocktails.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Cocktails.ViewModels;
@@ -5,14 +6,21 @@ namespace Cocktails.ViewModels;
 /// <summary>Entrée de la navigation latérale : libellé, icône, écran, et compteur optionnel.</summary>
 public sealed partial class NavItem : ObservableObject
 {
-    public NavItem(string title, string icon, ScreenViewModel screen)
+    private readonly string _titleKey;
+
+    public NavItem(string titleKey, string icon, ScreenViewModel screen)
     {
-        Title = title;
+        _titleKey = titleKey;
         Icon = icon;
         Screen = screen;
+        Localizer.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(Title));
     }
 
-    public string Title { get; }
+    /// <summary>Libellé traduit (mis à jour à chaud au changement de langue).</summary>
+    public string Title => Localizer.Instance[_titleKey];
+
+    /// <summary>Clé de traduction du libellé (utilisée par le shell pour la sélection par nom).</summary>
+    public string TitleKey => _titleKey;
 
     /// <summary>
     /// Données de tracé de l'icône (mini-langage SVG path). Converties en géométrie

@@ -7,6 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Cocktails.Core;
 using Cocktails.Core.Process;
+using Cocktails.Localization;
 using Cocktails.Services;
 using Cocktails.ViewModels;
 using Cocktails.Views;
@@ -21,7 +22,11 @@ public partial class App : Application
     private SettingsStore? _settingsStore;
     private UpdateMonitor? _monitor;
     private TrayIcon? _trayIcon;
+    private NativeMenuItem? _openItem;
     private NativeMenuItem? _updatesItem;
+    private NativeMenuItem? _searchItem;
+    private NativeMenuItem? _checkNowItem;
+    private NativeMenuItem? _quitItem;
     private bool _quitting;
 
     public override void Initialize()
@@ -45,7 +50,18 @@ public partial class App : Application
             // Réglages : chargés du disque, ré-enregistrés à chaque changement.
             _settingsStore = new SettingsStore();
             _settings = _settingsStore.Load();
-            _settings.PropertyChanged += (_, _) => _settingsStore.Save(_settings);
+
+            // Langue : appliquée avant de construire l'UI, puis suivie à chaud.
+            Localizer.Instance.SetLanguage(_settings.Language);
+            Localizer.Instance.LanguageChanged += (_, _) => UpdateTrayLabels();
+            _settings.PropertyChanged += (_, e) =>
+            {
+                _settingsStore.Save(_settings);
+                if (e.PropertyName == nameof(AppSettings.Language))
+                {
+                    Localizer.Instance.SetLanguage(_settings.Language);
+                }
+            };
 
             // Monitoring des mises à jour + notifications système (natives en bundle .app,
             // osascript en dev — cf. PlatformNotifier).
@@ -83,29 +99,30 @@ public partial class App : Application
     {
         var menu = new NativeMenu();
 
-        var open = new NativeMenuItem("Ouvrir Cocktails");
-        open.Click += (_, _) => ShowWindow();
+        _openItem = new NativeMenuItem();
+        _openItem.Click += (_, _) => ShowWindow();
 
-        _updatesItem = new NativeMenuItem("Mises à jour");
-        _updatesItem.Click += (_, _) => ShowScreen("Mises à jour");
-        UpdateTrayUpdatesLabel();
+        _updatesItem = new NativeMenuItem();
+        _updatesItem.Click += (_, _) => ShowScreen("Nav.Updates");
 
-        var search = new NativeMenuItem("Rechercher…");
-        search.Click += (_, _) => ShowScreen("Rechercher");
+        _searchItem = new NativeMenuItem();
+        _searchItem.Click += (_, _) => ShowScreen("Nav.Search");
 
-        var checkNow = new NativeMenuItem("Vérifier maintenant");
-        checkNow.Click += (_, _) => _ = _monitor?.CheckNowAsync();
+        _checkNowItem = new NativeMenuItem();
+        _checkNowItem.Click += (_, _) => _ = _monitor?.CheckNowAsync();
 
-        var quit = new NativeMenuItem("Quitter Cocktails");
-        quit.Click += (_, _) => Quit();
+        _quitItem = new NativeMenuItem();
+        _quitItem.Click += (_, _) => Quit();
 
-        menu.Items.Add(open);
+        menu.Items.Add(_openItem);
         menu.Items.Add(new NativeMenuItemSeparator());
         menu.Items.Add(_updatesItem);
-        menu.Items.Add(search);
-        menu.Items.Add(checkNow);
+        menu.Items.Add(_searchItem);
+        menu.Items.Add(_checkNowItem);
         menu.Items.Add(new NativeMenuItemSeparator());
-        menu.Items.Add(quit);
+        menu.Items.Add(_quitItem);
+
+        UpdateTrayLabels();
 
         _trayIcon = new TrayIcon
         {
@@ -117,6 +134,33 @@ public partial class App : Application
         _trayIcon.Clicked += (_, _) => ShowWindow();
     }
 
+    /// <summary>(Ré)applique les libellés traduits du menu de la barre de menu.</summary>
+    private void UpdateTrayLabels()
+    {
+        var l = Localizer.Instance;
+        if (_openItem is not null)
+        {
+            _openItem.Header = l["Tray.Open"];
+        }
+
+        if (_searchItem is not null)
+        {
+            _searchItem.Header = l["Tray.Search"];
+        }
+
+        if (_checkNowItem is not null)
+        {
+            _checkNowItem.Header = l["Tray.CheckNow"];
+        }
+
+        if (_quitItem is not null)
+        {
+            _quitItem.Header = l["Tray.Quit"];
+        }
+
+        UpdateTrayUpdatesLabel();
+    }
+
     private void UpdateTrayUpdatesLabel()
     {
         if (_updatesItem is null)
@@ -125,7 +169,9 @@ public partial class App : Application
         }
 
         var count = _monitor?.OutdatedCount ?? 0;
-        _updatesItem.Header = count > 0 ? $"Mises à jour ({count})" : "Mises à jour";
+        _updatesItem.Header = count > 0
+            ? Localizer.Instance.Format("Tray.UpdatesCount", count)
+            : Localizer.Instance["Nav.Updates"];
     }
 
     private void ShowWindow()

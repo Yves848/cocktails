@@ -86,12 +86,12 @@ public partial class MainWindow : Window
         }
         else if (meta && (e.Key == Key.OemComma || e.KeySymbol == ","))
         {
-            vm?.SelectScreen("Réglages");
+            vm?.SelectScreen("Nav.Settings");
             e.Handled = true;
         }
         else if (e.Key == Key.F1)
         {
-            vm?.SelectScreen("Aide");
+            vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
     }

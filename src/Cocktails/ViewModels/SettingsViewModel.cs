@@ -4,12 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
+using Cocktails.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Cocktails.ViewModels;
 
 /// <summary>Une option de fréquence de vérification (libellé + intervalle en minutes).</summary>
 public sealed record FrequencyOption(string Label, int Minutes);
+
+/// <summary>Une option de langue (libellé affiché + valeur).</summary>
+public sealed record LanguageOption(string Label, AppLanguage Value);
 
 /// <summary>Écran « Réglages » : confirmation, surveillance, notifications, environnement Homebrew.</summary>
 public sealed partial class SettingsViewModel : ScreenViewModel
@@ -20,7 +24,7 @@ public sealed partial class SettingsViewModel : ScreenViewModel
     public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
     {
         Settings = settings ?? new AppSettings();
-        StatusMessage = "Réglages.";
+        StatusMessage = L["Status.Settings"];
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
@@ -28,7 +32,42 @@ public sealed partial class SettingsViewModel : ScreenViewModel
     {
     }
 
-    public override string Title => "Réglages";
+    protected override string TitleKey => "Nav.Settings";
+
+    protected override void OnLanguageChanged()
+    {
+        Frequencies = BuildFrequencies();
+        Languages = BuildLanguages();
+        OnPropertyChanged(nameof(Frequencies));
+        OnPropertyChanged(nameof(SelectedFrequency));
+        OnPropertyChanged(nameof(Languages));
+        OnPropertyChanged(nameof(SelectedLanguage));
+    }
+
+    /// <summary>Langues proposées (Système + langues concrètes en endonymes).</summary>
+    public IReadOnlyList<LanguageOption> Languages { get; private set; } = BuildLanguages();
+
+    private static IReadOnlyList<LanguageOption> BuildLanguages() =>
+    [
+        new(L["Lang.System"], AppLanguage.System),
+        new("English", AppLanguage.English),
+        new("Français", AppLanguage.French),
+        new("Español", AppLanguage.Spanish),
+        new("Deutsch", AppLanguage.German),
+    ];
+
+    public LanguageOption SelectedLanguage
+    {
+        get => Languages.FirstOrDefault(o => o.Value == Settings.Language) ?? Languages[0];
+        set
+        {
+            if (value is not null && value.Value != Settings.Language)
+            {
+                Settings.Language = value.Value;   // le shell applique la langue (Localizer)
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public AppSettings Settings { get; }
 
@@ -49,11 +88,13 @@ public sealed partial class SettingsViewModel : ScreenViewModel
         }
     }
 
-    public IReadOnlyList<FrequencyOption> Frequencies { get; } =
+    public IReadOnlyList<FrequencyOption> Frequencies { get; private set; } = BuildFrequencies();
+
+    private static IReadOnlyList<FrequencyOption> BuildFrequencies() =>
     [
-        new("Toutes les heures", 60),
-        new("Toutes les 6 heures", 360),
-        new("Une fois par jour", 1440),
+        new(L["Freq.Hourly"], 60),
+        new(L["Freq.6h"], 360),
+        new(L["Freq.Daily"], 1440),
     ];
 
     public FrequencyOption SelectedFrequency
@@ -77,7 +118,7 @@ public sealed partial class SettingsViewModel : ScreenViewModel
             _analyticsEnabled = await Homebrew.GetAnalyticsEnabledAsync();
             OnPropertyChanged(nameof(AnalyticsEnabled));
             _analyticsLoaded = true;
-            StatusMessage = "Réglages.";
+            StatusMessage = L["Status.Settings"];
         });
 
     private async Task ApplyAnalyticsAsync(bool enabled)
@@ -85,13 +126,11 @@ public sealed partial class SettingsViewModel : ScreenViewModel
         try
         {
             await Homebrew.SetAnalyticsAsync(enabled);
-            StatusMessage = enabled
-                ? "Statistiques Homebrew activées."
-                : "Statistiques Homebrew désactivées.";
+            StatusMessage = L[enabled ? "Status.AnalyticsOn" : "Status.AnalyticsOff"];
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Erreur : {ex.Message}";
+            StatusMessage = L.Format("Error.Generic", ex.Message);
         }
     }
 }

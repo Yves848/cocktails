@@ -15,7 +15,7 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
 {
     public MaintenanceViewModel(IHomebrewService homebrew) : base(homebrew)
     {
-        StatusMessage = "Nettoyage & diagnostic.";
+        StatusMessage = L["Status.MaintReady"];
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
@@ -23,24 +23,24 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
     {
     }
 
-    public override string Title => "Maintenance";
+    protected override string TitleKey => "Nav.Maintenance";
 
     [RelayCommand]
     private Task Cleanup()
-        => RunWithOutputAsync("Nettoyage (brew cleanup)…", p => Homebrew.CleanupAsync(p));
+        => RunWithOutputAsync(L["Status.CleanupRunning"], p => Homebrew.CleanupAsync(p));
 
     /// <summary>Retire les dépendances orphelines — confirmé car cela supprime des paquets.</summary>
     [RelayCommand]
     private void Autoremove()
         => RequestConfirmation(
-            "Retirer les dépendances orphelines ?",
-            "« brew autoremove » supprimera les formulae installées automatiquement et devenues inutiles.",
-            "Retirer",
-            () => RunWithOutputAsync("Suppression des dépendances orphelines…", p => Homebrew.AutoremoveAsync(p)));
+            L["Confirm.AutoremoveTitle"],
+            L["Confirm.AutoremoveMsg"],
+            L["Confirm.AutoremoveBtn"],
+            () => RunWithOutputAsync(L["Status.AutoremoveRunning"], p => Homebrew.AutoremoveAsync(p)));
 
     [RelayCommand]
     private Task Doctor()
-        => RunWithOutputAsync("Diagnostic (brew doctor)…", p => Homebrew.DoctorAsync(p));
+        => RunWithOutputAsync(L["Status.DoctorRunning"], p => Homebrew.DoctorAsync(p));
 
     /// <summary>Formules installées auxquelles il manque des dépendances (<c>brew missing</c>).</summary>
     public ObservableCollection<MissingDependency> Missing { get; } = [];
@@ -59,7 +59,7 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
     partial void OnMissingCheckedChanged(bool value) => OnPropertyChanged(nameof(MissingIsHealthy));
 
     [RelayCommand]
-    private Task CheckMissing() => RunAsync("Vérification des dépendances manquantes…", async () =>
+    private Task CheckMissing() => RunAsync(L["Status.MissingChecking"], async () =>
     {
         var missing = await Homebrew.GetMissingAsync();
         Missing.Clear();
@@ -70,28 +70,28 @@ public sealed partial class MaintenanceViewModel : ScreenViewModel
 
         MissingChecked = true;
         MissingResult = missing.Count == 0
-            ? "Aucune dépendance manquante — tout est complet."
-            : $"{missing.Count} formule(s) avec des dépendances manquantes.";
+            ? L["Status.MissingNone"]
+            : L.Format("Status.MissingSome", missing.Count);
         StatusMessage = MissingResult;
     });
 
     /// <summary>Exporte l'installé vers <paramref name="path"/> (Brewfile). Appelé après le sélecteur.</summary>
     public Task ExportBrewfileAsync(string path)
-        => RunWithOutputAsync("Export du Brewfile…", async progress =>
+        => RunWithOutputAsync(L["Status.BrewfileExporting"], async progress =>
         {
             await Homebrew.BundleDumpAsync(path, progress);
-            StatusMessage = "Brewfile exporté.";
+            StatusMessage = L["Status.BrewfileExported"];
         });
 
     /// <summary>Installe depuis <paramref name="path"/> (Brewfile) — confirmé (installe des paquets).</summary>
     public void ImportBrewfile(string path)
         => RequestConfirmation(
-            "Importer ce Brewfile ?",
-            "Les entrées manquantes (taps, formulae, casks) seront installées. Cela peut être long.",
-            "Importer",
-            () => RunWithOutputAsync("Import du Brewfile…", async progress =>
+            L["Confirm.ImportTitle"],
+            L["Confirm.ImportMsg"],
+            L["Confirm.ImportBtn"],
+            () => RunWithOutputAsync(L["Status.BrewfileImporting"], async progress =>
             {
                 await Homebrew.BundleInstallAsync(path, progress);
-                StatusMessage = "Brewfile importé.";
+                StatusMessage = L["Status.BrewfileImported"];
             }));
 }

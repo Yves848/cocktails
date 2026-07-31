@@ -97,6 +97,15 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
     le **proxy `favicons.yg-devworks.com`** (contrat : `docs/proxy-favicons.md`), mis en
     cache, avec repli sur l'initiale du type. Seul point du code UI qui sort sur le réseau
     en dehors de `brew` (et il ne parle qu'à `yg-devworks.com`).
+  - **Localisation** (`Localization/`) : `Localizer` (singleton) expose un indexeur
+    `this[cle]` lié depuis le XAML via l'extension `{loc:Tr Cle}` et depuis les VMs
+    (`ScreenViewModel.L`). `Strings` = catalogue central `cle → [EN, FR, ES, DE]` (les
+    termes brew restent tels quels). `SetLanguage` change la culture **à chaud** :
+    `PropertyChanged("Item[]")` rafraîchit toutes les liaisons + `LanguageChanged` laisse
+    les écrans reconstruire leurs listes (`ScreenViewModel.OnLanguageChanged`, `NavItem`,
+    Help, tray). Langue = `AppLanguage` (`System` = suit l'OS), persistée dans
+    `AppSettings.Language` ; appliquée et suivie dans `App.axaml.cs` ; choisie dans Réglages.
+    Titres d'écran via `TitleKey`. Statuts/confirmations/notifs passent tous par des clés.
   - `Converters/StringToGeometryConverter` : parse les icônes (path SVG) à l'affichage,
     pour garder les VMs indépendants de la plateforme (testables).
   - `ViewModels/DesignHomebrewService` : stub design-time (previewer XAML et ctors sans

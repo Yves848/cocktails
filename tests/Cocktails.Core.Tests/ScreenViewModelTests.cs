@@ -770,15 +770,15 @@ public class ScreenViewModelTests
     {
         var vm = new MainViewModel(new FakeHomebrewService());
 
-        vm.SelectScreen("Aide");
+        vm.SelectScreen("Nav.Help");
         Assert.Equal("Aide", vm.SelectedNav?.Title);
         Assert.IsType<HelpViewModel>(vm.CurrentScreen);
 
-        vm.SelectScreen("Réglages");
+        vm.SelectScreen("Nav.Settings");
         Assert.IsType<SettingsViewModel>(vm.CurrentScreen);
 
-        // Titre inconnu : ne change rien.
-        vm.SelectScreen("Inexistant");
+        // Clé inconnue : ne change rien.
+        vm.SelectScreen("Nav.Inexistant");
         Assert.IsType<SettingsViewModel>(vm.CurrentScreen);
     }
 

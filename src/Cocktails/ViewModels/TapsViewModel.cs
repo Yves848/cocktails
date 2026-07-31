@@ -20,7 +20,7 @@ public partial class TapsViewModel : ScreenViewModel
     {
     }
 
-    public override string Title => "Taps";
+    protected override string TitleKey => "Nav.Taps";
 
     public ObservableCollection<BrewTap> Taps { get; } = [];
 
@@ -33,11 +33,11 @@ public partial class TapsViewModel : ScreenViewModel
     [RelayCommand]
     private Task RefreshAsync() => LoadAsync();
 
-    private Task LoadAsync() => RunAsync("Chargement des taps…", async () =>
+    private Task LoadAsync() => RunAsync(L["Status.LoadingTaps"], async () =>
     {
         var taps = await Homebrew.GetTapsAsync();
         Replace(taps);
-        StatusMessage = $"{taps.Count} tap(s).";
+        StatusMessage = L.Format("Status.TapsCount", taps.Count);
     });
 
     [RelayCommand]
@@ -47,16 +47,16 @@ public partial class TapsViewModel : ScreenViewModel
         // Un tap se nomme user/repo.
         if (name.Length == 0 || !name.Contains('/'))
         {
-            StatusMessage = "Nom de tap invalide (attendu : utilisateur/dépôt).";
+            StatusMessage = L["Status.TapInvalid"];
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"Ajout du tap « {name} »…", async progress =>
+        return RunWithOutputAsync(L.Format("Status.TapAdding", name), async progress =>
         {
             await Homebrew.AddTapAsync(name, progress);
             NewTapName = string.Empty;
             Replace(await Homebrew.GetTapsAsync());
-            StatusMessage = $"Tap « {name} » ajouté.";
+            StatusMessage = L.Format("Status.TapAdded", name);
         });
     }
 
@@ -69,14 +69,14 @@ public partial class TapsViewModel : ScreenViewModel
         }
 
         return RequestConfirmationTask(
-            "Retirer ce tap ?",
-            $"« {tap.Name} » sera retiré. Ses formules/casks ne seront plus disponibles à l'installation.",
-            "Retirer",
-            () => RunWithOutputAsync($"Retrait du tap « {tap.Name} »…", async progress =>
+            L["Confirm.RemoveTapTitle"],
+            L.Format("Confirm.RemoveTapMsg", tap.Name),
+            L["Confirm.RemoveTapBtn"],
+            () => RunWithOutputAsync(L.Format("Status.TapRemoving", tap.Name), async progress =>
             {
                 await Homebrew.RemoveTapAsync(tap.Name, progress);
                 Replace(await Homebrew.GetTapsAsync());
-                StatusMessage = $"Tap « {tap.Name} » retiré.";
+                StatusMessage = L.Format("Status.TapRemoved", tap.Name);
             }));
     }
 
@@ -88,11 +88,11 @@ public partial class TapsViewModel : ScreenViewModel
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"Confiance accordée à « {tap.Name} »…", async progress =>
+        return RunWithOutputAsync(L.Format("Status.TapTrusting", tap.Name), async progress =>
         {
             await Homebrew.TrustTapAsync(tap.Name, progress);
             Replace(await Homebrew.GetTapsAsync());   // rafraîchit l'indicateur de confiance
-            StatusMessage = $"« {tap.Name} » approuvé.";
+            StatusMessage = L.Format("Status.TapTrusted", tap.Name);
         });
     }
 

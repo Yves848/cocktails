@@ -60,3 +60,5 @@ _(rien pour l'instant)_
   détecte un changement (`UpdateMonitor.OutdatedChanged` → `ScreenViewModel.Invalidate`).
 - [x] **Barre de menu / arrière-plan** — `TrayIcon` + menu popup ; fermer masque l'app
   (réglable), agent `LSUIElement` (pas d'icône Dock) en bundle.
+- [x] **Multilingue** — FR / EN / ES / DE, détection auto (Système) + sélecteur dans
+  Réglages, changement à chaud (`Localization/` : `Localizer` + `{loc:Tr}` + `Strings`).

@@ -13,7 +13,6 @@ public partial class SearchViewModel : PackageListViewModel
 {
     public SearchViewModel(IHomebrewService homebrew) : base(homebrew)
     {
-        StatusMessage = "Saisissez un terme puis lancez la recherche.";
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
@@ -21,7 +20,7 @@ public partial class SearchViewModel : PackageListViewModel
     {
     }
 
-    public override string Title => "Rechercher";
+    protected override string TitleKey => "Nav.Search";
 
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = string.Empty;
@@ -35,7 +34,7 @@ public partial class SearchViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunAsync($"Recherche de « {query} »…", async () =>
+        return RunAsync(L["Status.Searching"], async () =>
         {
             var results = await Homebrew.SearchAsync(query);
 
@@ -51,9 +50,7 @@ public partial class SearchViewModel : PackageListViewModel
 
             Replace(marked);
             var installedCount = marked.Count(p => p.IsInstalled);
-            StatusMessage = installedCount > 0
-                ? $"{marked.Count} résultat(s) — {installedCount} déjà installé(s)."
-                : $"{marked.Count} résultat(s) pour « {query} ».";
+            StatusMessage = L.Format("Status.SearchResults", marked.Count, installedCount);
         });
     }
 
@@ -65,10 +62,10 @@ public partial class SearchViewModel : PackageListViewModel
             return Task.CompletedTask;
         }
 
-        return RunWithOutputAsync($"Installation de « {package.Name} »…", async progress =>
+        return RunWithOutputAsync(L.Format("Status.Installing", package.Name), async progress =>
         {
             await Homebrew.InstallAsync(package.Name, progress);
-            StatusMessage = $"« {package.Name} » installé.";
+            StatusMessage = L.Format("Status.Installed", package.Name);
         });
     }
 }
