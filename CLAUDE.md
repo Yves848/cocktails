@@ -37,7 +37,10 @@ Solution `Cocktails.slnx`, trois projets, avec une frontière stricte UI ↔ Hom
   - `Models/Package` : record de liste (`Name`, `Kind`, `InstalledVersion`,
     `LatestVersion`, dérivés `IsInstalled` / `IsOutdated` / `KindLabel` / `KindBadge`).
     `Models/PackageDetails` : détail enrichi (`GetInfoAsync` → `brew info --json=v2`)
-    avec description, homepage, dépendances, versions, pinned.
+    avec description, homepage, dépendances, versions, pinned. `GetInfoAsync` complète
+    aussi, pour les formulae, l'arbre transitif (`brew deps --tree`, parsé par
+    `ParseDepsTree` → liste plate de `Models/DependencyNode`, racine incluse), affiché
+    indenté dans `PackageDetailView`.
   - `HomebrewException` : levée quand une commande `brew` renvoie un code non nul.
 - **`src/Cocktails`** — app Avalonia (MVVM). Ne dépend **que** de `IHomebrewService`,
   jamais de `Process` ni du format de sortie de brew.

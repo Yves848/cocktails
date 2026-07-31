@@ -11,7 +11,6 @@ _(rien pour l'instant)_
 
 ## Manques Homebrew (priorisés)
 
-- [ ] **`deps --tree`** — arbre de dépendances dans le détail.
 - [ ] **`missing`** — dépendances manquantes, alerte Maintenance.
 - [ ] **`fetch`** — préchargement (niche).
 - [ ] **`vulns`** — vulnérabilités connues, info sécurité dans le détail (à considérer).
@@ -54,3 +53,4 @@ _(fait — voir « Fait »)_
 - [x] **Raccourcis clavier** — ⌘W / ⌘M / ⌘, / F1 (au niveau fenêtre, pensés AZERTY).
 - [x] **Opérations par lot** — cases à cocher dans Installés/Mises à jour ; désinstallation
   et mise à jour par lot sur la sélection.
+- [x] **`deps --tree`** — arbre de dépendances transitives dans le détail (formulae).

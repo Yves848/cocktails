@@ -52,7 +52,22 @@ public sealed class HomebrewService : IHomebrewService
     public async Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
     {
         var result = await RunAsync(["info", "--json=v2", name], cancellationToken);
-        return ParseInfo(result.StandardOutput, name);
+        var details = ParseInfo(result.StandardOutput, name);
+
+        // Arbre de dépendances transitives (formulae seulement ; brew deps --tree n'a pas
+        // de sens pour un cask). Appel best-effort : un échec laisse l'arbre vide.
+        if (details.Kind == PackageKind.Formula)
+        {
+            var tree = await _runner
+                .RunAsync(_brewPath, ["deps", "--tree", name], null, cancellationToken)
+                .ConfigureAwait(false);
+            if (tree.ExitCode == 0)
+            {
+                details = details with { Tree = ParseDepsTree(tree.StandardOutput) };
+            }
+        }
+
+        return details;
     }
 
     public async Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
@@ -302,6 +317,57 @@ public sealed class HomebrewService : IHomebrewService
         }
 
         return new PackageDetails(fallbackName, PackageKind.Formula, null, null, null, null, [], false, null);
+    }
+
+    /// <summary>
+    /// Parse la sortie ASCII de <c>brew deps --tree &lt;name&gt;</c> en une liste plate de
+    /// nœuds (profondeur + nom). La première ligne (nom seul) est la racine (profondeur 0) ;
+    /// chaque niveau vaut 4 colonnes de dessin d'arbre (« │   » / «     » puis « ├── » / « └── »).
+    /// </summary>
+    public static IReadOnlyList<DependencyNode> ParseDepsTree(string output)
+    {
+        var nodes = new List<DependencyNode>();
+        if (string.IsNullOrEmpty(output))
+        {
+            return nodes;
+        }
+
+        // Ne PAS trimer le début : les glyphes de gauche portent la profondeur.
+        foreach (var raw in output.Split('\n'))
+        {
+            var line = raw.TrimEnd();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            var connector = -1;
+            for (var i = 0; i < line.Length; i++)
+            {
+                if (line[i] is '├' or '└')
+                {
+                    connector = i;
+                    break;
+                }
+            }
+
+            if (connector < 0)
+            {
+                // Ligne racine : le paquet lui-même.
+                nodes.Add(new DependencyNode(0, line.Trim()));
+            }
+            else
+            {
+                var depth = (connector / 4) + 1;
+                var name = line[(connector + 4)..].Trim();
+                if (name.Length > 0)
+                {
+                    nodes.Add(new DependencyNode(depth, name));
+                }
+            }
+        }
+
+        return nodes;
     }
 
     private static PackageDetails ParseFormulaInfo(JsonElement f, string fallbackName)

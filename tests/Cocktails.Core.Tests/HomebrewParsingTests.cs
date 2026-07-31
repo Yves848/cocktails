@@ -233,6 +233,69 @@ public class HomebrewParsingTests
         => Assert.Empty(HomebrewService.ParseTaps(""));
 
     [Fact]
+    public void ParseDepsTree_ReadsDepthsAndNames()
+    {
+        // Sortie réelle de `brew deps --tree git`.
+        const string output = "git\n├── pcre2\n└── gettext\n    ├── json-c\n    └── libunistring\n";
+
+        var nodes = HomebrewService.ParseDepsTree(output);
+
+        Assert.Equal(5, nodes.Count);
+        Assert.Equal(new DependencyNode(0, "git"), nodes[0]);
+        Assert.True(nodes[0].IsRoot);
+        Assert.Equal(new DependencyNode(1, "pcre2"), nodes[1]);
+        Assert.Equal(new DependencyNode(1, "gettext"), nodes[2]);
+        Assert.Equal(new DependencyNode(2, "json-c"), nodes[3]);
+        Assert.Equal(new DependencyNode(2, "libunistring"), nodes[4]);
+    }
+
+    [Fact]
+    public void ParseDepsTree_HandlesVerticalBarsAndDepthThree()
+    {
+        // Sortie réelle de `brew deps --tree wget` (extrait avec barres « │ »).
+        const string output =
+            "wget\n" +
+            "├── libidn2\n" +
+            "│   ├── libunistring\n" +
+            "│   └── gettext\n" +
+            "│       ├── json-c\n" +
+            "│       └── libunistring\n" +
+            "├── libpsl\n" +
+            "└── openssl@3\n" +
+            "    └── ca-certificates\n";
+
+        var nodes = HomebrewService.ParseDepsTree(output);
+
+        Assert.Equal(new DependencyNode(0, "wget"), nodes[0]);
+        Assert.Equal(new DependencyNode(1, "libidn2"), nodes[1]);
+        Assert.Equal(new DependencyNode(2, "libunistring"), nodes[2]);
+        Assert.Equal(new DependencyNode(2, "gettext"), nodes[3]);
+        Assert.Equal(new DependencyNode(3, "json-c"), nodes[4]);
+        Assert.Equal(new DependencyNode(3, "libunistring"), nodes[5]);
+        // openssl@3 (racine niveau 1) et sa dépendance (niveau 2).
+        Assert.Contains(new DependencyNode(1, "openssl@3"), nodes);
+        Assert.Contains(new DependencyNode(2, "ca-certificates"), nodes);
+    }
+
+    [Fact]
+    public void ParseDepsTree_RootOnly_IsNotShownAsTree()
+    {
+        var nodes = HomebrewService.ParseDepsTree("pcre2\n");
+
+        var node = Assert.Single(nodes);
+        Assert.Equal(new DependencyNode(0, "pcre2"), node);
+
+        // Un détail sans dépendance transitive ne déclenche pas la section.
+        var details = new PackageDetails(
+            "pcre2", PackageKind.Formula, null, null, null, null, [], false, null, nodes);
+        Assert.False(details.HasDependencyTree);
+    }
+
+    [Fact]
+    public void ParseDepsTree_Blank_ReturnsEmpty()
+        => Assert.Empty(HomebrewService.ParseDepsTree(""));
+
+    [Fact]
     public void ParseConfig_ReadsKeyValuePairs()
     {
         const string output = """

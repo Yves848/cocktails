@@ -13,8 +13,15 @@ public record PackageDetails(
     string? InstalledVersion,
     IReadOnlyList<string> Dependencies,
     bool IsPinned,
-    string? Tap)
+    string? Tap,
+    IReadOnlyList<DependencyNode>? Tree = null)
 {
+    /// <summary>Arbre de dépendances transitives (<c>brew deps --tree</c>), racine incluse.</summary>
+    public IReadOnlyList<DependencyNode> DependencyTree => Tree ?? [];
+
+    /// <summary>Vrai s'il y a au moins une dépendance transitive à afficher.</summary>
+    public bool HasDependencyTree => DependencyTree.Count > 1;
+
     /// <summary>Vrai si une version est installée localement.</summary>
     public bool IsInstalled => InstalledVersion is not null;
 
