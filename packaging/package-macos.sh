@@ -87,15 +87,19 @@ chmod +x "$APP/Contents/MacOS/$APP_NAME"
 # identité (requise pour notariser).
 SIGN_ID="${SIGN_ID:--}"
 echo "==> Signature ($SIGN_ID)"
-CODESIGN_OPTS=(--force --deep --sign "$SIGN_ID")
-if [ "$SIGN_ID" != "-" ]; then
-    # Developer ID : runtime durci + horodatage sécurisé (exigés par la notarisation).
-    CODESIGN_OPTS+=(--options runtime --timestamp)
-fi
-if codesign "${CODESIGN_OPTS[@]}" "$APP" >/dev/null 2>&1; then
-    echo "    signé"
+if [ "$SIGN_ID" = "-" ]; then
+    # Ad-hoc : suffisant en local (+ notifications natives sous l'identité « Cocktails »).
+    codesign --force --deep --sign - "$APP" >/dev/null 2>&1 \
+        && echo "    signé (ad-hoc)" \
+        || echo "    (signature ad-hoc échouée — notifications natives possiblement inactives)"
 else
-    echo "    (signature échouée — notifications natives possiblement inactives)"
+    # Developer ID : bundle « plat » (dylibs Mach-O + ~200 assemblys managés PE dans
+    # Contents/MacOS). --deep signe les Mach-O imbriqués en runtime durci et scelle les
+    # assemblys ; les entitlements .NET (JIT…) s'appliquent à l'exécutable principal.
+    echo "    signature (--deep, runtime durci, entitlements)…"
+    codesign --force --deep --options runtime --timestamp \
+        --entitlements "$HERE/entitlements.plist" --sign "$SIGN_ID" "$APP"
+    codesign --verify --deep --strict --verbose=1 "$APP" && echo "    signé (Developer ID) ✓"
 fi
 
 # Notarisation (opt-in) : NOTARIZE=1 + identité Developer ID + profil notarytool stocké

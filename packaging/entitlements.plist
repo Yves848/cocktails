@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- .NET exécute du code JIT : sans ces droits, le runtime durci (hardened
+         runtime) exigé par la notarisation ferait crasher l'app au lancement. -->
+    <key>com.apple.security.cs.allow-jit</key>                         <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>  <true/>
+    <!-- Charger les nombreuses dylibs .NET signées séparément. -->
+    <key>com.apple.security.cs.disable-library-validation</key>        <true/>
+    <!-- Variables d'environnement DOTNET_*/DYLD_* utilisées par le runtime. -->
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>  <true/>
+</dict>
+</plist>
