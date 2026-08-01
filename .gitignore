@@ -16,3 +16,6 @@ obj/
 # Packaging output
 /dist/
 packaging/icon_1024.png
+
+# Sous-dépôt séparé (site vitrine), versionné à part
+/website/
