@@ -6,7 +6,7 @@ Cocktails puts a clear, fast interface on top of the `brew` CLI — without ever
 what happens underneath. Every action runs the real `brew` command and streams its
 output live, so the GUI is a convenience, not a black box.
 
-![Cocktails — installed packages](https://cocktails.yg-devworks.com/screenshots/installed.png)
+![Cocktails — a tour of the app](https://cocktails.yg-devworks.com/media/demo.gif)
 
 > Website & screenshots: **https://cocktails.yg-devworks.com**
 > Mirror of the canonical repo hosted on a private GitLab; this GitHub repo is the
