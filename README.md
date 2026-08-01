@@ -65,3 +65,7 @@ Tech: **C# / .NET 10** · **[Avalonia](https://avaloniaui.net)** · MVVM.
 
 Cocktails is in **private beta**. Want to be notified at release? Leave your address on
 the [website](https://cocktails.yg-devworks.com).
+
+## License
+
+[Apache License 2.0](LICENSE) © Yves Godart.
