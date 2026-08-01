@@ -24,7 +24,7 @@ output live, so the GUI is a convenience, not a black box.
 - **Transparent** — every action shows the actual `brew` command and its live output.
 - **Multilingual** — English, French, Spanish, German (live language switch).
 
-Native, signed & **notarized**, macOS 11+ (Apple Silicon).
+Native, signed with a Developer ID (notarization pending), macOS 11+ (Apple Silicon).
 
 ## Install
 
@@ -33,8 +33,16 @@ brew tap yves/cocktails https://gitlab.yg-devworks.com/yves/homebrew-cocktails.g
 brew install --cask cocktails
 ```
 
+Homebrew asks you to trust this third-party tap on first use — confirm when prompted
+(or run `brew trust yves/cocktails` first).
+
 Then launch **Cocktails** from Spotlight or Launchpad — it's a menu-bar agent, so look
 for the shaker icon in the menu bar.
+
+> The current build is signed with a Developer ID; **notarization is pending** (Apple's
+> notary service is backlogged). If macOS blocks the first launch, run
+> `xattr -dr com.apple.quarantine "/Applications/Cocktails.app"` or use
+> System Settings › Privacy & Security › “Open Anyway”. A notarized build will follow.
 
 ## Build from source
 
