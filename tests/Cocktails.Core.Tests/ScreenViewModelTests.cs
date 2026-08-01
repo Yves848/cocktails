@@ -488,6 +488,28 @@ public class ScreenViewModelTests
     }
 
     [Fact]
+    public async Task Search_NameInstalledAsFormulaAndCask_DoesNotThrow()
+    {
+        // Un même nom peut être installé en formula ET en cask (ex. powershell) :
+        // GetInstalled renvoie alors deux entrées homonymes. La recherche ne doit
+        // pas planter sur une clé de dictionnaire dupliquée.
+        var fake = new FakeHomebrewService
+        {
+            Installed = ["powershell"],
+            Casks = ["powershell"],
+        };
+        var vm = new SearchViewModel(fake);
+        vm.SearchQuery = "powershell";
+
+        await vm.SearchCommand.ExecuteAsync(null);
+
+        Assert.Single(vm.Packages);
+        Assert.Equal("powershell", vm.Packages[0].Package.Name);
+        Assert.DoesNotContain("Erreur", vm.StatusMessage);
+        Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
     public async Task Search_Install_CallsService()
     {
         var fake = new FakeHomebrewService();

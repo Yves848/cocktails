@@ -40,8 +40,11 @@ public partial class SearchViewModel : PackageListViewModel
 
             // Marque les résultats déjà installés (brew search ne donne pas cet état) :
             // on croise avec la liste des installés pour reporter leur version.
+            // Un même nom peut être installé en formula ET en cask (ex. powershell) :
+            // regrouper par nom évite une exception de clé dupliquée dans le dictionnaire.
             var installedVersions = (await Homebrew.GetInstalledAsync())
-                .ToDictionary(p => p.Name, p => p.InstalledVersion);
+                .GroupBy(p => p.Name)
+                .ToDictionary(g => g.Key, g => g.First().InstalledVersion);
             var marked = results
                 .Select(r => installedVersions.TryGetValue(r.Name, out var v) && v is not null
                     ? r with { InstalledVersion = v }
