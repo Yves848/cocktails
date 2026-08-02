@@ -8,6 +8,8 @@ output live, so the GUI is a convenience, not a black box.
 
 ![Cocktails — a tour of the app](https://cocktails.yg-devworks.com/media/demo.gif)
 
+> 📺 **[Watch the full walkthrough on YouTube](https://youtu.be/GQt3-w27LQM)**
+>
 > Website & screenshots: **https://cocktails.yg-devworks.com**
 > Mirror of the canonical repo hosted on a private GitLab; this GitHub repo is the
 > public mirror.
