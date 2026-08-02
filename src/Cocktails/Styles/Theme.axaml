@@ -20,11 +20,17 @@
   <Styles.Resources>
     <SolidColorBrush x:Key="TextPrimary" Color="#ECEEF5" />
     <SolidColorBrush x:Key="TextMuted" Color="#9AA0B4" />
-    <SolidColorBrush x:Key="Accent" Color="#5B8CFF" />
-    <SolidColorBrush x:Key="AccentSoft" Color="#295B8CFF" />
-    <SolidColorBrush x:Key="Success" Color="#37D67A" />
-    <SolidColorBrush x:Key="Warning" Color="#F5A623" />
-    <SolidColorBrush x:Key="Danger" Color="#FF5F6D" />
+    <!-- Accent CONFIGURABLE : la couleur est une ressource dynamique ; changer
+         AccentColor / AccentSoftColor à l'exécution recolore toutes les liaisons.
+         Défaut de la refonte = teal. Réglable dans les Réglages (à venir). -->
+    <Color x:Key="AccentColor">#2DD4BF</Color>
+    <Color x:Key="AccentSoftColor">#332DD4BF</Color>
+    <SolidColorBrush x:Key="Accent" Color="{DynamicResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentSoft" Color="{DynamicResource AccentSoftColor}" />
+    <SolidColorBrush x:Key="Success" Color="#43C07A" />
+    <SolidColorBrush x:Key="Warning" Color="#F0B429" />
+    <SolidColorBrush x:Key="Danger" Color="#F0616B" />
+    <SolidColorBrush x:Key="Violet" Color="#A78BFA" />
     <SolidColorBrush x:Key="Hairline" Color="#12FFFFFF" />
     <SolidColorBrush x:Key="FillSubtle" Color="#10FFFFFF" />
     <!-- Bordure 2px qui délimite la carte (filet clair discret sur fond sombre). -->
@@ -224,8 +230,8 @@
     <Setter Property="Background" Value="{StaticResource Accent}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
-  <Style Selector="Button.act.primary:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="#7BA0FF" />
+  <Style Selector="Button.act.primary:pointerover">
+    <Setter Property="Opacity" Value="0.9" />
   </Style>
   <!-- Action destructive (désinstaller) : rouge, discret tant qu'on ne survole pas. -->
   <Style Selector="Button.act.danger">
