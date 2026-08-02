@@ -1,0 +1,425 @@
+<title>Cocktails — refonte UI (tuiles)</title>
+<style>
+  :root{
+    --bg:#0d1016; --sidebar:#090c11; --panel:#141a23; --panel-2:#1a222d; --tile:#151c26;
+    --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12); --line-3:rgba(255,255,255,.18);
+    --ink:#e8eef5; --muted:#8a97a7; --faint:#5c6675;
+    --teal:#2dd4bf; --teal-dim:#1e8579;
+    --blue:#5b8cff; --amber:#f0b429; --red:#f0616b; --green:#43c07a; --violet:#a78bfa;
+    --r:13px; --r-sm:9px; --gap:14px;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+    --term-h:200px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:#05070a;color:var(--ink);font-family:var(--sans);
+    font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+
+  /* fenêtre de l'app */
+  .app{position:relative;height:100vh;display:grid;grid-template-columns:232px 1fr;
+    background:
+      radial-gradient(900px 500px at 78% -12%, rgba(45,212,191,.08), transparent 60%),
+      var(--bg);
+    overflow:hidden}
+
+  /* ---------------- sidebar ---------------- */
+  .sidebar{background:var(--sidebar);border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .brand{height:56px;display:flex;align-items:center;gap:10px;padding:0 18px;
+    background:linear-gradient(180deg,rgba(45,212,191,.14),rgba(45,212,191,.04));
+    border-bottom:1px solid var(--line);font-weight:650;letter-spacing:.01em}
+  .brand .dot{width:22px;height:22px;border-radius:7px;flex:none;
+    background:linear-gradient(150deg,var(--teal),var(--teal-dim));
+    box-shadow:0 0 0 1px rgba(45,212,191,.4), 0 4px 12px rgba(45,212,191,.25);
+    display:grid;place-items:center}
+  .brand .dot svg{width:13px;height:13px;color:#04110f}
+  nav{padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;
+    color:var(--muted);cursor:pointer;position:relative;transition:background .12s,color .12s}
+  .nav-item svg{width:18px;height:18px;flex:none}
+  .nav-item:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+  .nav-item.active{background:rgba(45,212,191,.13);color:var(--ink)}
+  .nav-item.active::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--teal)}
+  .nav-item .lbl{font-weight:500}
+  .badge{margin-left:auto;background:var(--blue);color:#fff;font-size:11px;font-weight:650;
+    min-width:20px;height:20px;padding:0 6px;border-radius:10px;display:grid;place-items:center}
+  .side-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:11.5px;line-height:1.5}
+
+  /* ---------------- main ---------------- */
+  .main{display:grid;grid-template-rows:auto 1fr auto;min-width:0}
+  .topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .search{flex:1;display:flex;align-items:center;gap:9px;background:var(--panel);
+    border:1px solid var(--line-2);border-radius:10px;padding:9px 13px;transition:border-color .15s}
+  .search:focus-within{border-color:var(--teal)}
+  .search svg{width:16px;height:16px;color:var(--faint)}
+  .search input{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;outline:none}
+  .search input::placeholder{color:var(--faint)}
+  .seg{display:flex;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:550;
+    padding:6px 13px;border-radius:7px;cursor:pointer}
+  .seg button.on{background:var(--panel-2);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .icon-btn{width:38px;height:38px;border:1px solid var(--line-2);background:var(--panel);
+    border-radius:10px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+  .icon-btn:hover{color:var(--ink);border-color:var(--line-3)}
+  .icon-btn svg{width:17px;height:17px}
+
+  /* barre de sélection (lots) */
+  .selbar{display:none;align-items:center;gap:12px;padding:10px 20px;background:rgba(45,212,191,.08);
+    border-bottom:1px solid var(--line)}
+  .selbar.show{display:flex}
+  .selbar .n{font-weight:600}
+  .selbar .spacer{flex:1}
+  .selbar .chip{cursor:pointer}
+
+  /* grille de tuiles */
+  .tiles-wrap{overflow-y:auto;padding:18px 20px 24px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:var(--gap)}
+
+  .tile{position:relative;background:linear-gradient(180deg,var(--tile),#12181f);
+    border:1px solid var(--line-2);border-radius:var(--r);padding:15px 15px 13px;
+    transition:border-color .15s,transform .12s,box-shadow .15s;min-width:0}
+  .tile:hover{border-color:var(--line-3);transform:translateY(-1px);
+    box-shadow:0 8px 22px rgba(0,0,0,.35)}
+  .tile.outdated{border-color:rgba(240,180,41,.32)}
+  .tile.outdated::after{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--amber)}
+  .tile.sel{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+
+  .tile-check{position:absolute;top:12px;left:12px;width:18px;height:18px;border-radius:5px;
+    border:1.5px solid var(--line-3);background:rgba(0,0,0,.3);cursor:pointer;opacity:0;
+    transition:opacity .12s;appearance:none;display:grid;place-items:center}
+  .tile:hover .tile-check,.tile.sel .tile-check{opacity:1}
+  .tile-check:checked{background:var(--teal);border-color:var(--teal);opacity:1}
+  .tile-check:checked::after{content:"✓";color:#04110f;font-size:12px;font-weight:800}
+
+  .tile-tools{position:absolute;top:11px;right:11px;display:flex;gap:4px;opacity:.55;transition:opacity .12s}
+  .tile:hover .tile-tools{opacity:1}
+  .tool{width:28px;height:28px;border-radius:8px;border:1px solid transparent;background:transparent;
+    color:var(--muted);cursor:pointer;display:grid;place-items:center}
+  .tool:hover{background:rgba(255,255,255,.06);color:var(--ink);border-color:var(--line-2)}
+  .tool svg{width:16px;height:16px}
+  .tool.on{color:var(--violet)}
+
+  .tile-head{display:flex;gap:12px;align-items:center;padding-right:60px}
+  .tile-icon{width:44px;height:44px;border-radius:11px;flex:none;display:grid;place-items:center;
+    font-weight:750;font-size:18px;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  .tile-name{font-weight:650;font-size:15.5px;line-height:1.15;letter-spacing:-.01em}
+  .tile-kind{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
+  .kind-cask{color:#8ab4ff}
+
+  .tile-ver{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0 14px;
+    font-family:var(--mono);font-size:12.5px}
+  .v-cur{color:var(--muted)}
+  .v-cur b{color:var(--ink);font-weight:600}
+  .v-new{display:inline-flex;align-items:center;gap:5px;color:var(--amber);
+    background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.3);
+    padding:2px 8px;border-radius:20px;font-weight:600;font-size:11.5px}
+  .v-new svg{width:12px;height:12px}
+  .pin-flag{color:var(--violet);font-size:11.5px;display:inline-flex;align-items:center;gap:4px}
+  .pin-flag svg{width:12px;height:12px}
+
+  .tile-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;
+    border:1px solid var(--line-2);background:rgba(255,255,255,.02);color:var(--muted);
+    font:inherit;font-weight:600;font-size:12.5px;cursor:pointer;transition:.13s}
+  .chip svg{width:14px;height:14px}
+  .chip:hover{color:var(--ink);border-color:var(--line-3);background:rgba(255,255,255,.05)}
+  .chip.danger:hover{color:var(--red);border-color:rgba(240,97,107,.5);background:rgba(240,97,107,.1)}
+  .chip.update{color:var(--amber);border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.09)}
+  .chip.update:hover{background:rgba(240,180,41,.16);border-color:rgba(240,180,41,.6)}
+  .chip.primary{color:var(--teal);border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.08)}
+  .chip.primary:hover{background:rgba(45,212,191,.16)}
+
+  /* ---------------- terminal ---------------- */
+  .terminal{border-top:1px solid var(--line);background:#080b10;display:flex;flex-direction:column;
+    height:var(--term-h);transition:height .22s cubic-bezier(.4,0,.2,1)}
+  .terminal.collapsed{height:41px}
+  .term-head{height:41px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;
+    border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+  .term-head .t{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+  .term-head .cmd{color:var(--faint);font-family:var(--mono);font-size:12px}
+  .term-head .sp{flex:1}
+  .term-head .chev{color:var(--muted);transition:transform .22s}
+  .terminal.collapsed .term-head .chev{transform:rotate(180deg)}
+  .term-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .term-body{flex:1;overflow:auto;padding:12px 16px;font-family:var(--mono);font-size:12.5px;
+    line-height:1.65;color:#c4d0dc}
+  .term-body .mut{color:#6b7684}
+  .term-body .ok{color:var(--green)}
+  .term-body .arw{color:var(--teal)}
+  .term-body .warn{color:var(--amber)}
+  .term-input{display:flex;align-items:center;gap:9px;padding:9px 16px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:12.5px;color:var(--faint)}
+  .term-input .p{color:var(--teal)}
+  .term-input input{flex:1;background:transparent;border:0;outline:none;color:var(--ink);font:inherit}
+  .term-input .soon{font-family:var(--sans);font-size:11px;color:var(--faint);
+    border:1px solid var(--line-2);border-radius:20px;padding:2px 9px}
+
+  /* ---------------- panneau coulissant ---------------- */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;
+    transition:.2s;z-index:5}
+  .scrim.show{opacity:1;visibility:visible}
+  .detail{position:absolute;top:0;right:0;height:100%;width:372px;background:#0f151d;
+    border-left:1px solid var(--line-2);z-index:6;transform:translateX(100%);
+    transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;
+    box-shadow:-24px 0 60px rgba(0,0,0,.5)}
+  .detail.open{transform:translateX(0)}
+  .det-head{padding:18px 18px 14px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center}
+  .det-head .tile-icon{width:46px;height:46px}
+  .det-close{margin-left:auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line-2);
+    background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none}
+  .det-close:hover{color:var(--ink);border-color:var(--line-3)}
+  .det-body{flex:1;overflow:auto;padding:18px}
+  .det-sec{margin-bottom:22px}
+  .det-sec h4{margin:0 0 11px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--faint);font-weight:700}
+  .det-desc{color:var(--muted);line-height:1.55;font-size:13.5px}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);
+    font-size:13px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--faint)}
+  .kv .v{font-family:var(--mono);color:var(--ink)}
+  .kv .v a{color:var(--teal);text-decoration:none}
+  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:var(--muted);white-space:pre;
+    background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow:auto}
+  .tree b{color:var(--ink);font-weight:600}
+  .tree .t{color:var(--teal-dim)}
+  .dep-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .dep-chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.04);
+    border:1px solid var(--line-2);border-radius:7px;padding:4px 9px}
+
+  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;
+    background:rgba(20,26,35,.95);border:1px solid var(--line-2);border-radius:10px;
+    padding:8px 14px;font-size:12.5px;color:var(--muted);box-shadow:0 10px 30px rgba(0,0,0,.5);
+    opacity:0;transition:.2s;pointer-events:none}
+  .hint.show{opacity:1}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:6px;border:3px solid transparent;background-clip:padding-box}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16);background-clip:padding-box}
+</style>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l-7 8v7l-3 2v-9z"/></svg></span>
+      Cocktails
+    </div>
+    <nav id="nav">
+      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8l-9-5V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg><span class="lbl">Installed</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="lbl">Search</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg><span class="lbl">Updates</span><span class="badge">9</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5 2.5-2.5Z"/></svg><span class="lbl">Maintenance</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg><span class="lbl">Services</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="9" r="2.4"/><path d="M6 8.4v7.2M8 6h6a2 2 0 0 1 2 2v.8"/></svg><span class="lbl">Taps</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2.3"/><circle cx="8" cy="16" r="2.3"/></svg><span class="lbl">Settings</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.5 1.5c0 1.7-2.5 2-2.5 3.5"/><path d="M12 17.5h.01"/></svg><span class="lbl">Help</span></div>
+    </nav>
+    <div class="side-foot">220 paquets · 9 à jour<br>macOS · Homebrew</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="filter" placeholder="Filtrer les paquets…" autocomplete="off">
+      </label>
+      <div class="seg" id="seg">
+        <button class="on" data-k="all">Tous</button>
+        <button data-k="formula">Formulae</button>
+        <button data-k="cask">Casks</button>
+      </div>
+      <button class="icon-btn" title="Trier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M6 12h12M9 18h6"/></svg></button>
+    </div>
+
+    <div class="selbar" id="selbar">
+      <span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--teal)"></span>
+      <span class="n"><span id="selcount">0</span> sélectionné(s)</span>
+      <span class="spacer"></span>
+      <button class="chip update">Update</button>
+      <button class="chip danger">Uninstall</button>
+      <button class="chip" id="selclear">Annuler</button>
+    </div>
+
+    <div class="tiles-wrap">
+      <div class="tiles" id="tiles"></div>
+    </div>
+
+    <div class="terminal" id="terminal">
+      <div class="term-head" id="termHead">
+        <span class="term-dot"></span>
+        <span class="t">TERMINAL</span>
+        <span class="cmd">— brew upgrade git</span>
+        <span class="sp"></span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 15 6-6 6 6"/></svg>
+      </div>
+      <div class="term-body" id="termBody">
+<span class="arw">➜</span> <b>brew upgrade git</b>
+<span class="mut">==> Downloading https://ghcr.io/v2/homebrew/core/git/manifests/2.47.0</span>
+<span class="mut">==> Fetching git</span>
+<span class="mut">==> Pouring git--2.47.0.arm64_sequoia.bottle.tar.gz</span>
+<span class="ok">🍺  /opt/homebrew/Cellar/git/2.47.0: 1,679 files, 54.3MB</span>
+<span class="mut">==> Running `brew cleanup git`...</span>
+<span class="ok">✓ git mis à jour : 2.45.1 → 2.47.0</span>
+      </div>
+      <div class="term-input">
+        <span class="p">➜ brew</span>
+        <input placeholder="install / upgrade / search …  (terminal éditable — phase 2)" disabled>
+        <span class="soon">bientôt éditable</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="detail" id="detail"></aside>
+  <div class="hint" id="hint"></div>
+</div>
+
+<script>
+(function(){
+  var TINTS={g:["#f0616b","#7a1d24"],b:["#5b8cff","#1f3a80"],t:["#2dd4bf","#12564d"],
+    a:["#f0b429","#7a5a12"],v:["#a78bfa","#3f2f7a"],p:["#43c07a","#1a5230"],r:["#ff8a5b","#7a3a1e"]};
+  function tint(c){var t=TINTS[c]||TINTS.b;return "linear-gradient(150deg,"+t[0]+","+t[1]+")";}
+
+  var PKGS=[
+    {name:"git",kind:"formula",cur:"2.45.1",latest:"2.47.0",c:"r",init:"G",
+     desc:"Distributed revision control system.",home:"git-scm.com",
+     deps:["gettext","pcre2"],tree:"git\n├─ gettext\n│  └─ libunistring\n├─ pcre2\n└─ curl"},
+    {name:"wget",kind:"formula",cur:"1.21.4",c:"t",init:"W",desc:"Internet file retriever.",
+     home:"gnu.org/software/wget",deps:["openssl@3","libidn2"],tree:"wget\n├─ openssl@3\n│  └─ ca-certificates\n└─ libidn2\n   └─ libunistring"},
+    {name:"node",kind:"formula",cur:"22.4.1",latest:"22.6.0",c:"p",init:"N",
+     desc:"Platform built on V8 to build network applications.",home:"nodejs.org",
+     deps:["icu4c","brotli","c-ares"],tree:"node\n├─ brotli\n├─ c-ares\n├─ icu4c\n└─ openssl@3"},
+    {name:"cairo",kind:"formula",cur:"1.18.4",c:"b",init:"C",desc:"Vector graphics library with cross-device output support.",
+     home:"cairographics.org",deps:["fontconfig","freetype","glib","libpng","pixman"],
+     tree:"cairo\n├─ fontconfig\n│  └─ freetype\n│     └─ libpng\n├─ glib\n│  └─ pcre2\n├─ pixman\n└─ lzo"},
+    {name:"ripgrep",kind:"formula",cur:"14.1.0",c:"a",init:"R",desc:"Search tool like grep and The Silver Searcher.",
+     home:"github.com/BurntSushi/ripgrep",deps:["pcre2"],tree:"ripgrep\n└─ pcre2"},
+    {name:"fd",kind:"formula",cur:"9.0.0",c:"v",init:"F",desc:"Simple, fast and user-friendly alternative to find.",
+     home:"github.com/sharkdp/fd",deps:[],tree:"fd\n(no dependencies)"},
+    {name:"jq",kind:"formula",cur:"1.7.1",c:"g",init:"J",desc:"Lightweight and flexible command-line JSON processor.",
+     home:"jqlang.github.io/jq",deps:["oniguruma"],tree:"jq\n└─ oniguruma"},
+    {name:"gh",kind:"formula",cur:"2.54.0",latest:"2.55.0",c:"b",init:"gh",
+     desc:"GitHub command-line tool.",home:"cli.github.com",deps:[],tree:"gh\n(no dependencies)"},
+    {name:"1password-cli",kind:"cask",cur:"2.35.0",latest:"2.38.1",c:"b",init:"1P",
+     desc:"Command-line interface for 1Password.",home:"1password.com/downloads/command-line",
+     deps:[],tree:"1password-cli\n(cask — no formula deps)"},
+    {name:"neovim",kind:"formula",cur:"0.10.0",c:"p",init:"nv",pinned:true,
+     desc:"Ambitious Vim-fork focused on extensibility and agility.",home:"neovim.io",
+     deps:["luajit","tree-sitter","unibilium"],tree:"neovim\n├─ luajit\n├─ tree-sitter\n└─ unibilium"},
+    {name:"ffmpeg",kind:"formula",cur:"7.0.1",latest:"7.0.2",c:"r",init:"ff",
+     desc:"Play, record, convert, and stream audio and video.",home:"ffmpeg.org",
+     deps:["dav1d","x264","x265","lame","opus"],tree:"ffmpeg\n├─ dav1d\n├─ lame\n├─ opus\n├─ x264\n└─ x265"},
+    {name:"aerospace",kind:"cask",cur:"0.21.3-Beta",c:"t",init:"Ae",
+     desc:"AeroSpace is an i3-like tiling window manager.",home:"github.com/nikitabobko/AeroSpace",
+     deps:[],tree:"aerospace\n(cask — no formula deps)"}
+  ];
+
+  var svg={
+    trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>',
+    reinstall:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+    update:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>',
+    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6Z"/><path d="M12 15v5"/></svg>',
+    tree:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="17" width="6" height="4" rx="1"/><rect x="15" y="17" width="6" height="4" rx="1"/><path d="M12 7v4M6 17v-3h12v3"/></svg>',
+    open:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>'
+  };
+  function up(v){return '<span class="v-new">'+svg.update.replace('width','w').replace('<svg','<svg width="12" height="12"')+v+'</span>';}
+
+  var selected=new Set();
+  function render(){
+    var f=document.getElementById('filter').value.toLowerCase();
+    var k=document.querySelector('#seg .on').dataset.k;
+    var host=document.getElementById('tiles');host.innerHTML='';
+    PKGS.filter(function(p){
+      return (k==='all'||p.kind===k) && (p.name.toLowerCase().indexOf(f)>=0 || p.desc.toLowerCase().indexOf(f)>=0);
+    }).forEach(function(p){
+      var out=!!p.latest;
+      var el=document.createElement('div');
+      el.className='tile'+(out?' outdated':'')+(selected.has(p.name)?' sel':'');
+      el.innerHTML=
+        '<input type="checkbox" class="tile-check" '+(selected.has(p.name)?'checked':'')+'>'+
+        '<div class="tile-tools">'+
+          '<button class="tool depBtn" title="Dépendances & infos">'+svg.tree+'</button>'+
+          '<button class="tool" title="Ouvrir la page">'+svg.open+'</button>'+
+        '</div>'+
+        '<div class="tile-head">'+
+          '<div class="tile-icon" style="background:'+tint(p.c)+'">'+p.init+'</div>'+
+          '<div><div class="tile-name">'+p.name+'</div>'+
+          '<div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div>'+
+        '</div>'+
+        '<div class="tile-ver">'+
+          '<span class="v-cur">installé <b>'+p.cur+'</b></span>'+
+          (out?'<span class="v-new">'+svg.update.replace('<svg','<svg width="12" height="12"')+p.latest+'</span>':'')+
+          (p.pinned?'<span class="pin-flag">'+svg.pin.replace('<svg','<svg width="12" height="12"')+'épinglé</span>':'')+
+        '</div>'+
+        '<div class="tile-actions">'+
+          (out?'<button class="chip update">'+svg.update.replace('<svg','<svg width="14" height="14"')+'Update</button>':'')+
+          '<button class="chip">'+svg.reinstall.replace('<svg','<svg width="14" height="14"')+'Reinstall</button>'+
+          '<button class="chip">'+svg.pin.replace('<svg','<svg width="14" height="14"')+(p.pinned?'Unpin':'Pin')+'</button>'+
+          '<button class="chip danger">'+svg.trash.replace('<svg','<svg width="14" height="14"')+'Uninstall</button>'+
+        '</div>';
+      el.querySelector('.tile-check').addEventListener('change',function(e){
+        if(e.target.checked)selected.add(p.name);else selected.delete(p.name);
+        el.classList.toggle('sel',e.target.checked);updateSel();
+      });
+      el.querySelector('.depBtn').addEventListener('click',function(e){e.stopPropagation();openDetail(p);});
+      host.appendChild(el);
+    });
+  }
+  function updateSel(){
+    document.getElementById('selcount').textContent=selected.size;
+    document.getElementById('selbar').classList.toggle('show',selected.size>0);
+  }
+  document.getElementById('selclear').addEventListener('click',function(){
+    selected.clear();document.getElementById('selbar').classList.remove('show');render();
+  });
+
+  function openDetail(p){
+    var out=!!p.latest;
+    var d=document.getElementById('detail');
+    d.innerHTML=
+      '<div class="det-head"><div class="tile-icon" style="background:'+tint(p.c)+'">'+p.init+'</div>'+
+        '<div><div class="tile-name">'+p.name+'</div><div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div>'+
+        '<button class="det-close" id="detClose">✕</button></div>'+
+      '<div class="det-body">'+
+        '<div class="det-sec"><div class="det-desc">'+p.desc+'</div></div>'+
+        '<div class="det-sec"><h4>Informations</h4>'+
+          '<div class="kv"><span class="k">Version installée</span><span class="v">'+p.cur+'</span></div>'+
+          '<div class="kv"><span class="k">Dernière version</span><span class="v" style="color:'+(out?'var(--amber)':'var(--ink)')+'">'+(p.latest||p.cur)+'</span></div>'+
+          '<div class="kv"><span class="k">Homepage</span><span class="v"><a href="#" onclick="return false">'+p.home+' ↗</a></span></div>'+
+          '<div class="kv"><span class="k">Épinglé</span><span class="v">'+(p.pinned?'oui':'non')+'</span></div>'+
+        '</div>'+
+        '<div class="det-sec"><h4>Dépendances directes</h4>'+
+          (p.deps.length?'<div class="dep-chips">'+p.deps.map(function(x){return '<span class="dep-chip">'+x+'</span>';}).join('')+'</div>':'<div class="det-desc">Aucune.</div>')+
+        '</div>'+
+        '<div class="det-sec"><h4>Arbre transitif</h4>'+
+          '<div class="tree">'+p.tree.replace(/^(\S+)/, '<b>$1</b>')+'</div>'+
+        '</div>'+
+      '</div>';
+    d.classList.add('open');document.getElementById('scrim').classList.add('show');
+    document.getElementById('detClose').addEventListener('click',closeDetail);
+  }
+  function closeDetail(){document.getElementById('detail').classList.remove('open');
+    document.getElementById('scrim').classList.remove('show');}
+  document.getElementById('scrim').addEventListener('click',closeDetail);
+
+  document.getElementById('termHead').addEventListener('click',function(){
+    document.getElementById('terminal').classList.toggle('collapsed');
+  });
+  document.getElementById('filter').addEventListener('input',render);
+  document.querySelectorAll('#seg button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#seg button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');render();
+    });
+  });
+  var hint=document.getElementById('hint'),ht;
+  document.getElementById('nav').addEventListener('click',function(e){
+    var it=e.target.closest('.nav-item');if(!it||it.classList.contains('active'))return;
+    hint.textContent='Maquette — écran « '+it.querySelector('.lbl').textContent+' » à venir';
+    hint.classList.add('show');clearTimeout(ht);ht=setTimeout(function(){hint.classList.remove('show');},1900);
+  });
+  render();
+})();
+</script>
