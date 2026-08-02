@@ -58,11 +58,11 @@
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
             <!-- Master : grille de tuiles -->
-            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
-                <ListBox x:Name="List" Classes="tilebox" Margin="2,0,2,8"
-                         SelectionMode="Single"
-                         SelectedItem="{Binding SelectedItem}"
-                         ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+            <ListBox x:Name="List" Grid.Column="0" Classes="tilebox" Margin="2,0,2,8"
+                     SelectionMode="Single"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
@@ -111,8 +111,7 @@
                             </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+            </ListBox>
 
             <!-- Detail : volet du package sélectionné -->
             <Border Grid.Column="1" BorderBrush="{StaticResource Hairline}" BorderThickness="1,0,0,0">
