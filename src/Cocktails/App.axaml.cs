@@ -72,6 +72,7 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel(homebrew, _settings, _monitor),
             };
+            _window.Opened += (_, _) => EnsureVisibleOnScreen(_window!);
 
             RestoreWindowGeometry(_window, _settings);
             _window.Closing += OnWindowClosing;
@@ -241,6 +242,49 @@ public partial class App : Application
 
         _trayIcon?.Dispose();
         _desktop?.Shutdown();
+    }
+
+    /// <summary>
+    /// Garantit que la fenêtre restaurée est visible : si sa position tombe hors de tout
+    /// écran actuel (ex. géométrie mémorisée sur un moniteur externe désormais absent),
+    /// on la recentre sur l'écran principal. Appelée après <c>Opened</c> (les écrans ne
+    /// sont connus qu'une fois la fenêtre créée côté plateforme).
+    /// </summary>
+    private static void EnsureVisibleOnScreen(Window window)
+    {
+        var screens = window.Screens;
+        if (screens is null || screens.All.Count == 0)
+        {
+            return;
+        }
+
+        var pos = window.Position;
+
+        // Visible si le coin haut-gauche est dans un écran (marge de sécurité incluse
+        // via WorkingArea, qui exclut menu-bar/dock).
+        var onScreen = false;
+        foreach (var s in screens.All)
+        {
+            if (s.Bounds.Contains(pos))
+            {
+                onScreen = true;
+                break;
+            }
+        }
+
+        if (onScreen)
+        {
+            return;
+        }
+
+        var target = screens.Primary ?? screens.All[0];
+        var wa = target.WorkingArea;
+        var scale = target.Scaling;
+        var pw = (int)(window.Bounds.Width * scale);
+        var ph = (int)(window.Bounds.Height * scale);
+        var nx = wa.X + Math.Max(0, (wa.Width - pw) / 2);
+        var ny = wa.Y + Math.Max(0, (wa.Height - ph) / 2);
+        window.Position = new PixelPoint(nx, ny);
     }
 
     private static void RestoreWindowGeometry(Window window, AppSettings settings)
