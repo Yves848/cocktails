@@ -56,6 +56,42 @@
     <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
   </Style>
 
+  <!-- Tuile (carte paquet) : ListBox.tilebox en WrapPanel, sélection = liseré accent. -->
+  <Style Selector="ListBox.tilebox">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="8" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="6" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Border.tile">
+    <Setter Property="Background" Value="#151C26" />
+    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="Width" Value="262" />
+    <Setter Property="Padding" Value="15,14" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:pointerover Border.tile">
+    <Setter Property="BorderBrush" Value="#33FFFFFF" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:selected Border.tile">
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+  <!-- Pastille « version disponible » (paquet obsolète) -->
+  <Style Selector="Border.verpill">
+    <Setter Property="Background" Value="#1FF0B429" />
+    <Setter Property="BorderBrush" Value="#4DF0B429" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
   <!-- Filet de séparation 1px -->
   <Style Selector="Border.hairline">
     <Setter Property="Height" Value="1" />

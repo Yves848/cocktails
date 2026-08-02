@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:views="using:Cocktails.Views"
+             xmlns:controls="using:Cocktails.Controls"
              xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -56,35 +57,62 @@
 
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
-            <!-- Master : liste -->
-            <ListBox x:Name="List" Grid.Column="0" Classes="rows" Margin="10,0,10,10"
-                     SelectionMode="Single"
-                     SelectedItem="{Binding SelectedItem}"
-                     ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SelectablePackage">
-                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
-                            <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
-                                      IsChecked="{Binding IsChecked}"
-                                      ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
-                            <Border Classes="badge" Grid.Column="1">
-                                <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextMuted}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <!-- Master : grille de tuiles -->
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+                <ListBox x:Name="List" Classes="tilebox" Margin="2,0,2,8"
+                         SelectionMode="Single"
+                         SelectedItem="{Binding SelectedItem}"
+                         ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SelectablePackage">
+                            <Border Classes="tile">
+                                <Grid RowDefinitions="Auto,Auto,Auto">
+                                    <!-- En-tête : icône + nom/type + case à cocher -->
+                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                        <controls:AppIcon Grid.Column="0" Width="42" Height="42"
+                                                          FallbackText="{Binding KindBadge}" />
+                                        <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+                                            <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                       Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                        </StackPanel>
+                                        <CheckBox Grid.Column="2" VerticalAlignment="Top" Margin="0,-2,-4,0"
+                                                  IsChecked="{Binding IsChecked}"
+                                                  ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
+                                    </Grid>
+
+                                    <!-- Versions : installée + pastille « disponible » si obsolète -->
+                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,13,0,0"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Classes="muted" VerticalAlignment="Center"
+                                                   Text="{Binding InstalledVersion}" />
+                                        <Border Classes="verpill" IsVisible="{Binding IsOutdated}">
+                                            <TextBlock FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource Warning}"
+                                                       Text="{Binding LatestVersion}" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Actions -->
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="7" Margin="0,14,0,0">
+                                        <Button Classes="act small" Content="{loc:Tr Btn.Reinstall}"
+                                                Command="{Binding #List.((vm:InstalledViewModel)DataContext).ReinstallCommand}"
+                                                CommandParameter="{Binding Package}" />
+                                        <Button Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
+                                                Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
+                                                CommandParameter="{Binding Package}" />
+                                    </StackPanel>
+                                </Grid>
                             </Border>
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Classes="body" Text="{Binding Name}" />
-                                <TextBlock Classes="muted" Text="{Binding KindLabel}" />
-                            </StackPanel>
-                            <TextBlock Grid.Column="3" Classes="muted" VerticalAlignment="Center"
-                                       Margin="0,0,12,0" Text="{Binding InstalledVersion}" />
-                            <Button Grid.Column="4" Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
-                                    Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
-                                    CommandParameter="{Binding Package}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
 
             <!-- Detail : volet du package sélectionné -->
             <Border Grid.Column="1" BorderBrush="{StaticResource Hairline}" BorderThickness="1,0,0,0">
