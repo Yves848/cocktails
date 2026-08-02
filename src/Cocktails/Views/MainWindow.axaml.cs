@@ -94,7 +94,30 @@ public partial class MainWindow : Window
             vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
+        else if (meta && TryGetDigitIndex(e.Key) is { } index)
+        {
+            // ⌘1…⌘8 → onglets. La rangée du haut (Key.D1…) et le pavé numérique
+            // (Key.NumPad1…) sont acceptés : sur AZERTY Apple la rangée du haut exige
+            // ⇧ pour un vrai chiffre, mais la touche physique reste Key.Dn — donc
+            // ⌘+touche fonctionne sans ⇧, et le pavé numérique offre de vrais chiffres.
+            vm?.SelectByIndex(index);
+            e.Handled = true;
+        }
     }
+
+    /// <summary>Indice 0-based de l'onglet pour une touche chiffre 1…8, sinon null.</summary>
+    private static int? TryGetDigitIndex(Key key) => key switch
+    {
+        Key.D1 or Key.NumPad1 => 0,
+        Key.D2 or Key.NumPad2 => 1,
+        Key.D3 or Key.NumPad3 => 2,
+        Key.D4 or Key.NumPad4 => 3,
+        Key.D5 or Key.NumPad5 => 4,
+        Key.D6 or Key.NumPad6 => 5,
+        Key.D7 or Key.NumPad7 => 6,
+        Key.D8 or Key.NumPad8 => 7,
+        _ => null,
+    };
 
     private void WireResize(Control handle, WindowEdge edge)
     {

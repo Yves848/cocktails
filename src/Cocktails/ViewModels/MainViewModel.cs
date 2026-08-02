@@ -38,17 +38,18 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null)
     {
         settings ??= new AppSettings();
-        _updatesNav = new NavItem("Nav.Updates", IconUpdates, new OutdatedViewModel(homebrew));
+        // Une couleur d'accent distincte par onglet (icônes uniques et colorées).
+        _updatesNav = new NavItem("Nav.Updates", IconUpdates, new OutdatedViewModel(homebrew), "#F0B429");
         NavItems =
         [
-            new NavItem("Nav.Installed", IconInstalled, new InstalledViewModel(homebrew, settings)),
-            new NavItem("Nav.Search", IconSearch, new SearchViewModel(homebrew)),
+            new NavItem("Nav.Installed", IconInstalled, new InstalledViewModel(homebrew, settings), "#2DD4BF"),
+            new NavItem("Nav.Search", IconSearch, new SearchViewModel(homebrew), "#38BDF8"),
             _updatesNav,
-            new NavItem("Nav.Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew)),
-            new NavItem("Nav.Services", IconServices, new ServicesViewModel(homebrew)),
-            new NavItem("Nav.Taps", IconTaps, new TapsViewModel(homebrew)),
-            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings)),
-            new NavItem("Nav.Help", IconHelp, new HelpViewModel()),
+            new NavItem("Nav.Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew), "#A78BFA"),
+            new NavItem("Nav.Services", IconServices, new ServicesViewModel(homebrew), "#43C07A"),
+            new NavItem("Nav.Taps", IconTaps, new TapsViewModel(homebrew), "#F472B6"),
+            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings), "#94A3B8"),
+            new NavItem("Nav.Help", IconHelp, new HelpViewModel(), "#FB923C"),
         ];
 
         // Le badge « Mises à jour » suit le compteur du moniteur.
@@ -119,6 +120,15 @@ public partial class MainViewModel : ViewModelBase
         if (item is not null)
         {
             SelectedNav = item;
+        }
+    }
+
+    /// <summary>Sélectionne le n-ième onglet (0-based) — raccourcis ⌘1…⌘8.</summary>
+    public void SelectByIndex(int index)
+    {
+        if (index >= 0 && index < NavItems.Count)
+        {
+            SelectedNav = NavItems[index];
         }
     }
 }

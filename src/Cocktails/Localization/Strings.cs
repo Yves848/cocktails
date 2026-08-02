@@ -167,6 +167,7 @@ public static class Strings
         ["Help.GroupNav"] = ["Navigation", "Navigation", "Navegación", "Navigation"],
         ["Help.GroupWindow"] = ["Window", "Fenêtre", "Ventana", "Fenster"],
         ["Help.GroupSearch"] = ["Search & filters", "Recherche & filtres", "Búsqueda y filtros", "Suche & Filter"],
+        ["Help.JumpTabs"] = ["Jump to a tab (Installed, Search, Updates…)", "Aller à un onglet (Installés, Rechercher, Mises à jour…)", "Ir a una pestaña (Instalados, Buscar, Actualizaciones…)", "Zu einem Tab springen (Installiert, Suche, Updates…)"],
         ["Help.OpenSettings"] = ["Open Settings", "Ouvrir les Réglages", "Abrir Ajustes", "Einstellungen öffnen"],
         ["Help.OpenHelp"] = ["Open this help", "Ouvrir cette aide", "Abrir esta ayuda", "Diese Hilfe öffnen"],
         ["Help.BrowseList"] = ["Browse the selected list", "Parcourir la liste sélectionnée", "Recorrer la lista seleccionada", "Durch die ausgewählte Liste blättern"],

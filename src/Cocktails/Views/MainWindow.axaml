@@ -56,7 +56,8 @@
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Path Grid.Column="0"
                                           Data="{Binding Icon, Converter={x:Static conv:StringToGeometryConverter.Instance}}"
-                                          Stroke="{StaticResource TextMuted}" StrokeThickness="1.8"
+                                          Stroke="{Binding Color, Converter={x:Static conv:StringToBrushConverter.Instance}}"
+                                          StrokeThickness="1.8"
                                           StrokeLineCap="Round" StrokeJoin="Round"
                                           Width="18" Height="18" Stretch="Uniform"
                                           VerticalAlignment="Center" />
