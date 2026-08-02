@@ -56,31 +56,32 @@
     <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
   </Style>
 
-  <!-- Tuile (carte paquet) : ListBox.tilebox en WrapPanel, sélection = liseré accent. -->
-  <Style Selector="ListBox.tilebox">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="8" />
-  </Style>
-  <Style Selector="ListBox.tilebox ListBoxItem">
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Margin" Value="6" />
-    <Setter Property="CornerRadius" Value="14" />
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
+  <!-- Tuile (carte paquet) : ItemsControl en WrapPanel, sélection = liseré accent. -->
   <Style Selector="Border.tile">
     <Setter Property="Background" Value="#151C26" />
     <Setter Property="BorderBrush" Value="#1FFFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="13" />
     <Setter Property="Width" Value="262" />
+    <Setter Property="Margin" Value="6" />
     <Setter Property="Padding" Value="15,14" />
   </Style>
-  <Style Selector="ListBox.tilebox ListBoxItem:pointerover Border.tile">
+  <Style Selector="Border.tile:pointerover">
     <Setter Property="BorderBrush" Value="#33FFFFFF" />
   </Style>
-  <Style Selector="ListBox.tilebox ListBoxItem:selected Border.tile">
+  <Style Selector="Border.tile.selected">
     <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+  <!-- Zone cliquable « sélectionner » d'une tuile (bouton plat, sans chrome). -->
+  <Style Selector="Button.tileselect">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.tileselect:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
   </Style>
   <!-- Pastille « version disponible » (paquet obsolète) -->
   <Style Selector="Border.verpill">

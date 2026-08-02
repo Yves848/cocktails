@@ -57,7 +57,27 @@ public abstract partial class PackageListViewModel : ScreenViewModel
     [ObservableProperty]
     public partial SelectablePackage? SelectedItem { get; set; }
 
-    partial void OnSelectedItemChanged(SelectablePackage? value) => SelectedPackage = value?.Package;
+    private SelectablePackage? _previousSelected;
+
+    partial void OnSelectedItemChanged(SelectablePackage? value)
+    {
+        if (_previousSelected is not null)
+        {
+            _previousSelected.IsSelected = false;
+        }
+
+        if (value is not null)
+        {
+            value.IsSelected = true;
+        }
+
+        _previousSelected = value;
+        SelectedPackage = value?.Package;
+    }
+
+    /// <summary>Sélectionne une tuile (pilote le volet de détail depuis la grille).</summary>
+    [RelayCommand]
+    private void SelectPackage(SelectablePackage? package) => SelectedItem = package;
 
     /// <summary>Packages actuellement cochés (dans l'ordre du jeu complet).</summary>
     protected IReadOnlyList<Package> CheckedPackages()

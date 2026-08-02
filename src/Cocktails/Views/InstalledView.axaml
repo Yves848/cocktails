@@ -57,61 +57,64 @@
 
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
-            <!-- Master : grille de tuiles -->
-            <ListBox x:Name="List" Grid.Column="0" Classes="tilebox" Margin="2,0,2,8"
-                     SelectionMode="Single"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     SelectedItem="{Binding SelectedItem}"
-                     ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
-                    <ListBox.ItemsPanel>
+            <!-- Master : grille de tuiles (ItemsControl + WrapPanel dans un ScrollViewer :
+                 le WrapPanel s'enroule sur la largeur bornée, hauteur défilable — pas de
+                 cycle de layout comme avec un ListBox à panneau non virtualisé). -->
+            <ScrollViewer x:Name="List" Grid.Column="0" Margin="2,0,2,8"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto" IsEnabled="{Binding !IsBusy}">
+                <ItemsControl ItemsSource="{Binding Packages}" Padding="6">
+                    <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
                         </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:SelectablePackage">
-                            <Border Classes="tile">
-                                <Grid RowDefinitions="Auto,Auto,Auto">
-                                    <!-- En-tête : icône + nom/type + case à cocher -->
-                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
-                                        <controls:AppIcon Grid.Column="0" Width="42" Height="42"
-                                                          FallbackText="{Binding KindBadge}" />
-                                        <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
-                                            <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
-                                                       Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
-                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
-                                        </StackPanel>
-                                        <CheckBox Grid.Column="2" VerticalAlignment="Top" Margin="0,-2,-4,0"
-                                                  IsChecked="{Binding IsChecked}"
-                                                  ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
-                                    </Grid>
-
-                                    <!-- Versions : installée + pastille « disponible » si obsolète -->
-                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,13,0,0"
-                                                VerticalAlignment="Center">
-                                        <TextBlock Classes="muted" VerticalAlignment="Center"
-                                                   Text="{Binding InstalledVersion}" />
-                                        <Border Classes="verpill" IsVisible="{Binding IsOutdated}">
-                                            <TextBlock FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource Warning}"
-                                                       Text="{Binding LatestVersion}" />
-                                        </Border>
-                                    </StackPanel>
+                            <Border Classes="tile" Classes.selected="{Binding IsSelected}">
+                                <StackPanel Spacing="0">
+                                    <!-- En-tête cliquable (sélectionne la tuile → volet détail) -->
+                                    <Button Classes="tileselect"
+                                            Command="{Binding #List.((vm:InstalledViewModel)DataContext).SelectPackageCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <controls:AppIcon Grid.Column="0" Width="42" Height="42"
+                                                              FallbackText="{Binding KindBadge}" />
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                           Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                                    <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                                    <TextBlock Classes="muted" FontSize="11" Text="·" />
+                                                    <TextBlock Classes="muted" FontSize="11" Text="{Binding InstalledVersion}" />
+                                                    <Border Classes="verpill" IsVisible="{Binding IsOutdated}">
+                                                        <TextBlock FontSize="10.5" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource Warning}"
+                                                                   Text="{Binding LatestVersion}" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
 
                                     <!-- Actions -->
-                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="7" Margin="0,14,0,0">
-                                        <Button Classes="act small" Content="{loc:Tr Btn.Reinstall}"
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,14,0,0">
+                                        <CheckBox Grid.Column="0" VerticalAlignment="Center" MinWidth="0"
+                                                  IsChecked="{Binding IsChecked}"
+                                                  ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
+                                        <Button Grid.Column="2" Classes="act small" Content="{loc:Tr Btn.Reinstall}" Margin="0,0,7,0"
                                                 Command="{Binding #List.((vm:InstalledViewModel)DataContext).ReinstallCommand}"
                                                 CommandParameter="{Binding Package}" />
-                                        <Button Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
+                                        <Button Grid.Column="3" Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
                                                 Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
                                                 CommandParameter="{Binding Package}" />
-                                    </StackPanel>
-                                </Grid>
+                                    </Grid>
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
-                    </ListBox.ItemTemplate>
-            </ListBox>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
 
             <!-- Detail : volet du package sélectionné -->
             <Border Grid.Column="1" BorderBrush="{StaticResource Hairline}" BorderThickness="1,0,0,0">
