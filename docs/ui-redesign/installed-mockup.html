@@ -4,8 +4,8 @@
     --bg:#0d1016; --sidebar:#090c11; --panel:#141a23; --panel-2:#1a222d; --tile:#151c26;
     --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12); --line-3:rgba(255,255,255,.18);
     --ink:#e8eef5; --muted:#8a97a7; --faint:#5c6675;
-    --teal:#2dd4bf; --teal-dim:#1e8579;
-    --blue:#5b8cff; --amber:#f0b429; --red:#f0616b; --green:#43c07a; --violet:#a78bfa;
+    --accent:#2dd4bf; --accent-dim:#12564d;         /* configurable */
+    --amber:#f0b429; --red:#f0616b; --violet:#a78bfa;
     --r:13px; --r-sm:9px; --gap:14px;
     --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
     --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
@@ -13,109 +13,111 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{margin:0;background:#05070a;color:var(--ink);font-family:var(--sans);
-    font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+  body{margin:0;background:#05070a;color:var(--ink);font-family:var(--sans);font-size:14px;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
 
-  /* fenêtre de l'app */
-  .app{position:relative;height:100vh;display:grid;grid-template-columns:232px 1fr;
-    background:
-      radial-gradient(900px 500px at 78% -12%, rgba(45,212,191,.08), transparent 60%),
-      var(--bg);
+  .app{position:relative;height:100vh;display:grid;grid-template-columns:236px 1fr;
+    background:radial-gradient(900px 500px at 80% -12%, color-mix(in srgb,var(--accent) 9%,transparent), transparent 60%), var(--bg);
     overflow:hidden}
 
-  /* ---------------- sidebar ---------------- */
+  /* ---------- sidebar ---------- */
   .sidebar{background:var(--sidebar);border-right:1px solid var(--line);display:flex;flex-direction:column}
   .brand{height:56px;display:flex;align-items:center;gap:10px;padding:0 18px;
-    background:linear-gradient(180deg,rgba(45,212,191,.14),rgba(45,212,191,.04));
-    border-bottom:1px solid var(--line);font-weight:650;letter-spacing:.01em}
-  .brand .dot{width:22px;height:22px;border-radius:7px;flex:none;
-    background:linear-gradient(150deg,var(--teal),var(--teal-dim));
-    box-shadow:0 0 0 1px rgba(45,212,191,.4), 0 4px 12px rgba(45,212,191,.25);
-    display:grid;place-items:center}
+    background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 15%,transparent),transparent);
+    border-bottom:1px solid var(--line);font-weight:650}
+  .brand .dot{width:23px;height:23px;border-radius:7px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--accent),var(--accent-dim));
+    box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent),0 4px 12px color-mix(in srgb,var(--accent) 30%,transparent)}
   .brand .dot svg{width:13px;height:13px;color:#04110f}
-  nav{padding:12px 10px;display:flex;flex-direction:column;gap:2px}
-  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;
+  nav{padding:12px 10px;display:flex;flex-direction:column;gap:3px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:7px 10px;border-radius:10px;
     color:var(--muted);cursor:pointer;position:relative;transition:background .12s,color .12s}
-  .nav-item svg{width:18px;height:18px;flex:none}
-  .nav-item:hover{background:rgba(255,255,255,.04);color:var(--ink)}
-  .nav-item.active{background:rgba(45,212,191,.13);color:var(--ink)}
+  .nav-item:hover{background:rgba(255,255,255,.045);color:var(--ink)}
+  .nav-item.active{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--ink)}
   .nav-item.active::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;
-    border-radius:0 3px 3px 0;background:var(--teal)}
+    border-radius:0 3px 3px 0;background:var(--accent)}
+  .nchip{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(155deg,var(--c),color-mix(in srgb,var(--c) 55%,#000));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px rgba(0,0,0,.35)}
+  .nchip svg{width:16px;height:16px;color:#fff}
   .nav-item .lbl{font-weight:500}
-  .badge{margin-left:auto;background:var(--blue);color:#fff;font-size:11px;font-weight:650;
+  .badge{margin-left:auto;background:#5b8cff;color:#fff;font-size:11px;font-weight:650;
     min-width:20px;height:20px;padding:0 6px;border-radius:10px;display:grid;place-items:center}
-  .side-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--line);
-    color:var(--faint);font-size:11.5px;line-height:1.5}
+  .kbd{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);
+    border:1px solid var(--line-2);border-radius:6px;padding:1px 6px;background:rgba(0,0,0,.25)}
+  .nav-item .badge + .kbd{margin-left:8px}
+  .side-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--line);color:var(--faint);
+    font-size:11.5px;line-height:1.5}
 
-  /* ---------------- main ---------------- */
+  /* ---------- main ---------- */
   .main{display:grid;grid-template-rows:auto 1fr auto;min-width:0}
-  .topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
-  .search{flex:1;display:flex;align-items:center;gap:9px;background:var(--panel);
+  .topbar{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line)}
+  .search{flex:1;min-width:120px;display:flex;align-items:center;gap:9px;background:var(--panel);
     border:1px solid var(--line-2);border-radius:10px;padding:9px 13px;transition:border-color .15s}
-  .search:focus-within{border-color:var(--teal)}
+  .search:focus-within{border-color:var(--accent)}
   .search svg{width:16px;height:16px;color:var(--faint)}
-  .search input{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;outline:none}
+  .search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;outline:none}
   .search input::placeholder{color:var(--faint)}
   .seg{display:flex;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;padding:3px}
   .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:550;
-    padding:6px 13px;border-radius:7px;cursor:pointer}
+    padding:6px 12px;border-radius:7px;cursor:pointer}
   .seg button.on{background:var(--panel-2);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.3)}
-  .icon-btn{width:38px;height:38px;border:1px solid var(--line-2);background:var(--panel);
-    border-radius:10px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
-  .icon-btn:hover{color:var(--ink);border-color:var(--line-3)}
-  .icon-btn svg{width:17px;height:17px}
+  .viewtog{display:flex;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;padding:3px}
+  .viewtog button{width:34px;height:30px;border:0;background:transparent;color:var(--muted);
+    border-radius:7px;cursor:pointer;display:grid;place-items:center}
+  .viewtog button svg{width:17px;height:17px}
+  .viewtog button.on{background:var(--panel-2);color:var(--ink)}
+  .accent-pick{display:flex;gap:6px;align-items:center;padding:5px 8px;background:var(--panel);
+    border:1px solid var(--line-2);border-radius:10px}
+  .sw{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.12s}
+  .sw:hover{transform:scale(1.12)}
+  .sw.on{border-color:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 
-  /* barre de sélection (lots) */
-  .selbar{display:none;align-items:center;gap:12px;padding:10px 20px;background:rgba(45,212,191,.08);
-    border-bottom:1px solid var(--line)}
+  .selbar{display:none;align-items:center;gap:12px;padding:10px 18px;
+    background:color-mix(in srgb,var(--accent) 9%,transparent);border-bottom:1px solid var(--line)}
   .selbar.show{display:flex}
   .selbar .n{font-weight:600}
   .selbar .spacer{flex:1}
-  .selbar .chip{cursor:pointer}
 
-  /* grille de tuiles */
-  .tiles-wrap{overflow-y:auto;padding:18px 20px 24px}
+  .tiles-wrap{overflow-y:auto;padding:16px 18px 22px}
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:var(--gap)}
+  .tiles.grid{grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
 
   .tile{position:relative;background:linear-gradient(180deg,var(--tile),#12181f);
     border:1px solid var(--line-2);border-radius:var(--r);padding:15px 15px 13px;
     transition:border-color .15s,transform .12s,box-shadow .15s;min-width:0}
-  .tile:hover{border-color:var(--line-3);transform:translateY(-1px);
-    box-shadow:0 8px 22px rgba(0,0,0,.35)}
-  .tile.outdated{border-color:rgba(240,180,41,.32)}
+  .tile:hover{border-color:var(--line-3);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+  .tile.outdated{border-color:color-mix(in srgb,var(--amber) 32%,transparent)}
   .tile.outdated::after{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;
     border-radius:0 3px 3px 0;background:var(--amber)}
-  .tile.sel{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+  .tile.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 
   .tile-check{position:absolute;top:12px;left:12px;width:18px;height:18px;border-radius:5px;
     border:1.5px solid var(--line-3);background:rgba(0,0,0,.3);cursor:pointer;opacity:0;
-    transition:opacity .12s;appearance:none;display:grid;place-items:center}
+    transition:opacity .12s;appearance:none;display:grid;place-items:center;z-index:2}
   .tile:hover .tile-check,.tile.sel .tile-check{opacity:1}
-  .tile-check:checked{background:var(--teal);border-color:var(--teal);opacity:1}
+  .tile-check:checked{background:var(--accent);border-color:var(--accent);opacity:1}
   .tile-check:checked::after{content:"✓";color:#04110f;font-size:12px;font-weight:800}
 
-  .tile-tools{position:absolute;top:11px;right:11px;display:flex;gap:4px;opacity:.55;transition:opacity .12s}
+  .tile-tools{position:absolute;top:11px;right:11px;display:flex;gap:4px;opacity:.5;transition:opacity .12s;z-index:2}
   .tile:hover .tile-tools{opacity:1}
   .tool{width:28px;height:28px;border-radius:8px;border:1px solid transparent;background:transparent;
     color:var(--muted);cursor:pointer;display:grid;place-items:center}
   .tool:hover{background:rgba(255,255,255,.06);color:var(--ink);border-color:var(--line-2)}
   .tool svg{width:16px;height:16px}
-  .tool.on{color:var(--violet)}
 
   .tile-head{display:flex;gap:12px;align-items:center;padding-right:60px}
   .tile-icon{width:44px;height:44px;border-radius:11px;flex:none;display:grid;place-items:center;
     font-weight:750;font-size:18px;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
-  .tile-name{font-weight:650;font-size:15.5px;line-height:1.15;letter-spacing:-.01em}
+  .tile-icon.img{background:#eef2f7;padding:7px;object-fit:contain;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.3)}
+  .tile-name{font-weight:650;font-size:15.5px;line-height:1.15;letter-spacing:-.01em;word-break:break-word}
   .tile-kind{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
   .kind-cask{color:#8ab4ff}
-
-  .tile-ver{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0 14px;
-    font-family:var(--mono);font-size:12.5px}
-  .v-cur{color:var(--muted)}
-  .v-cur b{color:var(--ink);font-weight:600}
+  .tile-ver{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0 14px;font-family:var(--mono);font-size:12.5px}
+  .v-cur{color:var(--muted)} .v-cur b{color:var(--ink);font-weight:600}
   .v-new{display:inline-flex;align-items:center;gap:5px;color:var(--amber);
-    background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.3);
-    padding:2px 8px;border-radius:20px;font-weight:600;font-size:11.5px}
+    background:color-mix(in srgb,var(--amber) 12%,transparent);
+    border:1px solid color-mix(in srgb,var(--amber) 32%,transparent);padding:2px 8px;border-radius:20px;font-weight:600;font-size:11.5px}
   .v-new svg{width:12px;height:12px}
   .pin-flag{color:var(--violet);font-size:11.5px;display:inline-flex;align-items:center;gap:4px}
   .pin-flag svg{width:12px;height:12px}
@@ -124,15 +126,27 @@
   .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;
     border:1px solid var(--line-2);background:rgba(255,255,255,.02);color:var(--muted);
     font:inherit;font-weight:600;font-size:12.5px;cursor:pointer;transition:.13s}
-  .chip svg{width:14px;height:14px}
+  .chip svg{width:14px;height:14px;flex:none}
   .chip:hover{color:var(--ink);border-color:var(--line-3);background:rgba(255,255,255,.05)}
-  .chip.danger:hover{color:var(--red);border-color:rgba(240,97,107,.5);background:rgba(240,97,107,.1)}
-  .chip.update{color:var(--amber);border-color:rgba(240,180,41,.4);background:rgba(240,180,41,.09)}
-  .chip.update:hover{background:rgba(240,180,41,.16);border-color:rgba(240,180,41,.6)}
-  .chip.primary{color:var(--teal);border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.08)}
-  .chip.primary:hover{background:rgba(45,212,191,.16)}
+  .chip.danger:hover{color:var(--red);border-color:color-mix(in srgb,var(--red) 50%,transparent);background:color-mix(in srgb,var(--red) 10%,transparent)}
+  .chip.update{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 40%,transparent);background:color-mix(in srgb,var(--amber) 9%,transparent)}
+  .chip.update:hover{background:color-mix(in srgb,var(--amber) 16%,transparent)}
 
-  /* ---------------- terminal ---------------- */
+  /* ---- Grid (Finder-like) ---- */
+  .tiles.grid .tile{padding:16px 12px 12px;text-align:center}
+  .tiles.grid .tile-head{flex-direction:column;gap:9px;padding-right:0}
+  .tiles.grid .tile-icon{width:52px;height:52px}
+  .tiles.grid .tile-kind{display:none}
+  .tiles.grid .tile-ver{justify-content:center;margin:10px 0 11px;font-size:11.5px}
+  .tiles.grid .tile-ver .v-cur{width:100%;text-align:center}
+  .tiles.grid .pin-flag{display:none}
+  .tiles.grid .tile-actions{justify-content:center;gap:6px}
+  .tiles.grid .chip{padding:7px}
+  .tiles.grid .chip .txt{display:none}
+  .tiles.grid .tile-tools{opacity:0}
+  .tiles.grid .tile:hover .tile-tools{opacity:1}
+
+  /* ---------- terminal ---------- */
   .terminal{border-top:1px solid var(--line);background:#080b10;display:flex;flex-direction:column;
     height:var(--term-h);transition:height .22s cubic-bezier(.4,0,.2,1)}
   .terminal.collapsed{height:41px}
@@ -143,28 +157,23 @@
   .term-head .sp{flex:1}
   .term-head .chev{color:var(--muted);transition:transform .22s}
   .terminal.collapsed .term-head .chev{transform:rotate(180deg)}
-  .term-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-  .term-body{flex:1;overflow:auto;padding:12px 16px;font-family:var(--mono);font-size:12.5px;
-    line-height:1.65;color:#c4d0dc}
+  .term-dot{width:8px;height:8px;border-radius:50%;background:#43c07a;box-shadow:0 0 8px #43c07a}
+  .term-body{flex:1;overflow:auto;padding:12px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#c4d0dc}
   .term-body .mut{color:#6b7684}
-  .term-body .ok{color:var(--green)}
-  .term-body .arw{color:var(--teal)}
-  .term-body .warn{color:var(--amber)}
+  .term-body .ok{color:#43c07a}
+  .term-body .arw{color:var(--accent)}
   .term-input{display:flex;align-items:center;gap:9px;padding:9px 16px;border-top:1px solid var(--line);
     font-family:var(--mono);font-size:12.5px;color:var(--faint)}
-  .term-input .p{color:var(--teal)}
+  .term-input .p{color:var(--accent)}
   .term-input input{flex:1;background:transparent;border:0;outline:none;color:var(--ink);font:inherit}
-  .term-input .soon{font-family:var(--sans);font-size:11px;color:var(--faint);
-    border:1px solid var(--line-2);border-radius:20px;padding:2px 9px}
+  .term-input .soon{font-family:var(--sans);font-size:11px;color:var(--faint);border:1px solid var(--line-2);border-radius:20px;padding:2px 9px}
 
-  /* ---------------- panneau coulissant ---------------- */
-  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;
-    transition:.2s;z-index:5}
+  /* ---------- sliding panel ---------- */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;transition:.2s;z-index:5}
   .scrim.show{opacity:1;visibility:visible}
   .detail{position:absolute;top:0;right:0;height:100%;width:372px;background:#0f151d;
     border-left:1px solid var(--line-2);z-index:6;transform:translateX(100%);
-    transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;
-    box-shadow:-24px 0 60px rgba(0,0,0,.5)}
+    transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-24px 0 60px rgba(0,0,0,.5)}
   .detail.open{transform:translateX(0)}
   .det-head{padding:18px 18px 14px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center}
   .det-head .tile-icon{width:46px;height:46px}
@@ -173,27 +182,21 @@
   .det-close:hover{color:var(--ink);border-color:var(--line-3)}
   .det-body{flex:1;overflow:auto;padding:18px}
   .det-sec{margin-bottom:22px}
-  .det-sec h4{margin:0 0 11px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;
-    color:var(--faint);font-weight:700}
+  .det-sec h4{margin:0 0 11px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700}
   .det-desc{color:var(--muted);line-height:1.55;font-size:13.5px}
-  .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);
-    font-size:13px}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
   .kv:last-child{border-bottom:0}
-  .kv .k{color:var(--faint)}
-  .kv .v{font-family:var(--mono);color:var(--ink)}
-  .kv .v a{color:var(--teal);text-decoration:none}
+  .kv .k{color:var(--faint)} .kv .v{font-family:var(--mono);color:var(--ink)}
+  .kv .v a{color:var(--accent);text-decoration:none}
   .tree{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:var(--muted);white-space:pre;
     background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow:auto}
   .tree b{color:var(--ink);font-weight:600}
-  .tree .t{color:var(--teal-dim)}
   .dep-chips{display:flex;flex-wrap:wrap;gap:7px}
-  .dep-chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.04);
-    border:1px solid var(--line-2);border-radius:7px;padding:4px 9px}
+  .dep-chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:7px;padding:4px 9px}
 
   .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;
-    background:rgba(20,26,35,.95);border:1px solid var(--line-2);border-radius:10px;
-    padding:8px 14px;font-size:12.5px;color:var(--muted);box-shadow:0 10px 30px rgba(0,0,0,.5);
-    opacity:0;transition:.2s;pointer-events:none}
+    background:rgba(20,26,35,.96);border:1px solid var(--line-2);border-radius:10px;padding:8px 14px;
+    font-size:12.5px;color:var(--muted);box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transition:.2s;pointer-events:none}
   .hint.show{opacity:1}
   ::-webkit-scrollbar{width:10px;height:10px}
   ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:6px;border:3px solid transparent;background-clip:padding-box}
@@ -206,16 +209,7 @@
       <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l-7 8v7l-3 2v-9z"/></svg></span>
       Cocktails
     </div>
-    <nav id="nav">
-      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8l-9-5V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/></svg><span class="lbl">Installed</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="lbl">Search</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg><span class="lbl">Updates</span><span class="badge">9</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5 2.5-2.5Z"/></svg><span class="lbl">Maintenance</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg><span class="lbl">Services</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="9" r="2.4"/><path d="M6 8.4v7.2M8 6h6a2 2 0 0 1 2 2v.8"/></svg><span class="lbl">Taps</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2.3"/><circle cx="8" cy="16" r="2.3"/></svg><span class="lbl">Settings</span></div>
-      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.5 1.5c0 1.7-2.5 2-2.5 3.5"/><path d="M12 17.5h.01"/></svg><span class="lbl">Help</span></div>
-    </nav>
+    <nav id="nav"></nav>
     <div class="side-foot">220 paquets · 9 à jour<br>macOS · Homebrew</div>
   </aside>
 
@@ -223,51 +217,47 @@
     <div class="topbar">
       <label class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="filter" placeholder="Filtrer les paquets…" autocomplete="off">
+        <input id="filter" placeholder="Filtrer…" autocomplete="off">
       </label>
       <div class="seg" id="seg">
         <button class="on" data-k="all">Tous</button>
         <button data-k="formula">Formulae</button>
         <button data-k="cask">Casks</button>
       </div>
-      <button class="icon-btn" title="Trier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M6 12h12M9 18h6"/></svg></button>
+      <div class="viewtog" id="viewtog" title="Vue tuiles / grille">
+        <button class="on" data-v="tiles" title="Tuiles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg></button>
+        <button data-v="grid" title="Grille"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
+      </div>
+      <div class="accent-pick" id="accent" title="Couleur d'accent"></div>
     </div>
 
     <div class="selbar" id="selbar">
-      <span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--teal)"></span>
+      <span class="term-dot" style="box-shadow:none;background:var(--accent)"></span>
       <span class="n"><span id="selcount">0</span> sélectionné(s)</span>
       <span class="spacer"></span>
-      <button class="chip update">Update</button>
-      <button class="chip danger">Uninstall</button>
+      <button class="chip update"><span class="txt">Update</span></button>
+      <button class="chip danger"><span class="txt">Uninstall</span></button>
       <button class="chip" id="selclear">Annuler</button>
     </div>
 
-    <div class="tiles-wrap">
-      <div class="tiles" id="tiles"></div>
-    </div>
+    <div class="tiles-wrap"><div class="tiles" id="tiles"></div></div>
 
     <div class="terminal" id="terminal">
       <div class="term-head" id="termHead">
-        <span class="term-dot"></span>
-        <span class="t">TERMINAL</span>
-        <span class="cmd">— brew upgrade git</span>
+        <span class="term-dot"></span><span class="t">TERMINAL</span><span class="cmd">— brew upgrade git</span>
         <span class="sp"></span>
         <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 15 6-6 6 6"/></svg>
       </div>
-      <div class="term-body" id="termBody">
+      <div class="term-body">
 <span class="arw">➜</span> <b>brew upgrade git</b>
 <span class="mut">==> Downloading https://ghcr.io/v2/homebrew/core/git/manifests/2.47.0</span>
-<span class="mut">==> Fetching git</span>
 <span class="mut">==> Pouring git--2.47.0.arm64_sequoia.bottle.tar.gz</span>
 <span class="ok">🍺  /opt/homebrew/Cellar/git/2.47.0: 1,679 files, 54.3MB</span>
-<span class="mut">==> Running `brew cleanup git`...</span>
 <span class="ok">✓ git mis à jour : 2.45.1 → 2.47.0</span>
       </div>
-      <div class="term-input">
-        <span class="p">➜ brew</span>
+      <div class="term-input"><span class="p">➜ brew</span>
         <input placeholder="install / upgrade / search …  (terminal éditable — phase 2)" disabled>
-        <span class="soon">bientôt éditable</span>
-      </div>
+        <span class="soon">bientôt éditable</span></div>
     </div>
   </div>
 
@@ -278,148 +268,140 @@
 
 <script>
 (function(){
+  var ICONS={
+    git:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADtUlEQVRYhbVXPWwcRRT+3uzu7eXOdhyLNFDQROdtQEJEgtR3+RG+WxdOhIREhCkoqGgQSIgQISGFNrIACZQiQaIgBbc2ko0CdUgXaMYWUKYCDt/Z8d7uzQ7F3fpm/27vVslUs2/efO9737yZ2SEUbP6qtXY4CK4RgKrOPtHb/IciOFQw+DqAWzGQq3qb33mqBPq2ZRDhHQAb8YlFSbBZnAGchsQGAMjYwOj79mDVevOpETAd/kgCb4TRngSJqQi4tvVRr7m8PSLxnQSuPCkSuTXg2uOCc0Vwf/HHvXMA0Let17u+2AgknjllagmgaWtiIoEje3kdwC1S3I5E8KCisbrp8AMA8FateQDvA/i4CIlMAo9by+tE4VajuOOXZYe/qxo6K7WHVZ29GAfNI5FaA49bw8zl8QJLSGW1hZRL8Tka8F8aVl5NJAgctpbfgnLISKXKwm5vEKy4trWgzjM19kWRwowoezjKPDEAgBQDgdAbBH/N66xGgGE63AWAvm2tEXAXEd9EP7Icx+MHrbDgMtilkMBQwSU/kLdLjNZMh7t927pMwPfh5LzCZGrwmG9CStXwrydk2eGy7PB/DEav9QaCA4Dp8LsSuCID+e2RCO7nLQf1mlYLgEMUdc1TouMJPLv9BwHAo0tn5FJJhyuCX09orGk6/O/Q11u1bgD4IEOJFdb1xdcAIGX2kZDIImYgUAAAZY29AuCCOlZq8w87fZFamF1ffMUYUW8MTBEHGZuQRUJCMsVPnzYRIuqyqo6rUeCoEpNIpPl1fXHDta3Tob1vWzcXSxrStuiczt4mAOg2axcJbDvKbnJNdDyB53bGNXCqpI3GCPueQEVnW14gn5/T2QsRjPHuOG+0+T0GAAtbezsSwcVIRjlKhAEBYNHQlDGJkyUNBqNmVQl+jDEEqhttfg9QTsKFrb2f8kio7WAQ/K70/0TKiRnvj74bpTb/JfyOHMV5JMLC3PdFp6qzs6F9Tmcvd3zRz7o7FBIN0+E/q/iJu2AaJRYM7Zvq5q4Xflc2d/cXDe3O0DeSrdqvx4OnElBIXMoi4Yrg1ficw8HYlqJEo+yMZVfbxB+SbrN2gcB2IhPGu+MzAJ/TMInrAN7LuDvqJ5zd1OC5BEYkMrfovidABJxUdkEEkNCoOLsJ2WciMCIxSYkE0KjfqGxODj41gWlIxIDq1c1s2dU29bsgrzCVu6MxbXCgwNswR4n63AzBgdmfZpOUOD9rcKDg6xgAus3aS4OAPiXA1xldn9/ivxXB+R9WO7IF6Q7yGAAAAABJRU5ErkJggg==', gnu:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAclBMVEX///8AAACkpKSPj4+Ghoaqqqrm5uaenp6Kior19fXp6en8/PyTk5NhYWGZmZmxsbFubm59fX1ZWVnGxsZmZmZTU1PLy8vV1dWvr68UFBS3t7c0NDTv7+8/Pz8ODg7AwMBISEguLi5sbGw5OTl3d3cbGxtNFP16AAABtUlEQVQ4jY1SiZKbMAyVsPEB5jABHK4QGvr/v1jJbLPZsNupZpDQYV1PAP9FzjlhfP5pGJ0u06eWuALxhrvz4cNQFqQ3ZXWoOkUsvE6k0R8vrlprVw8oR9Ys+c0Ra7OZxWyZ52JAEesr7I5yySXRcg5Jtcb43OPqSKYrttEvBBLVzO4JG0o0LEeJNauywUjWERtKsqxH6tHEDMYf/gH6jkRB/WmsOUNKcgRjEJc+C5CVwlZiQ9+DwJ0TyRnxKje8ADQI0GXFuDmQuFGp3lNAWGPqHqDSLoxqpG4oOBqvKnYXI3gusBOKHq6s0XYwiGNxPpTIS7ZWNciA4MTMBfPEamcLpAryjErBpcsAVNO/wNkwm7K/at3qDH6pT3/gcVrFSPSdSUEVSeXcS4IWghjW+Lv4RCVgVfrihrRbcF7ZRItSj9ibfA2wM0ygfEQ043GpiwBf6UE7jLcQcYR79eaHBWCPoNaH3r0HeJqpja/rrm0XRuaNdupVPDVz8gMfvcRYDXE/J6CLo+92o1HmcwMH0astonoM/D39xlt+x9OMT7JLz7cx/pwhP05X/BwB+Q0f0z/8J/oDEj4UQ+F7lsEAAAAASUVORK5CYII=', node:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEH0lEQVRYhbWW32scVRTHv+fOzO4m2XUrCWrRB42PfQiCNvQlRqtSK9VWSKxF0PqgrWBABPXNQgT7XvwRbFEiFmn9USkSzEuSBv+Agg+C0gerqYkm0f09M/ec48PsJju7mx+brAeGnZ2595zP/Z57zxzCDmzk0kgiLK5MJhPOSLlkS35FX/3h9ZmLO/FF7U44NnlwLJk0Zx3HdAkrxCryOYaK3mCjz0yfnv3pfwF49tODDyW7zJeJLqdfWCECCCuEFX5ZEQYCMqTCck1t6umpsalcRwCOTAz3dWe9ye60ewhQEq4GrgMQBkoFBhFgDAHQMLT6/tRrM+/uCmD0i8fG01nvHceFKwKIRMGaAAQIfIENFMYQjAOQITDrimX70tSpuattAYxefPz57oz5KJlysiqAajXgJgDCikpJ1lQgp/prABvKdTLuke9enr65KcDRzx69P5P1vk5n3QEVhSrQDoANo6sW2DgEYwAyAAjqV+RKV7b3+OXRy0EtpqndHL/0xId33pP6JbPHHdgsLZsZGQIhAoYCtUVAAQJRd7dzTMsrK4cnHhmMAQyfGU5xIK84DrV9LJshaqo1XhEMOdQT+ngzBoA00n/fCh0b6m7jg4hiAetVUAVKRUFQsck4AKIcLv0RtHTaNkSjClUIZkGxEMbGmrppWF0M4ZelIxAq64Frm7lcZCjHx5nGiYs3/c4ANECwVZSLzYsz8RlAfpVRzHHTwJ2Y8LoC5ZKtPiXUn/4mBaDA0m+d2QtR7QA4VIQbCLsOYHQNrFxk5FZs6xltmg0UlQpDoWsqtwbwBHAFcAQgxdLvYXR8dmkiCm5cS53fCCCTh7oCdbkKoQh9wepSiE5Yc55bvasGV08AjXKxvBCCuQMyAE3SNwN4AngCUgI4AmBWLP/ZGRWgtMkeyCCS3hXAd2MD/lmyCIMOqVCzunKwpoC6AgQOYOPfI1XF8kKHVGjRfsSOIeWTTQMAILdqO1OiFdX91VCIuvb8m6dcwtZy38r+WuhMcQIAY8xaWTIAMHX4V1+Bc+rIhsmuFASl3O5VUGjOkj1b+x9b8tAn+++jivkWxeRAq2PjJQl396ei1qxFS8YMiFVwtVPm2r1VqBCr0Qtzb82dBq1vw5aaD58/cEjy5nOquH2N73r3eui5zdk2gGWBCq5bV56cf2P+VqO/TVuwoY8Hx6mQeBuh8WrPHIewtz8BgLYECFkWmfi5mbH5uY1ibNkD7vtgX7oXmUkqJI5Cop4x2+cic7u7IUAoEjB4fPrUtfe28r/tJvTA+Qcf8IqJr6jk9RMR7ro3AaJ4i25Z1NfgSsW4J2ZPzla247ftLnhoYv+LVPTO9aSSmWxvpAKLwkdwA8Y8dfXE7M/t+NtZG34G7sN3DF7oTWdeEOJCmApOfj/y4zc7cfUfbufDUBEpo1YAAAAASUVORK5CYII=', cairo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAYFBMVEX////zmRTQ0+bZ2+v73bH85MD++O797tj969HS1eeprdH98uH//Pj726v62KX+9ej3tVL60Zb0nyH0qj30pS/1sEn5z5H5yID5y4b86cucocuJkMF6gbmRmMb2tlf74LeK07TLAAAAlElEQVQYlU2P2xKDIAxENyAgalUM4KWt/v9floLanqfsmZ1MAmREAn9I0WxC/rK2zfPVWH3l1kixvYU0bcl1B1ghLNDVWTy+su/rcwRmYNjHcR/ymFDOTZSYnFPnEmZP5JnLClQqFUJIFVVlcRgqgsxRGvBFeJSGXiMRM1Fcr1tVIO8pqPuXqGfmWcdbtMsKrEt+5QPvmQZhLSoIrgAAAABJRU5ErkJggg==',
+    github:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAb1BMVEX///8kKS74+PgsMTY+Q0f8/Pzw8PGRk5ZNUVXr6+xDSEzCxMUpLjLV1tYuMzc/Q0i3ubuUl5lbX2NTV1uLjpFKTlKxs7Xh4uOFh4rn5+h3en1vcnZ9gIPc3d6/wcJzd3o3PECmqKpjZ2rOz9CfoaRP5W5KAAABU0lEQVQ4jW1T7aKCIAzdEEUTSUuzLMtuvf8zXtiQVDx/lJ3DvgEIEPU9l1rL/F4LiFEMCQYkj2JDC6VxhaRJl3x2xgin7MePMuYRD7cQftrjrcL7ELk9nNt8yXXtyRm5mquzXADKA6LpzgZRlgBPZ1WO7yn/yrmqyGdGn95Zjav2hbNghZHMV3uNG3DZCigEmhRq+pmyrUAcifj4CO+49xciWqAe6p3pCJrNH1ATp5gH6KghQLrDnoB8GxaYPYFkhpONipjrl+wI61hQ8tB5EvYb4eTL5Ebhd8u/2f4EYfhvvWJpw9ZJ0LQfb5uxbMKi3pp5xVp30miexZHbRriHvUnojrKt7isXqWRBFQQNF2w3aYCPUl8/EREWzxtuE+pVI/wbkSGp0a51Nyg1F+L5/nel56xXgt+zcMgeC0FK27gdTzVoPXtI9DBuO2tRhJj94m3/A1GiDZXoM3d5AAAAAElFTkSuQmCC', gh:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEmklEQVRYha1XX2hbVRz+vnNv02xrIxu9N1mSlTiuIL26PdStiMjciyjq9ElkTwMfrMhEdOjDYEunU/BBJw71QXwUpA+WoQznZGygOOdEO6aCQWKbP7e5rptpM9qkyc+HJttdctNma76nnN/vnO/7zrknv3MO0SFs2w7Muu5uAfZAZAhAVMgoAFAkByAH8ncCJzYZxpnLly+XO+Hlah0ShhFZIA+LyF4AoQ79Fkl+HhQZS7uuc0cGLMvqnS8WDwJ4VUQ2dCh8KzlZAvBeXyh0NJVKLXZsoD7rCREZuRNhHyPngyLP+K1Gi4G4aW5bEvlagHg3xD1CGZ18IlMoTLY1kDCMyAJwodviXhNBYId3JVTjh2VZvQvkhFecwB8EviB55Q70rhEYJ/BLIyBAfIGcsCyrt8XAfLF4sPmbU6ljjus+d+/QUARKPQ9y2Tk5D/ISgXMEzoKcBPDfcoqzBPYPmGbYcd1nSR71corISH1zNyZ5Y9Olmnc7NW2n4zgXGm3bMPquaNrg6Ojon8lkstZEzHg8fo+mae7U1NTVRjwcDt+NWu3vW3jJUlDESruuQwCImObHIjLavIZK1x/I5/MX/da3U0Sj0cFqpfJPc5zkJ06h8KKybTtQLzKtqFaH1iIOALVazfaLi8he27YDatZ1d8OnwpEsQdPOrdWApmk/kfzXJxWadd3dSoA9bcYeyefzLUt3u8hms1cg8rpfToA9qn6wtEAPBL5cq3gDwQ0b/LlEhhSAaHOcZGl6ejrVLQPpdPoaySmfVFQ1jtQmFEhKtwwAAERmWkJkVNFTjG72lYGuigMA2cJJQCkAfju0PxwOm93STiQSQfh8agCuAuB7YVAij3bLwOL167tEpNcn5SiK/Og3SEReFpFVb0ydQIBX/OIUOa9Anm0zaMfmcPi1tYpHDGOfiDzmmyTPqtDGjd8CmPM1IfJuxDSPDA8P99yucDKZVBHTPCDAp226zG0SOdU4jI6LyEt1V+9r5M9VkTcgsg0ACEyD/EwB36tA4GImk5n1Y9y6detdpVJpWAEP1kT2QcRqZ5BKHXdmZvYrANBFjpEsAwCXB7oDIg+B/BUABNgiIoerIqcq5fKJZDLZ8tcFgOtzcxOo1b6r1WpvrShOLvaIHKtPbhkR0xwTkUP1ZlEPBGyS65bK5R+8dUFT6unczMwJP+JIJPKIVKtn2gl7DIw5hUIS8BShvlDo7frNBgBC1XJ5LJPJ/BUUuZ/kAQAfKKVeWN/f/007Yl3XJ9vlPOqTfaHQOzea3lw0Gt1SrVTOA9gMoEpNe8pxnJOrknoQNowKAL1NOq/19IzkcrlpXwMAEDPN7UsiJ2+YIE8DOE1gToDww7t2HR0fH6+uYGAJgOYnrpOPZwuF37xB30ITi8XiS5XKVxDZ3pwbMM3eld59YcOoovl8IS9puv5kLpdrORF9d3M2m830h0IjJMdI3vKkKpVKvmO8cjd1WSb55rr163f6ibc1AACpVGrRKRSSPYBNpT4EUAQ5n0gkllZUJ6+CnCf5kR4I3OcUCofS6fTCKqZXh20YfYODgxtX6xeLxeKWZXX6isb/mQzVddO1ixsAAAAASUVORK5CYII=', onep:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAV1BMVEX//vswMTb///8sLTMfICcPEhuFhYYcHiUiIyolJizZ2dft7Orx8O6ZmZmfn5+ysrGMjI3T0tBAQUYWGCD49/W/vr1ycnSTk5M6PECnp6d6enwAAAa5uLhytYxZAAAB10lEQVRYhe2XyaKDIAxFIaCCIg5YtcP/f+frYC1gRFu668sWcgw3MQRC/i1kMNtnzqqpyjpN67Jq1LsQIM3QZoYLeTXBTdbWDdmPgE63RjBqGZNm1GofArpScsd7YnBZdjsQcKB86f0wTg9bBCB9gnx9jiLpw1JAMYp195uJsQgQIJeBzz/lzFcJkLNN/yuBrRGg2P7+I4a1U4yev0gm83RhIx5A7+0TuphM+ys9EgIcEi9UPu+CzFtKkHroqC8AewEWS7RbBFAu6i8AoLz0Q1DS3xMEUOmFAHr5AwQBXHsh+CncArDWDaAxiy1hADWNHQLUSwk2AGJwAC3WQYIA1toA5VfKzfgRAgCaqQ0Jrsc8hQC2CFChXYydL7AO4JUFKNE+ZCZ/HCCsYkSTQLM8qIGsLUCKAcJZoDL9JgA9wgyAHMuycwRUxCcALmiSHRHRNE4AuJzRXuukES2k+QgnvMzsvwkt5ZcGRyxAu5TjfyYYEBXDADsJX2gohCBnCLc073aKb6rdu21duf7xF0v01YZcrtkL4EeHXa7R1zuJHjC+MOLEDlnxY178oBk/6pLoYZvEj/s3hNKjceVkwrR6p/sdQZraffIM7zx57oi4R9cM+fzZ90v2B5F0GSsVaG+3AAAAAElFTkSuQmCC', neovim:'data:image/png;base64,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', ffmpeg:'data:image/png;base64,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'
+  };
   var TINTS={g:["#f0616b","#7a1d24"],b:["#5b8cff","#1f3a80"],t:["#2dd4bf","#12564d"],
     a:["#f0b429","#7a5a12"],v:["#a78bfa","#3f2f7a"],p:["#43c07a","#1a5230"],r:["#ff8a5b","#7a3a1e"]};
   function tint(c){var t=TINTS[c]||TINTS.b;return "linear-gradient(150deg,"+t[0]+","+t[1]+")";}
+  function S(p,s){return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+  var P={trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/>',
+    reinstall:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+    update:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/>',
+    pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6Z"/><path d="M12 15v5"/>',
+    tree:'<rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="17" width="6" height="4" rx="1"/><rect x="15" y="17" width="6" height="4" rx="1"/><path d="M12 7v4M6 17v-3h12v3"/>',
+    open:'<path d="M7 17 17 7M9 7h8v8"/>'};
+  var ICN={tree:S(P.tree,16),open:S(P.open,16),up14:S(P.update,14),reinstall14:S(P.reinstall,14),
+    pin14:S(P.pin,14),trash14:S(P.trash,14),up12:S(P.update,12),pin12:S(P.pin,12)};
 
-  var PKGS=[
-    {name:"git",kind:"formula",cur:"2.45.1",latest:"2.47.0",c:"r",init:"G",
-     desc:"Distributed revision control system.",home:"git-scm.com",
-     deps:["gettext","pcre2"],tree:"git\n├─ gettext\n│  └─ libunistring\n├─ pcre2\n└─ curl"},
-    {name:"wget",kind:"formula",cur:"1.21.4",c:"t",init:"W",desc:"Internet file retriever.",
-     home:"gnu.org/software/wget",deps:["openssl@3","libidn2"],tree:"wget\n├─ openssl@3\n│  └─ ca-certificates\n└─ libidn2\n   └─ libunistring"},
-    {name:"node",kind:"formula",cur:"22.4.1",latest:"22.6.0",c:"p",init:"N",
-     desc:"Platform built on V8 to build network applications.",home:"nodejs.org",
-     deps:["icu4c","brotli","c-ares"],tree:"node\n├─ brotli\n├─ c-ares\n├─ icu4c\n└─ openssl@3"},
-    {name:"cairo",kind:"formula",cur:"1.18.4",c:"b",init:"C",desc:"Vector graphics library with cross-device output support.",
-     home:"cairographics.org",deps:["fontconfig","freetype","glib","libpng","pixman"],
-     tree:"cairo\n├─ fontconfig\n│  └─ freetype\n│     └─ libpng\n├─ glib\n│  └─ pcre2\n├─ pixman\n└─ lzo"},
-    {name:"ripgrep",kind:"formula",cur:"14.1.0",c:"a",init:"R",desc:"Search tool like grep and The Silver Searcher.",
-     home:"github.com/BurntSushi/ripgrep",deps:["pcre2"],tree:"ripgrep\n└─ pcre2"},
-    {name:"fd",kind:"formula",cur:"9.0.0",c:"v",init:"F",desc:"Simple, fast and user-friendly alternative to find.",
-     home:"github.com/sharkdp/fd",deps:[],tree:"fd\n(no dependencies)"},
-    {name:"jq",kind:"formula",cur:"1.7.1",c:"g",init:"J",desc:"Lightweight and flexible command-line JSON processor.",
-     home:"jqlang.github.io/jq",deps:["oniguruma"],tree:"jq\n└─ oniguruma"},
-    {name:"gh",kind:"formula",cur:"2.54.0",latest:"2.55.0",c:"b",init:"gh",
-     desc:"GitHub command-line tool.",home:"cli.github.com",deps:[],tree:"gh\n(no dependencies)"},
-    {name:"1password-cli",kind:"cask",cur:"2.35.0",latest:"2.38.1",c:"b",init:"1P",
-     desc:"Command-line interface for 1Password.",home:"1password.com/downloads/command-line",
-     deps:[],tree:"1password-cli\n(cask — no formula deps)"},
-    {name:"neovim",kind:"formula",cur:"0.10.0",c:"p",init:"nv",pinned:true,
-     desc:"Ambitious Vim-fork focused on extensibility and agility.",home:"neovim.io",
-     deps:["luajit","tree-sitter","unibilium"],tree:"neovim\n├─ luajit\n├─ tree-sitter\n└─ unibilium"},
-    {name:"ffmpeg",kind:"formula",cur:"7.0.1",latest:"7.0.2",c:"r",init:"ff",
-     desc:"Play, record, convert, and stream audio and video.",home:"ffmpeg.org",
-     deps:["dav1d","x264","x265","lame","opus"],tree:"ffmpeg\n├─ dav1d\n├─ lame\n├─ opus\n├─ x264\n└─ x265"},
-    {name:"aerospace",kind:"cask",cur:"0.21.3-Beta",c:"t",init:"Ae",
-     desc:"AeroSpace is an i3-like tiling window manager.",home:"github.com/nikitabobko/AeroSpace",
-     deps:[],tree:"aerospace\n(cask — no formula deps)"}
+  /* -------- nav colorée + raccourcis -------- */
+  var NAV=[
+    {lbl:'Installed',c:'#2dd4bf',active:1,svg:'<path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5v8l-9-5V8Z"/><path d="m21 8-9 5v8l9-5V8Z"/>'},
+    {lbl:'Search',c:'#5b8cff',svg:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'},
+    {lbl:'Updates',c:'#f0b429',badge:9,svg:'<path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/>'},
+    {lbl:'Maintenance',c:'#43c07a',svg:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5 2.5-2.5Z"/>'},
+    {lbl:'Services',c:'#a78bfa',svg:'<path d="M3 12h4l2 6 4-14 2 8h6"/>'},
+    {lbl:'Taps',c:'#ff8a5b',svg:'<circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="9" r="2.4"/><path d="M6 8.4v7.2M8 6h6a2 2 0 0 1 2 2v.8"/>'},
+    {lbl:'Settings',c:'#38bdf8',svg:'<path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2.3"/><circle cx="8" cy="16" r="2.3"/>'},
+    {lbl:'Help',c:'#ec4899',svg:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4.5 1.5c0 1.7-2.5 2-2.5 3.5"/><path d="M12 17.5h.01"/>'}
   ];
+  document.getElementById('nav').innerHTML=NAV.map(function(n,i){
+    return '<div class="nav-item'+(n.active?' active':'')+'" data-i="'+i+'">'+
+      '<span class="nchip" style="--c:'+n.c+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+n.svg+'</svg></span>'+
+      '<span class="lbl">'+n.lbl+'</span>'+
+      (n.badge?'<span class="badge">'+n.badge+'</span>':'')+
+      '<span class="kbd">⌘'+(i+1)+'</span></div>';
+  }).join('');
 
-  var svg={
-    trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>',
-    reinstall:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
-    update:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>',
-    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6Z"/><path d="M12 15v5"/></svg>',
-    tree:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="17" width="6" height="4" rx="1"/><rect x="15" y="17" width="6" height="4" rx="1"/><path d="M12 7v4M6 17v-3h12v3"/></svg>',
-    open:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>'
-  };
-  function up(v){return '<span class="v-new">'+svg.update.replace('width','w').replace('<svg','<svg width="12" height="12"')+v+'</span>';}
+  /* -------- accent configurable -------- */
+  var ACCENTS=[['#2dd4bf','#12564d'],['#5b8cff','#1f3a80'],['#a78bfa','#3f2f7a'],['#43c07a','#1a5230'],['#f0b429','#7a5a12'],['#ec4899','#7a1d4a']];
+  var accEl=document.getElementById('accent');
+  accEl.innerHTML=ACCENTS.map(function(a,i){return '<span class="sw'+(i===0?' on':'')+'" style="background:'+a[0]+'" data-a="'+a[0]+'" data-d="'+a[1]+'"></span>';}).join('');
+  accEl.addEventListener('click',function(e){var s=e.target.closest('.sw');if(!s)return;
+    accEl.querySelectorAll('.sw').forEach(function(x){x.classList.remove('on');});s.classList.add('on');
+    document.documentElement.style.setProperty('--accent',s.dataset.a);
+    document.documentElement.style.setProperty('--accent-dim',s.dataset.d);});
 
-  var selected=new Set();
+  /* -------- données paquets (ic = clé icône réelle, sinon repli initiale) -------- */
+  var PKGS=[
+    {name:'git',kind:'formula',cur:'2.45.1',latest:'2.47.0',ic:'git',c:'r',init:'G',desc:'Distributed revision control system.',home:'git-scm.com',deps:['gettext','pcre2'],tree:'git\n├─ gettext\n│  └─ libunistring\n├─ pcre2\n└─ curl'},
+    {name:'wget',kind:'formula',cur:'1.21.4',ic:'gnu',c:'t',init:'W',desc:'Internet file retriever.',home:'gnu.org/software/wget',deps:['openssl@3','libidn2'],tree:'wget\n├─ openssl@3\n│  └─ ca-certificates\n└─ libidn2'},
+    {name:'node',kind:'formula',cur:'22.4.1',latest:'22.6.0',ic:'node',c:'p',init:'N',desc:'Platform built on V8 to build network applications.',home:'nodejs.org',deps:['icu4c','brotli','c-ares'],tree:'node\n├─ brotli\n├─ c-ares\n├─ icu4c\n└─ openssl@3'},
+    {name:'cairo',kind:'formula',cur:'1.18.4',ic:'cairo',c:'b',init:'C',desc:'Vector graphics library with cross-device output support.',home:'cairographics.org',deps:['fontconfig','freetype','glib','pixman'],tree:'cairo\n├─ fontconfig\n│  └─ freetype\n├─ glib\n└─ pixman'},
+    {name:'ripgrep',kind:'formula',cur:'14.1.0',ic:'github',c:'a',init:'R',desc:'Search tool like grep and The Silver Searcher.',home:'github.com/BurntSushi/ripgrep',deps:['pcre2'],tree:'ripgrep\n└─ pcre2'},
+    {name:'fd',kind:'formula',cur:'9.0.0',ic:'github',c:'v',init:'F',desc:'Simple, fast and user-friendly alternative to find.',home:'github.com/sharkdp/fd',deps:[],tree:'fd\n(no dependencies)'},
+    {name:'jq',kind:'formula',cur:'1.7.1',ic:null,c:'g',init:'J',desc:'Lightweight and flexible command-line JSON processor.',home:'jqlang.github.io/jq',deps:['oniguruma'],tree:'jq\n└─ oniguruma'},
+    {name:'gh',kind:'formula',cur:'2.54.0',latest:'2.55.0',ic:'gh',c:'b',init:'gh',desc:'GitHub command-line tool.',home:'cli.github.com',deps:[],tree:'gh\n(no dependencies)'},
+    {name:'1password-cli',kind:'cask',cur:'2.35.0',latest:'2.38.1',ic:'onep',c:'b',init:'1P',desc:'Command-line interface for 1Password.',home:'1password.com',deps:[],tree:'1password-cli\n(cask)'},
+    {name:'neovim',kind:'formula',cur:'0.10.0',ic:'neovim',c:'p',init:'nv',pinned:true,desc:'Ambitious Vim-fork focused on extensibility and agility.',home:'neovim.io',deps:['luajit','tree-sitter'],tree:'neovim\n├─ luajit\n└─ tree-sitter'},
+    {name:'ffmpeg',kind:'formula',cur:'7.0.1',latest:'7.0.2',ic:'ffmpeg',c:'r',init:'ff',desc:'Play, record, convert, and stream audio and video.',home:'ffmpeg.org',deps:['dav1d','x264','x265','opus'],tree:'ffmpeg\n├─ dav1d\n├─ opus\n├─ x264\n└─ x265'},
+    {name:'aerospace',kind:'cask',cur:'0.21.3-Beta',ic:'github',c:'t',init:'Ae',desc:'AeroSpace is an i3-like tiling window manager.',home:'github.com/nikitabobko/AeroSpace',deps:[],tree:'aerospace\n(cask)'}
+  ];
+  function iconHTML(p,cls){var ic=ICONS[p.ic];
+    return ic?'<img class="'+cls+' img" src="'+ic+'" alt="">':'<div class="'+cls+'" style="background:'+tint(p.c)+'">'+p.init+'</div>';}
+
+  var tiles=document.getElementById('tiles'),filter=document.getElementById('filter'),
+    seg=document.getElementById('seg'),selected=new Set();
   function render(){
-    var f=document.getElementById('filter').value.toLowerCase();
-    var k=document.querySelector('#seg .on').dataset.k;
-    var host=document.getElementById('tiles');host.innerHTML='';
-    PKGS.filter(function(p){
-      return (k==='all'||p.kind===k) && (p.name.toLowerCase().indexOf(f)>=0 || p.desc.toLowerCase().indexOf(f)>=0);
-    }).forEach(function(p){
-      var out=!!p.latest;
-      var el=document.createElement('div');
+    var f=filter.value.toLowerCase(),k=seg.querySelector('.on').dataset.k;
+    tiles.innerHTML='';
+    PKGS.filter(function(p){return (k==='all'||p.kind===k)&&(p.name.toLowerCase().indexOf(f)>=0||p.desc.toLowerCase().indexOf(f)>=0);})
+    .forEach(function(p){
+      var out=!!p.latest,el=document.createElement('div');
       el.className='tile'+(out?' outdated':'')+(selected.has(p.name)?' sel':'');
       el.innerHTML=
         '<input type="checkbox" class="tile-check" '+(selected.has(p.name)?'checked':'')+'>'+
-        '<div class="tile-tools">'+
-          '<button class="tool depBtn" title="Dépendances & infos">'+svg.tree+'</button>'+
-          '<button class="tool" title="Ouvrir la page">'+svg.open+'</button>'+
-        '</div>'+
-        '<div class="tile-head">'+
-          '<div class="tile-icon" style="background:'+tint(p.c)+'">'+p.init+'</div>'+
-          '<div><div class="tile-name">'+p.name+'</div>'+
-          '<div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div>'+
-        '</div>'+
-        '<div class="tile-ver">'+
-          '<span class="v-cur">installé <b>'+p.cur+'</b></span>'+
-          (out?'<span class="v-new">'+svg.update.replace('<svg','<svg width="12" height="12"')+p.latest+'</span>':'')+
-          (p.pinned?'<span class="pin-flag">'+svg.pin.replace('<svg','<svg width="12" height="12"')+'épinglé</span>':'')+
-        '</div>'+
+        '<div class="tile-tools"><button class="tool depBtn" title="Dépendances & infos">'+ICN.tree+'</button>'+
+          '<button class="tool" title="Ouvrir la page">'+ICN.open+'</button></div>'+
+        '<div class="tile-head">'+iconHTML(p,'tile-icon')+
+          '<div><div class="tile-name">'+p.name+'</div><div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div></div>'+
+        '<div class="tile-ver"><span class="v-cur">installé <b>'+p.cur+'</b></span>'+
+          (out?'<span class="v-new">'+ICN.up12+p.latest+'</span>':'')+
+          (p.pinned?'<span class="pin-flag">'+ICN.pin12+'épinglé</span>':'')+'</div>'+
         '<div class="tile-actions">'+
-          (out?'<button class="chip update">'+svg.update.replace('<svg','<svg width="14" height="14"')+'Update</button>':'')+
-          '<button class="chip">'+svg.reinstall.replace('<svg','<svg width="14" height="14"')+'Reinstall</button>'+
-          '<button class="chip">'+svg.pin.replace('<svg','<svg width="14" height="14"')+(p.pinned?'Unpin':'Pin')+'</button>'+
-          '<button class="chip danger">'+svg.trash.replace('<svg','<svg width="14" height="14"')+'Uninstall</button>'+
-        '</div>';
+          (out?'<button class="chip update">'+ICN.up14+'<span class="txt">Update</span></button>':'')+
+          '<button class="chip">'+ICN.reinstall14+'<span class="txt">Reinstall</span></button>'+
+          '<button class="chip">'+ICN.pin14+'<span class="txt">'+(p.pinned?'Unpin':'Pin')+'</span></button>'+
+          '<button class="chip danger">'+ICN.trash14+'<span class="txt">Uninstall</span></button></div>';
       el.querySelector('.tile-check').addEventListener('change',function(e){
         if(e.target.checked)selected.add(p.name);else selected.delete(p.name);
-        el.classList.toggle('sel',e.target.checked);updateSel();
-      });
+        el.classList.toggle('sel',e.target.checked);updateSel();});
       el.querySelector('.depBtn').addEventListener('click',function(e){e.stopPropagation();openDetail(p);});
-      host.appendChild(el);
+      tiles.appendChild(el);
     });
   }
-  function updateSel(){
-    document.getElementById('selcount').textContent=selected.size;
-    document.getElementById('selbar').classList.toggle('show',selected.size>0);
-  }
-  document.getElementById('selclear').addEventListener('click',function(){
-    selected.clear();document.getElementById('selbar').classList.remove('show');render();
-  });
+  function updateSel(){document.getElementById('selcount').textContent=selected.size;
+    document.getElementById('selbar').classList.toggle('show',selected.size>0);}
+  document.getElementById('selclear').addEventListener('click',function(){selected.clear();
+    document.getElementById('selbar').classList.remove('show');render();});
 
-  function openDetail(p){
-    var out=!!p.latest;
-    var d=document.getElementById('detail');
-    d.innerHTML=
-      '<div class="det-head"><div class="tile-icon" style="background:'+tint(p.c)+'">'+p.init+'</div>'+
-        '<div><div class="tile-name">'+p.name+'</div><div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div>'+
-        '<button class="det-close" id="detClose">✕</button></div>'+
+  function openDetail(p){var out=!!p.latest,d=document.getElementById('detail');
+    d.innerHTML='<div class="det-head">'+iconHTML(p,'tile-icon')+
+      '<div><div class="tile-name">'+p.name+'</div><div class="tile-kind '+(p.kind==='cask'?'kind-cask':'')+'">'+p.kind+'</div></div>'+
+      '<button class="det-close" id="detClose">✕</button></div>'+
       '<div class="det-body">'+
         '<div class="det-sec"><div class="det-desc">'+p.desc+'</div></div>'+
         '<div class="det-sec"><h4>Informations</h4>'+
           '<div class="kv"><span class="k">Version installée</span><span class="v">'+p.cur+'</span></div>'+
           '<div class="kv"><span class="k">Dernière version</span><span class="v" style="color:'+(out?'var(--amber)':'var(--ink)')+'">'+(p.latest||p.cur)+'</span></div>'+
           '<div class="kv"><span class="k">Homepage</span><span class="v"><a href="#" onclick="return false">'+p.home+' ↗</a></span></div>'+
-          '<div class="kv"><span class="k">Épinglé</span><span class="v">'+(p.pinned?'oui':'non')+'</span></div>'+
-        '</div>'+
+          '<div class="kv"><span class="k">Épinglé</span><span class="v">'+(p.pinned?'oui':'non')+'</span></div></div>'+
         '<div class="det-sec"><h4>Dépendances directes</h4>'+
-          (p.deps.length?'<div class="dep-chips">'+p.deps.map(function(x){return '<span class="dep-chip">'+x+'</span>';}).join('')+'</div>':'<div class="det-desc">Aucune.</div>')+
-        '</div>'+
-        '<div class="det-sec"><h4>Arbre transitif</h4>'+
-          '<div class="tree">'+p.tree.replace(/^(\S+)/, '<b>$1</b>')+'</div>'+
-        '</div>'+
-      '</div>';
+          (p.deps.length?'<div class="dep-chips">'+p.deps.map(function(x){return '<span class="dep-chip">'+x+'</span>';}).join('')+'</div>':'<div class="det-desc">Aucune.</div>')+'</div>'+
+        '<div class="det-sec"><h4>Arbre transitif</h4><div class="tree">'+p.tree.replace(/^(\S+)/,'<b>$1</b>')+'</div></div></div>';
     d.classList.add('open');document.getElementById('scrim').classList.add('show');
-    document.getElementById('detClose').addEventListener('click',closeDetail);
-  }
+    document.getElementById('detClose').addEventListener('click',closeDetail);}
   function closeDetail(){document.getElementById('detail').classList.remove('open');
     document.getElementById('scrim').classList.remove('show');}
   document.getElementById('scrim').addEventListener('click',closeDetail);
 
-  document.getElementById('termHead').addEventListener('click',function(){
-    document.getElementById('terminal').classList.toggle('collapsed');
-  });
-  document.getElementById('filter').addEventListener('input',render);
-  document.querySelectorAll('#seg button').forEach(function(b){
-    b.addEventListener('click',function(){
-      document.querySelectorAll('#seg button').forEach(function(x){x.classList.remove('on');});
-      b.classList.add('on');render();
-    });
-  });
+  document.getElementById('termHead').addEventListener('click',function(){document.getElementById('terminal').classList.toggle('collapsed');});
+  filter.addEventListener('input',render);
+  seg.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    seg.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');render();});
+  var vt=document.getElementById('viewtog');
+  vt.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    vt.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    tiles.classList.toggle('grid',b.dataset.v==='grid');});
+
   var hint=document.getElementById('hint'),ht;
-  document.getElementById('nav').addEventListener('click',function(e){
-    var it=e.target.closest('.nav-item');if(!it||it.classList.contains('active'))return;
-    hint.textContent='Maquette — écran « '+it.querySelector('.lbl').textContent+' » à venir';
-    hint.classList.add('show');clearTimeout(ht);ht=setTimeout(function(){hint.classList.remove('show');},1900);
-  });
+  function showHint(t){hint.textContent=t;hint.classList.add('show');clearTimeout(ht);ht=setTimeout(function(){hint.classList.remove('show');},1900);}
+  document.getElementById('nav').addEventListener('click',function(e){var it=e.target.closest('.nav-item');
+    if(!it||it.classList.contains('active'))return;showHint('Maquette — écran « '+NAV[+it.dataset.i].lbl+' » à venir');});
+  window.addEventListener('keydown',function(e){
+    if((e.metaKey||e.ctrlKey)&&e.key>='1'&&e.key<='8'){e.preventDefault();var i=+e.key-1;
+      showHint(NAV[i].active?'Déjà sur « '+NAV[i].lbl+' »':'⌘'+e.key+' — écran « '+NAV[i].lbl+' »');}});
   render();
 })();
 </script>
