@@ -19,3 +19,6 @@ packaging/icon_1024.png
 
 # Sous-dépôt séparé (site vitrine), versionné à part
 /website/
+
+# Instructions locales Claude Code (non publiées)
+CLAUDE.md
