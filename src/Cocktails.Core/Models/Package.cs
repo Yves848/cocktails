@@ -8,12 +8,14 @@ namespace Cocktails.Core.Models;
 /// <param name="InstalledVersion">Version installée, ou <c>null</c> si non installé.</param>
 /// <param name="LatestVersion">Dernière version connue côté Homebrew, si disponible.</param>
 /// <param name="Description">Description courte fournie par Homebrew, si disponible.</param>
+/// <param name="Homepage">Site officiel du package, si connu (sert à récupérer l'icône).</param>
 public record Package(
     string Name,
     PackageKind Kind,
     string? InstalledVersion = null,
     string? LatestVersion = null,
-    string? Description = null)
+    string? Description = null,
+    string? Homepage = null)
 {
     /// <summary>Vrai si une version est installée localement.</summary>
     public bool IsInstalled => InstalledVersion is not null;

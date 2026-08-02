@@ -28,13 +28,11 @@ public sealed class HomebrewService : IHomebrewService
 
     public async Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
     {
-        var formulae = await RunAsync(["list", "--versions", "--formula"], cancellationToken);
-        var casks = await RunAsync(["list", "--versions", "--cask"], cancellationToken);
-
-        var packages = new List<Package>();
-        packages.AddRange(ParseInstalled(formulae.StandardOutput, PackageKind.Formula));
-        packages.AddRange(ParseInstalled(casks.StandardOutput, PackageKind.Cask));
-        return packages;
+        // brew info --installed --json=v2 : un seul appel qui rend, pour chaque paquet
+        // installé, son nom, sa version installée ET sa homepage (source de l'icône).
+        // ~1 s pour ~200 paquets (Homebrew met en cache l'API), acceptable au chargement.
+        var result = await RunAsync(["info", "--installed", "--json=v2"], cancellationToken);
+        return ParseInstalledInfo(result.StandardOutput);
     }
 
     public async Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
@@ -217,6 +215,64 @@ public sealed class HomebrewService : IHomebrewService
 
             var version = parts.Length > 1 ? parts[^1] : null;
             packages.Add(new Package(parts[0], kind, InstalledVersion: version));
+        }
+
+        return packages;
+    }
+
+    /// <summary>
+    /// Parse la sortie JSON de <c>brew info --installed --json=v2</c> (sections
+    /// <c>formulae</c> et <c>casks</c>). Récupère, par paquet installé, son nom, sa
+    /// version installée et sa <c>homepage</c> (qui alimente l'icône dans l'UI).
+    /// </summary>
+    public static IReadOnlyList<Package> ParseInstalledInfo(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var packages = new List<Package>();
+
+        if (root.TryGetProperty("formulae", out var formulae) && formulae.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var f in formulae.EnumerateArray())
+            {
+                if (GetString(f, "name") is not { } name)
+                {
+                    continue;
+                }
+
+                string? installed = null;
+                if (f.TryGetProperty("installed", out var inst)
+                    && inst.ValueKind == JsonValueKind.Array && inst.GetArrayLength() > 0)
+                {
+                    installed = GetString(inst[inst.GetArrayLength() - 1], "version");
+                }
+
+                packages.Add(new Package(
+                    name, PackageKind.Formula,
+                    InstalledVersion: installed,
+                    Homepage: GetString(f, "homepage")));
+            }
+        }
+
+        if (root.TryGetProperty("casks", out var casks) && casks.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var c in casks.EnumerateArray())
+            {
+                if (GetString(c, "token") is not { } token)
+                {
+                    continue;
+                }
+
+                packages.Add(new Package(
+                    token, PackageKind.Cask,
+                    InstalledVersion: GetString(c, "installed"),
+                    Homepage: GetString(c, "homepage")));
+            }
         }
 
         return packages;

@@ -79,6 +79,7 @@
                                             CommandParameter="{Binding}">
                                         <Grid ColumnDefinitions="Auto,*">
                                             <controls:AppIcon Grid.Column="0" Width="42" Height="42"
+                                                              Homepage="{Binding Homepage}"
                                                               FallbackText="{Binding KindBadge}" />
                                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                                 <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
