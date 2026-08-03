@@ -73,6 +73,19 @@ public class BrewCommandLineTests
             BrewCommandLine.SuggestedCommands(["It exists as a Cask. Try `brew install --cask firefox`"]));
 
     [Fact]
+    public void OptionsFor_ListIncludesVersions_AndCommonFlags()
+    {
+        var options = BrewCommandLine.OptionsFor("list");
+        Assert.Contains("--versions", options);
+        Assert.Contains("--cask", options);
+        Assert.Contains("--help", options);   // options communes ajoutées
+    }
+
+    [Fact]
+    public void OptionsFor_UnknownSubcommand_ReturnsCommonOnly()
+        => Assert.Equal(["--help", "--verbose", "--debug", "--quiet"], BrewCommandLine.OptionsFor("zork"));
+
+    [Fact]
     public void CommonPrefix_ReturnsLongestSharedStart()
     {
         Assert.Equal("git-", BrewCommandLine.CommonPrefix(["git-lfs", "git-delta", "git-extras"]));

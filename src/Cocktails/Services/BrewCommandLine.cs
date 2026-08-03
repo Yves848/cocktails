@@ -81,6 +81,32 @@ public static class BrewCommandLine
         "services", "link", "unlink", "home", "desc", "leaves", "missing", "update",
     ];
 
+    // Options communes à la plupart des sous-commandes.
+    private static readonly string[] CommonOptions = ["--help", "--verbose", "--debug", "--quiet"];
+
+    // Options spécifiques par sous-commande (complétion des flags « --… »).
+    private static readonly Dictionary<string, string[]> OptionsBySub = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["install"] = ["--cask", "--formula", "--force", "--HEAD", "--build-from-source", "--no-quarantine", "--dry-run"],
+        ["reinstall"] = ["--cask", "--formula", "--force", "--no-quarantine"],
+        ["uninstall"] = ["--cask", "--formula", "--force", "--zap", "--ignore-dependencies"],
+        ["upgrade"] = ["--cask", "--formula", "--greedy", "--dry-run", "--force"],
+        ["list"] = ["--versions", "--cask", "--formula", "--pinned", "--full-name", "-1"],
+        ["outdated"] = ["--cask", "--formula", "--greedy", "--verbose", "--json"],
+        ["info"] = ["--json", "--cask", "--formula", "--github"],
+        ["deps"] = ["--tree", "--installed", "--cask", "--formula", "--include-build"],
+        ["uses"] = ["--installed", "--recursive", "--cask", "--formula"],
+        ["search"] = ["--cask", "--formula", "--desc"],
+        ["cleanup"] = ["--prune", "--dry-run", "-s"],
+        ["services"] = ["--all"],
+    };
+
+    /// <summary>Options (flags <c>--…</c>) proposées pour une sous-commande donnée.</summary>
+    public static string[] OptionsFor(string subcommand)
+        => OptionsBySub.TryGetValue(subcommand, out var specific)
+            ? [.. specific, .. CommonOptions]
+            : CommonOptions;
+
     /// <summary>
     /// Repère dans une sortie brew les commandes proposées : lignes commençant par
     /// <c>brew </c> (ex. « brew install --cask X ») ou entre backticks (« Try `brew …` »).

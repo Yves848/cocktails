@@ -272,6 +272,14 @@ public partial class MainViewModel : ViewModelBase
 
             case "list":
             case "installed":
+                // Uniquement la liste « simple » (éventuellement filtrée par type). Avec
+                // d'autres options (ex. --versions) ou des noms, on laisse la commande brute
+                // afficher sa sortie dans le terminal.
+                if (args.Skip(1).Any(a => a is not ("--cask" or "--formula")))
+                {
+                    return false;
+                }
+
                 if (FindScreen<InstalledViewModel>() is not { } installed)
                 {
                     return false;
@@ -284,7 +292,7 @@ public partial class MainViewModel : ViewModelBase
                     : PackageKindFilter.All;
                 return true;
 
-            case "leaves":
+            case "leaves" when args.Length == 1:
                 if (FindScreen<InstalledViewModel>() is not { } leaves)
                 {
                     return false;
@@ -295,7 +303,7 @@ public partial class MainViewModel : ViewModelBase
                 leaves.LeavesOnly = true;
                 return true;
 
-            case "outdated":
+            case "outdated" when args.Length == 1:
                 SelectScreen("Nav.Updates");
                 return true;
 
@@ -411,7 +419,12 @@ public partial class MainViewModel : ViewModelBase
         var firstWord = before.Length == 0 || before.Equals("brew", StringComparison.OrdinalIgnoreCase);
 
         IReadOnlyList<string>? pool;
-        if (firstWord)
+        if (word.StartsWith('-'))
+        {
+            // Complétion des options (« --versions », « --cask »…) de la sous-commande.
+            pool = BrewCommandLine.OptionsFor(Subcommand(text));
+        }
+        else if (firstWord)
         {
             pool = BrewCommandLine.Subcommands;
         }
