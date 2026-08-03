@@ -89,6 +89,7 @@ public static class Strings
         ["Batch.Selected"] = ["{0} package(s) selected", "{0} paquet(s) sélectionné(s)", "{0} paquete(s) seleccionado(s)", "{0} Paket(e) ausgewählt"],
         ["Batch.UncheckAll"] = ["Uncheck all", "Tout décocher", "Desmarcar todo", "Alle abwählen"],
         ["Batch.UninstallSelection"] = ["Uninstall selection", "Désinstaller la sélection", "Desinstalar selección", "Auswahl deinstallieren"],
+        ["Batch.ReinstallSelection"] = ["Reinstall selection", "Réinstaller la sélection", "Reinstalar selección", "Auswahl neu installieren"],
         ["Batch.UpdateSelection"] = ["Update selection", "Mettre à jour la sélection", "Actualizar selección", "Auswahl aktualisieren"],
 
         // Mises à jour
@@ -222,6 +223,9 @@ public static class Strings
         ["Status.BatchUninstalling"] = ["Uninstalling {0} package(s)…", "Désinstallation de {0} paquet(s)…", "Desinstalando {0} paquete(s)…", "{0} Paket(e) werden deinstalliert…"],
         ["Status.BatchUninstallProgress"] = ["Uninstalling… ({0}/{1})", "Désinstallation… ({0}/{1})", "Desinstalando… ({0}/{1})", "Deinstallation… ({0}/{1})"],
         ["Status.BatchUninstalled"] = ["{0} package(s) uninstalled.", "{0} paquet(s) désinstallé(s).", "{0} paquete(s) desinstalado(s).", "{0} Paket(e) deinstalliert."],
+        ["Status.BatchReinstalling"] = ["Reinstalling {0} package(s)…", "Réinstallation de {0} paquet(s)…", "Reinstalando {0} paquete(s)…", "{0} Paket(e) werden neu installiert…"],
+        ["Status.BatchReinstallProgress"] = ["Reinstalling… ({0}/{1})", "Réinstallation… ({0}/{1})", "Reinstalando… ({0}/{1})", "Neuinstallation… ({0}/{1})"],
+        ["Status.BatchReinstalled"] = ["{0} package(s) reinstalled.", "{0} paquet(s) réinstallé(s).", "{0} paquete(s) reinstalado(s).", "{0} Paket(e) neu installiert."],
         ["Status.BatchUpgrading"] = ["Updating {0} package(s)…", "Mise à jour de {0} paquet(s)…", "Actualizando {0} paquete(s)…", "{0} Paket(e) werden aktualisiert…"],
         ["Status.BatchUpgradeProgress"] = ["Updating… ({0}/{1})", "Mise à jour… ({0}/{1})", "Actualizando… ({0}/{1})", "Aktualisierung… ({0}/{1})"],
         ["Status.BatchUpgraded"] = ["{0} package(s) up to date.", "{0} paquet(s) à jour.", "{0} paquete(s) actualizado(s).", "{0} Paket(e) aktuell."],

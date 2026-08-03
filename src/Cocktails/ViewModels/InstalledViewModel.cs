@@ -160,6 +160,33 @@ public partial class InstalledViewModel : PackageListViewModel
             () => DoBatchUninstallAsync(targets));
     }
 
+    /// <summary>Réinstalle en une passe toutes les lignes cochées (non destructif, sans confirmation).</summary>
+    [RelayCommand]
+    private Task BatchReinstall()
+    {
+        var targets = CheckedPackages();
+        if (targets.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunWithOutputAsync(L.Format("Status.BatchReinstalling", targets.Count), async progress =>
+        {
+            var done = 0;
+            foreach (var package in targets)
+            {
+                progress.Report($"$ brew reinstall {package.Name}");
+                await Homebrew.ReinstallAsync(package.Name, progress);
+                done++;
+                StatusMessage = L.Format("Status.BatchReinstallProgress", done, targets.Count);
+            }
+
+            ClearSelection();
+            Replace(await Homebrew.GetInstalledAsync());
+            StatusMessage = L.Format("Status.BatchReinstalled", targets.Count);
+        });
+    }
+
     private Task DoBatchUninstallAsync(IReadOnlyList<Package> targets)
         => RunWithOutputAsync(L.Format("Status.BatchUninstalling", targets.Count), async progress =>
         {

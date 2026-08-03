@@ -45,12 +45,14 @@
         <!-- Barre d'actions par lot (visible dès qu'une ligne est cochée). -->
         <Border Grid.Row="1" Classes="mcard" Margin="18,0,18,10" Padding="12,8"
                 IsVisible="{Binding AnySelected}">
-            <Grid ColumnDefinitions="*,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                 <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
                            Text="{Binding SelectedCountLabel}" />
                 <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Batch.UncheckAll}" Margin="0,0,8,0"
                         Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
-                <Button Grid.Column="2" Classes="act danger small" Content="{loc:Tr Batch.UninstallSelection}"
+                <Button Grid.Column="2" Classes="act small" Content="{loc:Tr Batch.ReinstallSelection}" Margin="0,0,8,0"
+                        Command="{Binding BatchReinstallCommand}" IsEnabled="{Binding !IsBusy}" />
+                <Button Grid.Column="3" Classes="act danger small" Content="{loc:Tr Batch.UninstallSelection}"
                         Command="{Binding BatchUninstallCommand}" IsEnabled="{Binding !IsBusy}" />
             </Grid>
         </Border>
