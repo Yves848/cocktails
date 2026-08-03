@@ -314,10 +314,30 @@
     <Setter Property="Background" Value="#33FF5F6D" />
   </Style>
 
+  <!-- Feux de circulation macOS (fermer / réduire / agrandir) : bouton sans chrome,
+       la pastille de couleur est une Ellipse ; léger assombrissement au survol. -->
+  <Style Selector="Button.mac">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="1" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.mac /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.mac:pointerover Ellipse">
+    <Setter Property="Opacity" Value="0.75" />
+  </Style>
+
   <!-- Bouton d'action compact (par ligne) -->
   <Style Selector="Button.act.small">
     <Setter Property="Padding" Value="10,5" />
     <Setter Property="FontSize" Value="12" />
+  </Style>
+  <!-- Bouton icône seule (tuiles) : padding carré, l'infobulle porte le libellé. -->
+  <Style Selector="Button.act.iconbtn">
+    <Setter Property="Padding" Value="7,6" />
   </Style>
 
   <!-- Champ de saisie -->

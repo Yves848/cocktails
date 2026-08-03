@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Cocktails.ViewModels;
 
 namespace Cocktails.Views;
@@ -94,6 +96,26 @@ public partial class MainWindow : Window
             vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
+        else if (meta && e.Key == Key.F)
+        {
+            // ⌘F : focus le champ de filtre de l'écran courant.
+            FindInContent<TextBox>("FilterBox")?.Focus();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Tab)
+        {
+            // Tab / ⇧Tab : bascule le focus entre la zone menu (nav) et la zone grille
+            // (tuiles). Les contrôles d'en-tête restent joignables par leurs raccourcis.
+            ToggleZoneFocus();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Space && IsFocusInTiles()
+                 && vm?.CurrentScreen is PackageListViewModel plvm && plvm.SelectedItem is { } sp)
+        {
+            // Espace : (dé)coche la tuile focalisée (opérations par lot).
+            sp.IsChecked = !sp.IsChecked;
+            e.Handled = true;
+        }
         else if (meta && TryGetDigitIndex(e.Key) is { } index)
         {
             // ⌘1…⌘8 → onglets. La rangée du haut (Key.D1…) et le pavé numérique
@@ -102,6 +124,46 @@ public partial class MainWindow : Window
             // ⌘+touche fonctionne sans ⇧, et le pavé numérique offre de vrais chiffres.
             vm?.SelectByIndex(index);
             e.Handled = true;
+        }
+    }
+
+    // --- Navigation clavier par zones (menu ↔ grille) ------------------------
+
+    private T? FindInContent<T>(string name) where T : Control
+        => this.GetVisualDescendants().OfType<T>().FirstOrDefault(c => c.Name == name);
+
+    private ListBox? TilesList() => FindInContent<ListBox>("List");
+
+    private bool IsFocusInTiles()
+    {
+        var tiles = TilesList();
+        return tiles is not null
+               && FocusManager?.GetFocusedElement() is Visual focused
+               && (focused == tiles || tiles.IsVisualAncestorOf(focused));
+    }
+
+    /// <summary>Bascule le focus entre la grille de tuiles (zone 2) et le menu (zone 1).</summary>
+    private void ToggleZoneFocus()
+    {
+        var nav = this.FindControl<ListBox>("NavList");
+        if (IsFocusInTiles())
+        {
+            nav?.Focus();
+            return;
+        }
+
+        if (TilesList() is { } tiles)
+        {
+            if (tiles.SelectedIndex < 0 && tiles.ItemCount > 0)
+            {
+                tiles.SelectedIndex = 0;
+            }
+
+            tiles.Focus();
+        }
+        else
+        {
+            nav?.Focus();
         }
     }
 

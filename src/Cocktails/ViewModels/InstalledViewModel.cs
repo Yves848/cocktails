@@ -34,6 +34,10 @@ public partial class InstalledViewModel : PackageListViewModel
     [ObservableProperty]
     public partial bool LeavesOnly { get; set; }
 
+    /// <summary>Bascule le filtre « racines » (bouton on/off + raccourci ⌥R).</summary>
+    [RelayCommand]
+    private void ToggleLeaves() => LeavesOnly = !LeavesOnly;
+
     protected override Task OnFirstActivatedAsync() => LoadAsync();
 
     [RelayCommand]

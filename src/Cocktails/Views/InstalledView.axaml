@@ -19,21 +19,27 @@
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
-            <TextBox Grid.Column="1" Classes="medit"
-                     PlaceholderText="{loc:Tr Placeholder.Filter}"
+            <TextBox Grid.Column="1" x:Name="FilterBox" Classes="medit"
+                     PlaceholderText="{loc:Tr Placeholder.Filter}" ToolTip.Tip="⌘F"
                      Text="{Binding FilterText}" IsEnabled="{Binding !IsBusy}" />
-            <CheckBox Grid.Column="2" Content="{loc:Tr Filter.Roots}" VerticalAlignment="Center" Margin="8,0,0,0"
-                      ToolTip.Tip="{loc:Tr Tooltip.Leaves}"
-                      IsChecked="{Binding LeavesOnly}" IsEnabled="{Binding !IsBusy}" />
+            <!-- Roots : bouton on/off uniforme (comme All/Formulae/Casks). -->
+            <Border Grid.Column="2" Classes="seg" Margin="8,0,0,0">
+                <Button Classes="segbtn" Classes.on="{Binding LeavesOnly}" Content="{loc:Tr Filter.Roots}"
+                        HotKey="Alt+R" ToolTip.Tip="{loc:Tr Tooltip.Leaves}"
+                        Command="{Binding ToggleLeavesCommand}" IsEnabled="{Binding !IsBusy}" />
+            </Border>
             <Border Grid.Column="3" Classes="seg" Margin="8,0,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="2">
                     <Button Classes="segbtn" Classes.on="{Binding IsKindAll}" Content="{loc:Tr Filter.All}"
+                            HotKey="Alt+A" ToolTip.Tip="⌥A"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.All}" />
                     <Button Classes="segbtn" Classes.on="{Binding IsKindFormula}" Content="Formulae"
+                            HotKey="Alt+F" ToolTip.Tip="⌥F"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.Formula}" />
                     <Button Classes="segbtn" Classes.on="{Binding IsKindCask}" Content="Casks"
+                            HotKey="Alt+C" ToolTip.Tip="⌥C"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.Cask}" />
                 </StackPanel>
@@ -123,23 +129,17 @@
                                     <CheckBox Grid.Column="0" VerticalAlignment="Center" MinWidth="0"
                                               IsChecked="{Binding IsChecked}"
                                               ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
-                                    <Button Grid.Column="2" Classes="act small icon" Margin="0,0,7,0"
+                                    <Button Grid.Column="2" Classes="act small iconbtn" Margin="0,0,7,0"
                                             ToolTip.Tip="{loc:Tr Btn.Reinstall}"
                                             Command="{Binding #List.((vm:InstalledViewModel)DataContext).ReinstallCommand}"
                                             CommandParameter="{Binding Package}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
-                                            <TextBlock Text="{loc:Tr Btn.Reinstall}" />
-                                        </StackPanel>
+                                        <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
                                     </Button>
-                                    <Button Grid.Column="3" Classes="act danger small icon"
+                                    <Button Grid.Column="3" Classes="act danger small iconbtn"
                                             ToolTip.Tip="{loc:Tr Btn.Uninstall}"
                                             Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
                                             CommandParameter="{Binding Package}">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon danger" />
-                                            <TextBlock Text="{loc:Tr Btn.Uninstall}" />
-                                        </StackPanel>
+                                        <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon danger" />
                                     </Button>
                                 </Grid>
                             </StackPanel>

@@ -32,23 +32,31 @@
 
             <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-                <!-- En-tête (zone de déplacement) -->
-                <Grid x:Name="DragArea" Grid.Row="0" ColumnDefinitions="*,Auto"
+                <!-- En-tête (zone de déplacement) : feux macOS à gauche, titre en accent. -->
+                <Grid x:Name="DragArea" Grid.Row="0" ColumnDefinitions="Auto,Auto,*"
                       Margin="16,13" Background="Transparent">
-                    <TextBlock Grid.Column="0" Classes="title" Text="Cocktails"
-                               VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                        <Button x:Name="MinBtn" Classes="icon" Content="‒" ToolTip.Tip="{loc:Tr Win.Minimize}" />
-                        <Button x:Name="MaxBtn" Classes="icon" Content="◻" ToolTip.Tip="{loc:Tr Win.Maximize}" />
-                        <Button x:Name="CloseBtn" Classes="icon" Content="✕" ToolTip.Tip="{loc:Tr Win.Close}" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                                VerticalAlignment="Center">
+                        <Button x:Name="CloseBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Close}">
+                            <Ellipse Width="12" Height="12" Fill="#FF5F57" />
+                        </Button>
+                        <Button x:Name="MinBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Minimize}">
+                            <Ellipse Width="12" Height="12" Fill="#FEBC2E" />
+                        </Button>
+                        <Button x:Name="MaxBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Maximize}">
+                            <Ellipse Width="12" Height="12" Fill="#28C840" />
+                        </Button>
                     </StackPanel>
+                    <TextBlock Grid.Column="1" Classes="title" Text="Cocktails"
+                               Foreground="{StaticResource Accent}"
+                               Margin="14,0,0,0" VerticalAlignment="Center" />
                 </Grid>
 
                 <Border Grid.Row="1" Classes="hairline" />
 
                 <!-- Corps : navigation latérale + écran actif -->
                 <Grid Grid.Row="2" ColumnDefinitions="196,*">
-                    <ListBox Grid.Column="0" Classes="nav"
+                    <ListBox Grid.Column="0" x:Name="NavList" Classes="nav"
                              ItemsSource="{Binding NavItems}"
                              SelectedItem="{Binding SelectedNav}">
                         <ListBox.ItemTemplate>
