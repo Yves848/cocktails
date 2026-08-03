@@ -25,6 +25,7 @@ public class SettingsStoreTests
                 MonitoringIntervalMinutes = 60,
                 KeepRunningInBackground = false,
                 Language = Cocktails.Localization.AppLanguage.German,
+                TerminalShortcut = "Ctrl+Alt+J",
                 WindowWidth = 1024,
                 WindowHeight = 720,
                 WindowX = 100,
@@ -40,6 +41,7 @@ public class SettingsStoreTests
             Assert.Equal(60, loaded.MonitoringIntervalMinutes);
             Assert.False(loaded.KeepRunningInBackground);
             Assert.Equal(Cocktails.Localization.AppLanguage.German, loaded.Language);
+            Assert.Equal("Ctrl+Alt+J", loaded.TerminalShortcut);
             Assert.Equal(1024, loaded.WindowWidth);
             Assert.Equal(720, loaded.WindowHeight);
             Assert.Equal(100, loaded.WindowX);

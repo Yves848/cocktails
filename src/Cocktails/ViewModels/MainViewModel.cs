@@ -250,66 +250,27 @@ public partial class MainViewModel : ViewModelBase
         => NavItems.Select(n => n.Screen).OfType<T>().FirstOrDefault();
 
     /// <summary>
-    /// Aiguille une commande « liste » vers l'écran adéquat (tuiles) : <c>search</c> →
-    /// Rechercher, <c>list</c>/<c>installed</c>/<c>leaves</c> → Installés (filtres posés),
-    /// <c>outdated</c> → Mises à jour. Retourne <c>true</c> si la commande a été aiguillée.
+    /// Aiguille <c>search &lt;terme&gt;</c> vers l'écran Rechercher (tuiles enrichies) au lieu
+    /// d'un texte brut. Les autres commandes (dont <c>list</c>, <c>outdated</c>) s'exécutent
+    /// normalement dans le terminal. Retourne <c>true</c> si la commande a été aiguillée.
     /// </summary>
     private bool TryRouteToScreen(string[] args)
     {
-        switch (args[0].ToLowerInvariant())
+        if (!args[0].Equals("search", StringComparison.OrdinalIgnoreCase) || args.Length < 2)
         {
-            case "search" when args.Length >= 2:
-                var query = string.Join(' ', args.Skip(1).Where(a => !a.StartsWith('-')));
-                if (query.Length == 0 || FindScreen<SearchViewModel>() is not { } search)
-                {
-                    return false;
-                }
-
-                SelectScreen("Nav.Search");
-                search.SearchQuery = query;
-                search.SearchCommand.Execute(null);
-                return true;
-
-            case "list":
-            case "installed":
-                // Uniquement la liste « simple » (éventuellement filtrée par type). Avec
-                // d'autres options (ex. --versions) ou des noms, on laisse la commande brute
-                // afficher sa sortie dans le terminal.
-                if (args.Skip(1).Any(a => a is not ("--cask" or "--formula")))
-                {
-                    return false;
-                }
-
-                if (FindScreen<InstalledViewModel>() is not { } installed)
-                {
-                    return false;
-                }
-
-                SelectScreen("Nav.Installed");
-                installed.LeavesOnly = false;
-                installed.KindFilter = args.Contains("--cask") ? PackageKindFilter.Cask
-                    : args.Contains("--formula") ? PackageKindFilter.Formula
-                    : PackageKindFilter.All;
-                return true;
-
-            case "leaves" when args.Length == 1:
-                if (FindScreen<InstalledViewModel>() is not { } leaves)
-                {
-                    return false;
-                }
-
-                SelectScreen("Nav.Installed");
-                leaves.KindFilter = PackageKindFilter.All;
-                leaves.LeavesOnly = true;
-                return true;
-
-            case "outdated" when args.Length == 1:
-                SelectScreen("Nav.Updates");
-                return true;
-
-            default:
-                return false;
+            return false;
         }
+
+        var query = string.Join(' ', args.Skip(1).Where(a => !a.StartsWith('-')));
+        if (query.Length == 0 || FindScreen<SearchViewModel>() is not { } search)
+        {
+            return false;
+        }
+
+        SelectScreen("Nav.Search");
+        search.SearchQuery = query;
+        search.SearchCommand.Execute(null);
+        return true;
     }
 
     /// <summary>Rappelle la commande précédente dans l'historique (↑).</summary>

@@ -44,6 +44,7 @@ public sealed class SettingsStore
                         MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
                         KeepRunningInBackground = dto.KeepRunningInBackground,
                         Language = dto.Language,
+                        TerminalShortcut = dto.TerminalShortcut,
                         WindowWidth = dto.WindowWidth,
                         WindowHeight = dto.WindowHeight,
                         WindowX = dto.WindowX,
@@ -75,6 +76,7 @@ public sealed class SettingsStore
                 MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
                 KeepRunningInBackground = settings.KeepRunningInBackground,
                 Language = settings.Language,
+                TerminalShortcut = settings.TerminalShortcut,
                 WindowWidth = settings.WindowWidth,
                 WindowHeight = settings.WindowHeight,
                 WindowX = settings.WindowX,
@@ -98,6 +100,7 @@ public sealed class SettingsStore
         public int MonitoringIntervalMinutes { get; set; } = 360;
         public bool KeepRunningInBackground { get; set; } = true;
         public Cocktails.Localization.AppLanguage Language { get; set; } = Cocktails.Localization.AppLanguage.System;
+        public string TerminalShortcut { get; set; } = "Cmd+T";
         public double? WindowWidth { get; set; }
         public double? WindowHeight { get; set; }
         public int? WindowX { get; set; }
