@@ -20,10 +20,6 @@ public partial class SelectablePackage : ObservableObject
     [ObservableProperty]
     public partial bool IsChecked { get; set; }
 
-    /// <summary>Tuile sélectionnée (pilote le liseré accent) ; maintenu par le VM.</summary>
-    [ObservableProperty]
-    public partial bool IsSelected { get; set; }
-
     // Relais de présentation (évite de réécrire les gabarits en Package.Xxx).
     public string Name => Package.Name;
     public string KindLabel => Package.KindLabel;
