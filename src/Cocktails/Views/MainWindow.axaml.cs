@@ -312,7 +312,7 @@ public partial class MainWindow : Window
                 vm.CloseSuggestions();
                 return true;
             case Key.Enter:
-                if (open && vm.SuggestionIndex >= 0) { vm.AcceptSuggestion(); return true; }
+                if (open && vm.SuggestionIndex >= 0) { vm.EnterOnSuggestion(); return true; }
                 return false;   // laisse le KeyBinding exécuter la commande
             default:
                 return false;

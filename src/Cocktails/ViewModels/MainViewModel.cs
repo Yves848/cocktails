@@ -163,6 +163,27 @@ public partial class MainViewModel : ViewModelBase
     public partial int SuggestionIndex { get; set; } = -1;
 
     /// <summary>
+    /// Vrai quand accepter une suggestion complète une commande exécutable (contexte
+    /// paquet) : le popup affiche alors ↩ (Entrée = exécuter), sinon seulement ⇥ (insérer).
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SuggestionsExecutable { get; set; }
+
+    /// <summary>
+    /// Entrée sur une suggestion surlignée : l'insère, puis exécute la commande si elle
+    /// est complète (contexte paquet). Sinon on insère seulement (comme ⇥).
+    /// </summary>
+    public void EnterOnSuggestion()
+    {
+        var executable = SuggestionsExecutable;
+        AcceptSuggestion();
+        if (executable)
+        {
+            _ = ExecuteTerminal();
+        }
+    }
+
+    /// <summary>
     /// Commandes brew proposées par la dernière sortie (ex. « brew install --cask … »),
     /// affichées en puces cliquables pour enchaîner directement.
     /// </summary>
@@ -242,6 +263,9 @@ public partial class MainViewModel : ViewModelBase
             {
                 screen.Invalidate();
                 await screen.ActivateAsync();
+                // L'ensemble installé a changé (install/uninstall…) → la complétion ciblée
+                // (uninstall, reinstall…) doit refléter le nouvel état.
+                _installedNames = (await _homebrew.GetInstalledAsync()).Select(p => p.Name).ToList();
             }
         }
     }
@@ -426,7 +450,7 @@ public partial class MainViewModel : ViewModelBase
 
     // Découpe la saisie pour la complétion : partie fixe avant le mot courant, mot
     // courant, et les candidats correspondants (sous-commandes ou noms selon le contexte).
-    private (string prefix, string word, List<string> matches) ComputeCompletion(string text)
+    private (string prefix, string word, List<string> matches, bool packageContext) ComputeCompletion(string text)
     {
         var lastSpace = text.LastIndexOf(' ');
         var prefix = lastSpace < 0 ? string.Empty : text[..(lastSpace + 1)];
@@ -442,7 +466,7 @@ public partial class MainViewModel : ViewModelBase
         if (word.Length == 0)
         {
             var recents = isPackage ? _lastResults.Distinct().Take(SuggestionCap).ToList() : [];
-            return (prefix, word, recents);
+            return (prefix, word, recents, isPackage);
         }
 
         IReadOnlyList<string>? pool;
@@ -461,7 +485,7 @@ public partial class MainViewModel : ViewModelBase
             if (pool is null)
             {
                 _ = EnsureNamesAsync();   // chargement paresseux ; les suggestions suivront
-                return (prefix, word, []);
+                return (prefix, word, [], isPackage);
             }
         }
 
@@ -482,7 +506,7 @@ public partial class MainViewModel : ViewModelBase
             matches = filtered.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        return (prefix, word, matches);
+        return (prefix, word, matches, isPackage);
     }
 
     // Première sous-commande de la saisie (après un « brew » éventuel).
@@ -511,7 +535,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void UpdateSuggestions()
     {
-        var (_, _, matches) = ComputeCompletion(TerminalInput);
+        var (_, _, matches, packageContext) = ComputeCompletion(TerminalInput);
         Suggestions.Clear();
         foreach (var m in matches.Take(SuggestionCap))
         {
@@ -519,6 +543,9 @@ public partial class MainViewModel : ViewModelBase
         }
 
         SuggestionIndex = -1;
+        // En contexte paquet, accepter une suggestion complète une commande exécutable
+        // (↩ = exécuter). Sinon, on insère seulement (⇥).
+        SuggestionsExecutable = packageContext;
         // Ouvre le popup dès qu'il y a des candidats (ComputeCompletion ne renvoie rien sur
         // un mot vide, sauf les résultats de la commande précédente en contexte paquet).
         IsSuggestionsOpen = Suggestions.Count > 0;
@@ -564,7 +591,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         var chosen = Suggestions[idx];
-        var (prefix, _, _) = ComputeCompletion(TerminalInput);
+        var (prefix, _, _, _) = ComputeCompletion(TerminalInput);
         SetInputSilently(prefix + chosen + " ");
     }
 
@@ -574,7 +601,7 @@ public partial class MainViewModel : ViewModelBase
     /// </summary>
     public void CompleteTerminal()
     {
-        var (prefix, word, matches) = ComputeCompletion(TerminalInput);
+        var (prefix, word, matches, _) = ComputeCompletion(TerminalInput);
         if (matches.Count == 0)
         {
             return;

@@ -203,7 +203,23 @@
                                                      SelectedIndex="{Binding SuggestionIndex}">
                                                 <ListBox.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Classes="term" Text="{Binding}" />
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}"
+                                                                       FontFamily="Menlo, Consolas, monospace"
+                                                                       FontSize="12" VerticalAlignment="Center" />
+                                                            <!-- Rappels touches (ligne sélectionnée) : ⇥ insérer, ↩ exécuter. -->
+                                                            <StackPanel Grid.Column="1" Classes="keyhints"
+                                                                        Orientation="Horizontal" Spacing="8"
+                                                                        Margin="14,0,0,0" VerticalAlignment="Center">
+                                                                <TextBlock Text="⇥" FontSize="13"
+                                                                           Foreground="{StaticResource TextMuted}"
+                                                                           ToolTip.Tip="{loc:Tr Terminal.HintInsert}" />
+                                                                <TextBlock Text="↩" FontSize="13" FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource Accent}"
+                                                                           ToolTip.Tip="{loc:Tr Terminal.HintRun}"
+                                                                           IsVisible="{Binding #Root.((vm:MainViewModel)DataContext).SuggestionsExecutable}" />
+                                                            </StackPanel>
+                                                        </Grid>
                                                     </DataTemplate>
                                                 </ListBox.ItemTemplate>
                                             </ListBox>

@@ -374,6 +374,13 @@
     <Setter Property="Foreground" Value="{StaticResource Accent}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
+  <!-- Rappels touches (⇥ / ↩) affichés seulement sur la ligne surlignée. -->
+  <Style Selector="ListBox#SuggestList StackPanel.keyhints">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected StackPanel.keyhints">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
 
   <!-- Terminal intégré (barre + zone de sortie) en bas de l'écran. -->
   <Style Selector="Border.terminal">

@@ -164,6 +164,8 @@ public static class Strings
         ["Terminal.Invalid"] = ["Only brew subcommands are allowed (no shell operators).", "Seules les sous-commandes brew sont permises (pas d'opérateurs shell).", "Solo se permiten subcomandos de brew (sin operadores de shell).", "Nur brew-Unterbefehle erlaubt (keine Shell-Operatoren)."],
         ["Terminal.Done"] = ["Command finished.", "Commande terminée.", "Comando finalizado.", "Befehl abgeschlossen."],
         ["Terminal.Failed"] = ["Command failed (exit {0}).", "Échec de la commande (code {0}).", "El comando falló (código {0}).", "Befehl fehlgeschlagen (Code {0})."],
+        ["Terminal.HintInsert"] = ["Tab: insert into the command", "Tab : insérer dans la commande", "Tab: insertar en el comando", "Tab: in den Befehl einfügen"],
+        ["Terminal.HintRun"] = ["Enter: run the command", "Entrée : exécuter la commande", "Intro: ejecutar el comando", "Enter: Befehl ausführen"],
         ["Notif.TestTitle"] = ["Cocktails", "Cocktails", "Cocktails", "Cocktails"],
         ["Notif.TestBody"] = ["Notifications are working 🍸", "Les notifications fonctionnent 🍸", "Las notificaciones funcionan 🍸", "Benachrichtigungen funktionieren 🍸"],
         ["Settings.Background"] = ["Keep running in background", "Rester actif en arrière-plan", "Seguir en segundo plano", "Im Hintergrund weiterlaufen"],
