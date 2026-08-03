@@ -58,6 +58,13 @@ public partial class MainViewModel : ViewModelBase
         Monitor.OutdatedChanged += OnOutdatedChanged;
         _updatesNav.Count = Monitor.OutdatedCount;
 
+        // Un upgrade fait depuis l'écran « Mises à jour » ne passe pas par le timer du
+        // moniteur : on lui demande de recompter tout de suite (badge + liste à jour).
+        if (_updatesNav.Screen is OutdatedViewModel outdatedVm)
+        {
+            outdatedVm.OutdatedSetChanged += (_, _) => _ = Monitor.CheckNowAsync();
+        }
+
         SelectedNav = NavItems[0];
     }
 
