@@ -162,6 +162,20 @@ public partial class MainViewModel : ViewModelBase
     public partial int SuggestionIndex { get; set; } = -1;
 
     /// <summary>
+    /// Commandes brew proposées par la dernière sortie (ex. « brew install --cask … »),
+    /// affichées en puces cliquables pour enchaîner directement.
+    /// </summary>
+    public ObservableCollection<string> SuggestedCommands { get; } = [];
+
+    /// <summary>Exécute une commande proposée (puce) — enchaîne dessus.</summary>
+    [RelayCommand]
+    private async Task UseSuggestion(string command)
+    {
+        TerminalInput = command;
+        await ExecuteTerminal();
+    }
+
+    /// <summary>
     /// Exécute la commande brew saisie sur l'écran courant (sortie streamée dans le
     /// terminal). Si la commande modifie l'état (install, uninstall…), l'écran est
     /// rechargé pour refléter le changement.
@@ -192,6 +206,7 @@ public partial class MainViewModel : ViewModelBase
 
         _historyIndex = _history.Count;
         _draft = string.Empty;
+        SuggestedCommands.Clear();
 
         // Commandes qui produisent une liste de paquets → affichées en tuiles sur l'écran
         // correspondant (Rechercher / Installés / Mises à jour) plutôt qu'en texte brut.
@@ -209,11 +224,25 @@ public partial class MainViewModel : ViewModelBase
             input = string.Join(' ', parsed);
         }
 
+        var startIndex = screen.OutputLog.Count;
         var args = await screen.RunTerminalCommandAsync(input);
-        if (args is not null && BrewCommandLine.IsMutating(args))
+        if (args is not null)
         {
-            screen.Invalidate();
-            await screen.ActivateAsync();
+            DetectSuggestions(screen.OutputLog.Skip(startIndex));
+            if (BrewCommandLine.IsMutating(args))
+            {
+                screen.Invalidate();
+                await screen.ActivateAsync();
+            }
+        }
+    }
+
+    // Repère dans la sortie les commandes brew proposées et les expose en puces.
+    private void DetectSuggestions(IEnumerable<string> lines)
+    {
+        foreach (var command in BrewCommandLine.SuggestedCommands(lines))
+        {
+            SuggestedCommands.Add(command);
         }
     }
 

@@ -42,6 +42,37 @@ public class BrewCommandLineTests
         => Assert.Equal(expected, BrewCommandLine.IsMutating([sub, "x"]));
 
     [Fact]
+    public void SuggestedCommands_ExtractsRunnableBrewLines()
+    {
+        // Sortie type de brew quand un nom est ambigu (formule + cask).
+        string[] output =
+        [
+            "To install firefly, run:",
+            "  brew install firefly",
+            "",
+            "==> Casks",
+            "firefly-iota-desktop",
+            "firefox",
+            "",
+            "To install firefly-iota-desktop, run:",
+            "  brew install --cask firefly-iota-desktop",
+            "✗ exit 1",
+        ];
+
+        var suggestions = BrewCommandLine.SuggestedCommands(output);
+
+        Assert.Equal(
+            ["brew install firefly", "brew install --cask firefly-iota-desktop"],
+            suggestions);
+    }
+
+    [Fact]
+    public void SuggestedCommands_HandlesBacktickHint()
+        => Assert.Equal(
+            ["brew install --cask firefox"],
+            BrewCommandLine.SuggestedCommands(["It exists as a Cask. Try `brew install --cask firefox`"]));
+
+    [Fact]
     public void CommonPrefix_ReturnsLongestSharedStart()
     {
         Assert.Equal("git-", BrewCommandLine.CommonPrefix(["git-lfs", "git-delta", "git-extras"]));

@@ -107,7 +107,7 @@
 
                         <!-- Terminal intégré : sorties des commandes brew, collapsible. -->
                         <Border Grid.Row="1" Classes="terminal">
-                            <Grid RowDefinitions="Auto,Auto,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="14,6">
                                     <Path Grid.Column="0" Data="{StaticResource IconTerminalGeo}"
                                           Classes="btnicon" VerticalAlignment="Center" />
@@ -153,8 +153,29 @@
                                     </Panel>
                                 </Border>
 
+                                <!-- Commandes proposées par brew (« To install …, run: … ») : puces
+                                     cliquables pour enchaîner directement. -->
+                                <ItemsControl Grid.Row="2" ItemsSource="{Binding SuggestedCommands}"
+                                              Margin="14,4,14,0" IsVisible="{Binding IsTerminalExpanded}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="act small" Margin="0,4,7,0"
+                                                    Command="{Binding #Root.((vm:MainViewModel)DataContext).UseSuggestionCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <Path Data="{StaticResource IconPlayGeo}" Classes="btnicon" />
+                                                    <TextBlock Classes="term" Text="{Binding}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
                                 <!-- Saisie : n'exécute que des sous-commandes brew. -->
-                                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="14,8,14,11"
+                                <Grid Grid.Row="3" ColumnDefinitions="Auto,*" Margin="14,8,14,11"
                                       IsVisible="{Binding IsTerminalExpanded}">
                                     <TextBlock Grid.Column="0" Classes="term" VerticalAlignment="Center"
                                                Foreground="{StaticResource Accent}" Text="❯ brew" Margin="0,0,9,0" />
@@ -167,8 +188,9 @@
                                         </TextBox.KeyBindings>
                                     </TextBox>
 
-                                    <!-- Popup de suggestions (complétion), ouvert au-dessus de la saisie. -->
-                                    <Popup Grid.Column="1" PlacementTarget="{Binding #TerminalBox}"
+                                    <!-- Popup de suggestions (complétion), calé sur le curseur (offset
+                                         horizontal ajusté en code-behind), ouvert au-dessus de la saisie. -->
+                                    <Popup x:Name="SuggestPopup" Grid.Column="1" PlacementTarget="{Binding #TerminalBox}"
                                            Placement="Top" VerticalOffset="-4"
                                            IsOpen="{Binding IsSuggestionsOpen}"
                                            IsLightDismissEnabled="False">

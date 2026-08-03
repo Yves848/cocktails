@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Cocktails.Services;
 
@@ -79,6 +80,41 @@ public static class BrewCommandLine
         "uses", "pin", "unpin", "tap", "untap", "outdated", "cleanup", "autoremove", "doctor",
         "services", "link", "unlink", "home", "desc", "leaves", "missing", "update",
     ];
+
+    /// <summary>
+    /// Repère dans une sortie brew les commandes proposées : lignes commençant par
+    /// <c>brew </c> (ex. « brew install --cask X ») ou entre backticks (« Try `brew …` »).
+    /// Dédoublonne en conservant l'ordre.
+    /// </summary>
+    public static IReadOnlyList<string> SuggestedCommands(IEnumerable<string> outputLines)
+    {
+        var result = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var raw in outputLines)
+        {
+            var line = raw.Trim();
+            string? command = null;
+            if (line.StartsWith("brew ", StringComparison.Ordinal))
+            {
+                command = line;
+            }
+            else
+            {
+                var match = Regex.Match(line, "`(brew [^`]+)`");
+                if (match.Success)
+                {
+                    command = match.Groups[1].Value.Trim();
+                }
+            }
+
+            if (command is not null && seen.Add(command))
+            {
+                result.Add(command);
+            }
+        }
+
+        return result;
+    }
 
     /// <summary>Plus long préfixe commun (insensible à la casse) d'un ensemble de chaînes.</summary>
     public static string CommonPrefix(IReadOnlyList<string> values)

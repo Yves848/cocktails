@@ -4,7 +4,10 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Cocktails.ViewModels;
@@ -70,6 +73,15 @@ public partial class MainWindow : Window
                     box.Focus();
                     box.CaretIndex = box.Text?.Length ?? 0;
                 }
+            }
+        };
+
+        // Cale le popup de complétion sur le curseur (largeur du texte avant le mot courant).
+        TerminalBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.TextProperty || e.Property == TextBox.CaretIndexProperty)
+            {
+                UpdateSuggestionPopupOffset();
             }
         };
 
@@ -211,6 +223,29 @@ public partial class MainWindow : Window
         {
             return false;   // geste mal formé : on ignore plutôt que de planter
         }
+    }
+
+    /// <summary>
+    /// Positionne le popup de complétion à l'horizontale du mot courant : on mesure la
+    /// largeur du texte qui précède ce mot dans la police (monospace) de la saisie.
+    /// </summary>
+    private void UpdateSuggestionPopupOffset()
+    {
+        if (this.FindControl<Popup>("SuggestPopup") is not { } popup
+            || this.FindControl<TextBox>("TerminalBox") is not { } box)
+        {
+            return;
+        }
+
+        var text = box.Text ?? string.Empty;
+        var caret = Math.Clamp(box.CaretIndex, 0, text.Length);
+        var lastSpace = text.LastIndexOf(' ', Math.Max(0, caret - 1));
+        var wordStart = lastSpace < 0 ? 0 : lastSpace + 1;
+        var prefix = text[..wordStart];
+
+        var typeface = new Typeface(box.FontFamily, box.FontStyle, box.FontWeight);
+        var width = new TextLayout(prefix, typeface, box.FontSize, Brushes.White).Width;
+        popup.HorizontalOffset = box.Padding.Left + width;
     }
 
     private static bool IsModifierKey(Key key) => key

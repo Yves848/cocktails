@@ -358,6 +358,23 @@
     <Setter Property="Padding" Value="7,6" />
   </Style>
 
+  <!-- Popup de suggestions du terminal : ligne sélectionnée mise en évidence en accent. -->
+  <Style Selector="ListBox#SuggestList ListBoxItem">
+    <Setter Property="Padding" Value="9,5" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#16FFFFFF" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Accent}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
   <!-- Terminal intégré (barre + zone de sortie) en bas de l'écran. -->
   <Style Selector="Border.terminal">
     <Setter Property="Background" Value="#0A0E15" />
