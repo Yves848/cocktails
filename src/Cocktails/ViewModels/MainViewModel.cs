@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -36,10 +37,20 @@ public partial class MainViewModel : ViewModelBase
         "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3 M12 17h.01";
 
     private readonly NavItem _updatesNav;
+    private readonly IHomebrewService _homebrew;
+
+    // Historique du terminal (commandes exécutées) + navigation ↑/↓.
+    private readonly List<string> _history = [];
+    private int _historyIndex;          // == _history.Count : position « brouillon »
+    private string _draft = string.Empty;
+    // Noms formulae+casks pour la complétion (chargés paresseusement à l'ouverture).
+    private IReadOnlyList<string>? _names;
+    private bool _namesLoading;
 
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
         INotifier? notifier = null)
     {
+        _homebrew = homebrew;
         settings ??= new AppSettings();
         // Une couleur d'accent distincte par onglet (icônes uniques et colorées).
         _updatesNav = new NavItem("Nav.Updates", IconUpdates, new OutdatedViewModel(homebrew), "#F0B429");
@@ -143,16 +154,144 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        var input = TerminalInput;
+        var input = TerminalInput.Trim();
         TerminalInput = string.Empty;
         IsTerminalExpanded = true;
 
+        // Historique (évite les doublons consécutifs), curseur remis en fin.
+        if (input.Length > 0 && (_history.Count == 0 || _history[^1] != input))
+        {
+            _history.Add(input);
+        }
+
+        _historyIndex = _history.Count;
+        _draft = string.Empty;
+
         var args = await screen.RunTerminalCommandAsync(input);
-        if (args is not null && Cocktails.Services.BrewCommandLine.IsMutating(args))
+        if (args is not null && BrewCommandLine.IsMutating(args))
         {
             screen.Invalidate();
             await screen.ActivateAsync();
         }
+    }
+
+    /// <summary>Rappelle la commande précédente dans l'historique (↑).</summary>
+    public void HistoryPrevious()
+    {
+        if (_history.Count == 0 || _historyIndex == 0)
+        {
+            return;
+        }
+
+        if (_historyIndex == _history.Count)
+        {
+            _draft = TerminalInput;   // sauvegarde la saisie en cours avant de plonger
+        }
+
+        _historyIndex--;
+        TerminalInput = _history[_historyIndex];
+    }
+
+    /// <summary>Revient vers les commandes plus récentes, puis au brouillon (↓).</summary>
+    public void HistoryNext()
+    {
+        if (_historyIndex >= _history.Count)
+        {
+            return;
+        }
+
+        _historyIndex++;
+        TerminalInput = _historyIndex == _history.Count ? _draft : _history[_historyIndex];
+    }
+
+    /// <summary>Précharge les noms de paquets à la première ouverture du terminal.</summary>
+    partial void OnIsTerminalExpandedChanged(bool value)
+    {
+        if (value)
+        {
+            _ = LoadNamesAsync();
+        }
+    }
+
+    private async Task LoadNamesAsync()
+    {
+        if (_names is not null || _namesLoading)
+        {
+            return;
+        }
+
+        _namesLoading = true;
+        try
+        {
+            _names = await _homebrew.GetAllNamesAsync();
+        }
+        catch (Exception)
+        {
+            _names = [];
+        }
+        finally
+        {
+            _namesLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Complète le mot courant de la saisie (Tab) : sous-commandes brew pour le premier
+    /// mot, sinon noms de paquets. Complète jusqu'au préfixe commun ; si aucun progrès et
+    /// plusieurs candidats, les liste dans le terminal (comportement type shell).
+    /// </summary>
+    public void CompleteTerminal()
+    {
+        var text = TerminalInput;
+        var lastSpace = text.LastIndexOf(' ');
+        var prefixPart = lastSpace < 0 ? string.Empty : text[..(lastSpace + 1)];
+        var word = lastSpace < 0 ? text : text[(lastSpace + 1)..];
+
+        var before = (lastSpace < 0 ? string.Empty : text[..lastSpace]).Trim();
+        var firstWord = before.Length == 0 || before.Equals("brew", StringComparison.OrdinalIgnoreCase);
+
+        IReadOnlyList<string> pool;
+        if (firstWord)
+        {
+            pool = BrewCommandLine.Subcommands;
+        }
+        else if (_names is { } names)
+        {
+            pool = names;
+        }
+        else
+        {
+            _ = LoadNamesAsync();   // pas encore chargés : on lance et on abandonne ce Tab
+            return;
+        }
+
+        var matches = pool
+            .Where(n => n.StartsWith(word, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (matches.Count == 0)
+        {
+            return;
+        }
+
+        if (matches.Count == 1)
+        {
+            TerminalInput = prefixPart + matches[0] + " ";
+            return;
+        }
+
+        var common = BrewCommandLine.CommonPrefix(matches);
+        if (common.Length > word.Length)
+        {
+            TerminalInput = prefixPart + common;
+            return;
+        }
+
+        // Aucun progrès possible : on affiche les candidats dans le terminal.
+        IsTerminalExpanded = true;
+        CurrentScreen?.OutputLog.Add(string.Join("   ", matches.Take(80))
+            + (matches.Count > 80 ? $"   … (+{matches.Count - 80})" : string.Empty));
     }
 
     partial void OnSelectedNavChanged(NavItem? value)

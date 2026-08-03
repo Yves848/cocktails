@@ -56,4 +56,43 @@ public static class BrewCommandLine
     /// <summary>Vrai si la première sous-commande modifie l'état (install, uninstall…).</summary>
     public static bool IsMutating(IReadOnlyList<string> args)
         => args.Count > 0 && Mutating.Contains(args[0]);
+
+    /// <summary>
+    /// Sous-commandes brew usuelles proposées à la complétion du premier mot.
+    /// </summary>
+    public static readonly string[] Subcommands =
+    [
+        "install", "uninstall", "reinstall", "upgrade", "info", "search", "list", "deps",
+        "uses", "pin", "unpin", "tap", "untap", "outdated", "cleanup", "autoremove", "doctor",
+        "services", "link", "unlink", "home", "desc", "leaves", "missing", "update",
+    ];
+
+    /// <summary>Plus long préfixe commun (insensible à la casse) d'un ensemble de chaînes.</summary>
+    public static string CommonPrefix(IReadOnlyList<string> values)
+    {
+        if (values.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var prefix = values[0];
+        for (var i = 1; i < values.Count; i++)
+        {
+            var candidate = values[i];
+            var len = System.Math.Min(prefix.Length, candidate.Length);
+            var j = 0;
+            while (j < len && char.ToLowerInvariant(prefix[j]) == char.ToLowerInvariant(candidate[j]))
+            {
+                j++;
+            }
+
+            prefix = prefix[..j];
+            if (prefix.Length == 0)
+            {
+                break;
+            }
+        }
+
+        return prefix;
+    }
 }

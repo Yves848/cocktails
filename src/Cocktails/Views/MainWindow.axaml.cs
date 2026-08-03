@@ -102,6 +102,32 @@ public partial class MainWindow : Window
             FindInContent<TextBox>("FilterBox")?.Focus();
             e.Handled = true;
         }
+        else if (IsFocusInTerminalInput() && e.Key is Key.Tab or Key.Up or Key.Down)
+        {
+            // Terminal : Tab = complétion, ↑/↓ = historique (curseur replacé en fin).
+            if (e.Key == Key.Tab)
+            {
+                vm?.CompleteTerminal();
+            }
+            else if (e.Key == Key.Up)
+            {
+                vm?.HistoryPrevious();
+            }
+            else
+            {
+                vm?.HistoryNext();
+            }
+
+            var box = this.FindControl<TextBox>("TerminalBox");
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (box is not null)
+                {
+                    box.CaretIndex = box.Text?.Length ?? 0;
+                }
+            });
+            e.Handled = true;
+        }
         else if (e.Key == Key.Tab)
         {
             // Tab / ⇧Tab : bascule le focus entre la zone menu (nav) et la zone grille
@@ -140,6 +166,10 @@ public partial class MainWindow : Window
         => this.GetVisualDescendants().OfType<T>().FirstOrDefault(c => c.Name == name);
 
     private ListBox? TilesList() => FindInContent<ListBox>("List");
+
+    private bool IsFocusInTerminalInput()
+        => this.FindControl<TextBox>("TerminalBox") is { } box
+           && ReferenceEquals(FocusManager?.GetFocusedElement(), box);
 
     private bool IsFocusInTiles()
     {

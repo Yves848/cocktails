@@ -33,6 +33,9 @@ internal sealed class DesignHomebrewService : IHomebrewService
     public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.FromResult(0);
 
+    public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<string>>(["git", "wget", "node", "ripgrep"]);
+
     public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<Package>>([Sample[0]]);
 

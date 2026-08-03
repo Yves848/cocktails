@@ -16,6 +16,12 @@ public interface IHomebrewService
     Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Tous les noms connus (formulae + casks), via <c>brew formulae</c> / <c>brew casks</c>.
+    /// Sert à la complétion (« intellisense ») du terminal intégré ; mis en cache par l'appelant.
+    /// </summary>
+    Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Récupère en un seul appel (<c>brew info --json=v2 …</c>) les métadonnées légères
     /// d'une liste de packages (version, description, homepage), pour enrichir les tuiles
     /// de résultats de recherche. Retourne un package par entrée trouvée.

@@ -41,6 +41,9 @@ public class ScreenViewModelTests
         public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.FromResult(0);
 
+        public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>([]);
+
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
@@ -224,6 +227,9 @@ public class ScreenViewModelTests
 
         public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.FromResult(0);
+
+        public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>([]);
 
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
@@ -962,6 +968,7 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
         public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
         public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
         public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);

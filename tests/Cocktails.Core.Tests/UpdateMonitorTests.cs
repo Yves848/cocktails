@@ -31,6 +31,9 @@ public class UpdateMonitorTests
         public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.FromResult(0);
 
+        public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>([]);
+
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 

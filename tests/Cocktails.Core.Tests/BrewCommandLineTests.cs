@@ -40,4 +40,13 @@ public class BrewCommandLineTests
     [InlineData("deps", false)]
     public void IsMutating_DetectsStateChangingSubcommands(string sub, bool expected)
         => Assert.Equal(expected, BrewCommandLine.IsMutating([sub, "x"]));
+
+    [Fact]
+    public void CommonPrefix_ReturnsLongestSharedStart()
+    {
+        Assert.Equal("git-", BrewCommandLine.CommonPrefix(["git-lfs", "git-delta", "git-extras"]));
+        Assert.Equal("node", BrewCommandLine.CommonPrefix(["node", "node@18", "node@20"]));
+        Assert.Equal("", BrewCommandLine.CommonPrefix(["wget", "curl"]));
+        Assert.Equal("wget", BrewCommandLine.CommonPrefix(["wget"]));
+    }
 }

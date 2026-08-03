@@ -158,7 +158,7 @@
                                       IsVisible="{Binding IsTerminalExpanded}">
                                     <TextBlock Grid.Column="0" Classes="term" VerticalAlignment="Center"
                                                Foreground="{StaticResource Accent}" Text="❯ brew" Margin="0,0,9,0" />
-                                    <TextBox Grid.Column="1" Classes="medit"
+                                    <TextBox Grid.Column="1" x:Name="TerminalBox" Classes="medit"
                                              Text="{Binding TerminalInput}"
                                              PlaceholderText="{loc:Tr Terminal.Prompt}"
                                              FontFamily="Menlo, Consolas, monospace"

@@ -41,6 +41,17 @@ public sealed class HomebrewService : IHomebrewService
         return ParseSearch(result.StandardOutput);
     }
 
+    public async Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+    {
+        var formulae = await RunAsync(["formulae"], cancellationToken);
+        var casks = await RunAsync(["casks"], cancellationToken);
+
+        var names = new List<string>();
+        names.AddRange(SplitLines(formulae.StandardOutput));
+        names.AddRange(SplitLines(casks.StandardOutput));
+        return names;
+    }
+
     public async Task<IReadOnlyList<Package>> GetInfoForAsync(
         IReadOnlyList<string> names, CancellationToken cancellationToken = default)
     {
