@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -124,6 +125,35 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Vide la sortie du terminal de l'écran courant.</summary>
     [RelayCommand]
     private void ClearTerminal() => CurrentScreen?.OutputLog.Clear();
+
+    /// <summary>Ligne de commande saisie dans le terminal intégré.</summary>
+    [ObservableProperty]
+    public partial string TerminalInput { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Exécute la commande brew saisie sur l'écran courant (sortie streamée dans le
+    /// terminal). Si la commande modifie l'état (install, uninstall…), l'écran est
+    /// rechargé pour refléter le changement.
+    /// </summary>
+    [RelayCommand]
+    private async Task ExecuteTerminal()
+    {
+        if (CurrentScreen is not { } screen || string.IsNullOrWhiteSpace(TerminalInput))
+        {
+            return;
+        }
+
+        var input = TerminalInput;
+        TerminalInput = string.Empty;
+        IsTerminalExpanded = true;
+
+        var args = await screen.RunTerminalCommandAsync(input);
+        if (args is not null && Cocktails.Services.BrewCommandLine.IsMutating(args))
+        {
+            screen.Invalidate();
+            await screen.ActivateAsync();
+        }
+    }
 
     partial void OnSelectedNavChanged(NavItem? value)
     {

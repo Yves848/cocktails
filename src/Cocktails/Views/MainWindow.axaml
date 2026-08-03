@@ -107,7 +107,7 @@
 
                         <!-- Terminal intégré : sorties des commandes brew, collapsible. -->
                         <Border Grid.Row="1" Classes="terminal">
-                            <Grid RowDefinitions="Auto,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="14,6">
                                     <Path Grid.Column="0" Data="{StaticResource IconTerminalGeo}"
                                           Classes="btnicon" VerticalAlignment="Center" />
@@ -152,6 +152,22 @@
                                         </ScrollViewer>
                                     </Panel>
                                 </Border>
+
+                                <!-- Saisie : n'exécute que des sous-commandes brew. -->
+                                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="14,8,14,11"
+                                      IsVisible="{Binding IsTerminalExpanded}">
+                                    <TextBlock Grid.Column="0" Classes="term" VerticalAlignment="Center"
+                                               Foreground="{StaticResource Accent}" Text="❯ brew" Margin="0,0,9,0" />
+                                    <TextBox Grid.Column="1" Classes="medit"
+                                             Text="{Binding TerminalInput}"
+                                             PlaceholderText="{loc:Tr Terminal.Prompt}"
+                                             FontFamily="Menlo, Consolas, monospace"
+                                             IsEnabled="{Binding !CurrentScreen.IsBusy}">
+                                        <TextBox.KeyBindings>
+                                            <KeyBinding Gesture="Enter" Command="{Binding ExecuteTerminalCommand}" />
+                                        </TextBox.KeyBindings>
+                                    </TextBox>
+                                </Grid>
                             </Grid>
                         </Border>
                     </Grid>

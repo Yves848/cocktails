@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Localization;
+using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -146,5 +147,43 @@ public abstract partial class ScreenViewModel : ViewModelBase
         });
 
         return RunAsync(busyMessage, () => action(progress));
+    }
+
+    /// <summary>Ajoute une ligne au terminal (borne le tail comme le flux de sortie).</summary>
+    private void AppendLog(string line)
+    {
+        OutputLog.Add(line);
+        while (OutputLog.Count > MaxLogLines)
+        {
+            OutputLog.RemoveAt(0);
+        }
+    }
+
+    /// <summary>
+    /// Exécute une commande saisie dans le terminal intégré. La saisie est analysée en
+    /// arguments brew (<see cref="BrewCommandLine"/> ; aucun shell), et la sortie est
+    /// <b>ajoutée</b> au terminal (sans l'effacer). Retourne les arguments exécutés (ou
+    /// <c>null</c> si la saisie était invalide), pour que le shell décide d'un rechargement.
+    /// </summary>
+    public async Task<string[]?> RunTerminalCommandAsync(string input)
+    {
+        var args = BrewCommandLine.Parse(input);
+        if (args is null)
+        {
+            AppendLog(L["Terminal.Invalid"]);
+            return null;
+        }
+
+        var line = "brew " + string.Join(' ', args);
+        var progress = new Progress<string>(AppendLog);
+        await RunAsync(line, async () =>
+        {
+            AppendLog("$ " + line);
+            var exit = await Homebrew.RunBrewAsync(args, progress);
+            AppendLog(exit == 0 ? "✓" : $"✗ exit {exit}");
+            StatusMessage = exit == 0 ? L["Terminal.Done"] : L.Format("Terminal.Failed", exit);
+        });
+
+        return args;
     }
 }

@@ -84,6 +84,15 @@ public sealed class HomebrewService : IHomebrewService
     public async Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["update"], cancellationToken, output);
 
+    public async Task<int> RunBrewAsync(
+        IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+    {
+        // Invocation directe du binaire brew avec ces arguments (pas de shell) : la saisie
+        // du terminal ne peut donc pas s'échapper vers un autre programme.
+        var result = await _runner.RunAsync(_brewPath, args, output, cancellationToken).ConfigureAwait(false);
+        return result.ExitCode;
+    }
+
     public async Task PinAsync(string name, CancellationToken cancellationToken = default)
         => await RunAsync(["pin", name], cancellationToken);
 

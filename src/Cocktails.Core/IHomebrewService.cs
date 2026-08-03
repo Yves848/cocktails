@@ -28,6 +28,14 @@ public interface IHomebrewService
     /// <summary>Actualise l'index des formules/casks (<c>brew update</c>).</summary>
     Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Exécute une sous-commande <c>brew</c> arbitraire (terminal intégré) en streamant la
+    /// sortie ligne à ligne. On invoque directement le binaire <c>brew</c> avec ces arguments
+    /// (aucun shell). Ne lève <b>pas</b> sur code non nul — les erreurs font partie de la
+    /// sortie du terminal ; retourne le code de sortie du processus.
+    /// </summary>
+    Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
     /// <summary>Récupère le détail enrichi d'un package (description, dépendances, homepage…).</summary>
     Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default);
 
