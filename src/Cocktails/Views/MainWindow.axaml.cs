@@ -116,6 +116,13 @@ public partial class MainWindow : Window
             sp.IsChecked = !sp.IsChecked;
             e.Handled = true;
         }
+        else if ((e.Key == Key.Up || e.Key == Key.Down) && IsFocusInTiles())
+        {
+            // Le WrapPanel ne gère pas le saut de rangée : on le fait géométriquement
+            // (tuile de la rangée voisine dont la colonne est la plus proche).
+            MoveTilesVertically(e.Key == Key.Down ? 1 : -1);
+            e.Handled = true;
+        }
         else if (meta && TryGetDigitIndex(e.Key) is { } index)
         {
             // ⌘1…⌘8 → onglets. La rangée du haut (Key.D1…) et le pavé numérique
@@ -142,6 +149,78 @@ public partial class MainWindow : Window
                && (focused == tiles || tiles.IsVisualAncestorOf(focused));
     }
 
+    /// <summary>
+    /// Déplace la sélection d'une rangée dans la grille (WrapPanel) : cherche, parmi les
+    /// tuiles de la rangée immédiatement au-dessus/au-dessous, celle dont la position
+    /// horizontale est la plus proche. <paramref name="dir"/> = +1 (bas) / -1 (haut).
+    /// </summary>
+    private void MoveTilesVertically(int dir)
+    {
+        var list = TilesList();
+        if (list is null || list.ItemCount == 0)
+        {
+            return;
+        }
+
+        var cur = list.SelectedIndex;
+        if (cur < 0)
+        {
+            list.SelectedIndex = 0;
+            FocusTile(list, 0);
+            return;
+        }
+
+        if (list.ContainerFromIndex(cur) is not Control curContainer)
+        {
+            return;
+        }
+
+        var curX = curContainer.Bounds.X;
+        var curY = curContainer.Bounds.Y;
+
+        var best = -1;
+        var bestScore = double.MaxValue;
+        for (var i = 0; i < list.ItemCount; i++)
+        {
+            if (i == cur || list.ContainerFromIndex(i) is not Control c)
+            {
+                continue;
+            }
+
+            var b = c.Bounds;
+            // La cible doit être sur une autre rangée dans le sens demandé.
+            if (dir > 0 && b.Y <= curY + 1)
+            {
+                continue;
+            }
+
+            if (dir < 0 && b.Y >= curY - 1)
+            {
+                continue;
+            }
+
+            // Rangée la plus proche d'abord, puis colonne la plus proche.
+            var score = (Math.Abs(b.Y - curY) * 100000) + Math.Abs(b.X - curX);
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = i;
+            }
+        }
+
+        if (best >= 0)
+        {
+            list.SelectedIndex = best;
+            FocusTile(list, best);
+        }
+    }
+
+    private static void FocusTile(ListBox list, int index)
+    {
+        list.ScrollIntoView(index);
+        (list.ContainerFromIndex(index) as Control)?.Focus();
+    }
+
     /// <summary>Bascule le focus entre la grille de tuiles (zone 2) et le menu (zone 1).</summary>
     private void ToggleZoneFocus()
     {
@@ -152,14 +231,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (TilesList() is { } tiles)
+        if (TilesList() is { ItemCount: > 0 } tiles)
         {
-            if (tiles.SelectedIndex < 0 && tiles.ItemCount > 0)
-            {
-                tiles.SelectedIndex = 0;
-            }
-
-            tiles.Focus();
+            var idx = tiles.SelectedIndex < 0 ? 0 : tiles.SelectedIndex;
+            tiles.SelectedIndex = idx;
+            FocusTile(tiles, idx);
         }
         else
         {
