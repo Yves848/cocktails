@@ -51,6 +51,7 @@ public partial class MainViewModel : ViewModelBase
     private HashSet<string>? _caskSet;
     private Task? _loadTask;             // chargement du catalogue mémoïsé (awaitable une fois)
     private bool _suppressSuggestions;   // vrai pendant un set programmatique (historique / accept)
+    private List<string> _lastResults = [];   // résultats de la commande précédente (enchaînement)
 
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
         INotifier? notifier = null)
@@ -208,12 +209,12 @@ public partial class MainViewModel : ViewModelBase
         _draft = string.Empty;
         SuggestedCommands.Clear();
 
-        // Commandes qui produisent une liste de paquets → affichées en tuiles sur l'écran
-        // correspondant (Rechercher / Installés / Mises à jour) plutôt qu'en texte brut.
         var parsed = BrewCommandLine.Parse(input);
         if (parsed is not null)
         {
-            if (TryRouteToScreen(parsed))
+            // `search <terme>` → écran Rechercher (tuiles enrichies) ; on mémorise les
+            // résultats pour l'enchaînement (le prochain « install … » les proposera en tête).
+            if (await TryRouteSearchAsync(parsed))
             {
                 return;
             }
@@ -228,13 +229,62 @@ public partial class MainViewModel : ViewModelBase
         var args = await screen.RunTerminalCommandAsync(input);
         if (args is not null)
         {
-            DetectSuggestions(screen.OutputLog.Skip(startIndex));
+            var newLines = screen.OutputLog.Skip(startIndex).ToList();
+            DetectSuggestions(newLines);
+            CaptureLastResults(args, newLines);
             if (BrewCommandLine.IsMutating(args))
             {
                 screen.Invalidate();
                 await screen.ActivateAsync();
             }
         }
+    }
+
+    // `search <terme>` : bascule sur l'écran Rechercher, lance la recherche et mémorise
+    // les noms trouvés (_lastResults) pour prioriser la complétion de la commande suivante.
+    private async Task<bool> TryRouteSearchAsync(string[] args)
+    {
+        if (!args[0].Equals("search", StringComparison.OrdinalIgnoreCase) || args.Length < 2
+            || FindScreen<SearchViewModel>() is not { } search)
+        {
+            return false;
+        }
+
+        var query = string.Join(' ', args.Skip(1).Where(a => !a.StartsWith('-')));
+        if (query.Length == 0)
+        {
+            return false;
+        }
+
+        SelectScreen("Nav.Search");
+        search.SearchQuery = query;
+        await search.SearchCommand.ExecuteAsync(null);
+        _lastResults = search.Packages.Select(p => p.Name).ToList();
+        return true;
+    }
+
+    // Mémorise les paquets listés par une commande (list, leaves, outdated…) pour
+    // l'enchaînement ; vide le contexte pour les autres commandes.
+    private void CaptureLastResults(string[] args, IEnumerable<string> outputLines)
+    {
+        string[] listing = ["list", "leaves", "outdated", "casks", "formulae", "deps", "uses"];
+        if (!listing.Contains(args[0], StringComparer.OrdinalIgnoreCase))
+        {
+            _lastResults = [];
+            return;
+        }
+
+        var names = new List<string>();
+        foreach (var line in outputLines)
+        {
+            var token = line.Trim().Split(' ', 2)[0];
+            if (token.Length > 0 && (_formulaSet?.Contains(token) == true || _caskSet?.Contains(token) == true))
+            {
+                names.Add(token);
+            }
+        }
+
+        _lastResults = names;
     }
 
     // Repère dans la sortie les commandes brew proposées et les expose en puces.
@@ -248,30 +298,6 @@ public partial class MainViewModel : ViewModelBase
 
     private T? FindScreen<T>() where T : ScreenViewModel
         => NavItems.Select(n => n.Screen).OfType<T>().FirstOrDefault();
-
-    /// <summary>
-    /// Aiguille <c>search &lt;terme&gt;</c> vers l'écran Rechercher (tuiles enrichies) au lieu
-    /// d'un texte brut. Les autres commandes (dont <c>list</c>, <c>outdated</c>) s'exécutent
-    /// normalement dans le terminal. Retourne <c>true</c> si la commande a été aiguillée.
-    /// </summary>
-    private bool TryRouteToScreen(string[] args)
-    {
-        if (!args[0].Equals("search", StringComparison.OrdinalIgnoreCase) || args.Length < 2)
-        {
-            return false;
-        }
-
-        var query = string.Join(' ', args.Skip(1).Where(a => !a.StartsWith('-')));
-        if (query.Length == 0 || FindScreen<SearchViewModel>() is not { } search)
-        {
-            return false;
-        }
-
-        SelectScreen("Nav.Search");
-        search.SearchQuery = query;
-        search.SearchCommand.Execute(null);
-        return true;
-    }
 
     /// <summary>Rappelle la commande précédente dans l'historique (↑).</summary>
     public void HistoryPrevious()
@@ -378,9 +404,19 @@ public partial class MainViewModel : ViewModelBase
 
         var before = (lastSpace < 0 ? string.Empty : text[..lastSpace]).Trim();
         var firstWord = before.Length == 0 || before.Equals("brew", StringComparison.OrdinalIgnoreCase);
+        var isOption = word.StartsWith('-');
+        var isPackage = !isOption && !firstWord;
+
+        // Mot vide : rien, SAUF en contexte paquet avec des résultats de la commande
+        // précédente (ex. après « search git », « install » propose les paquets trouvés).
+        if (word.Length == 0)
+        {
+            var recents = isPackage ? _lastResults.Distinct().Take(SuggestionCap).ToList() : [];
+            return (prefix, word, recents);
+        }
 
         IReadOnlyList<string>? pool;
-        if (word.StartsWith('-'))
+        if (isOption)
         {
             // Complétion des options (« --versions », « --cask »…) de la sous-commande.
             pool = BrewCommandLine.OptionsFor(Subcommand(text));
@@ -391,8 +427,7 @@ public partial class MainViewModel : ViewModelBase
         }
         else
         {
-            var sub = Subcommand(text);
-            pool = BrewCommandLine.CompletesInstalledOnly(sub) ? _installedNames : _names;
+            pool = BrewCommandLine.CompletesInstalledOnly(Subcommand(text)) ? _installedNames : _names;
             if (pool is null)
             {
                 _ = EnsureNamesAsync();   // chargement paresseux ; les suggestions suivront
@@ -400,10 +435,22 @@ public partial class MainViewModel : ViewModelBase
             }
         }
 
-        var matches = pool
-            .Where(n => n.StartsWith(word, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var filtered = pool.Where(n => n.StartsWith(word, StringComparison.OrdinalIgnoreCase));
+
+        // En contexte paquet, les résultats de la commande précédente passent en tête.
+        List<string> matches;
+        if (isPackage && _lastResults.Count > 0)
+        {
+            var recent = new HashSet<string>(_lastResults, StringComparer.OrdinalIgnoreCase);
+            matches = filtered
+                .OrderByDescending(n => recent.Contains(n))
+                .ThenBy(n => n, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+        else
+        {
+            matches = filtered.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
+        }
 
         return (prefix, word, matches);
     }
@@ -434,7 +481,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void UpdateSuggestions()
     {
-        var (_, word, matches) = ComputeCompletion(TerminalInput);
+        var (_, _, matches) = ComputeCompletion(TerminalInput);
         Suggestions.Clear();
         foreach (var m in matches.Take(SuggestionCap))
         {
@@ -442,8 +489,9 @@ public partial class MainViewModel : ViewModelBase
         }
 
         SuggestionIndex = -1;
-        // On n'ouvre le popup que si l'utilisateur a commencé à écrire le mot.
-        IsSuggestionsOpen = Suggestions.Count > 0 && word.Length > 0;
+        // Ouvre le popup dès qu'il y a des candidats (ComputeCompletion ne renvoie rien sur
+        // un mot vide, sauf les résultats de la commande précédente en contexte paquet).
+        IsSuggestionsOpen = Suggestions.Count > 0;
     }
 
     private void SetInputSilently(string text)
