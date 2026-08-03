@@ -60,9 +60,20 @@
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                         <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                                                    Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
-                                        <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                            <TextBlock Classes="muted" FontSize="11" Text="·"
+                                                       IsVisible="{Binding LatestVersion, Converter={x:Static ac:ObjectConverters.IsNotNull}}" />
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding LatestVersion}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
+
+                                <!-- Description courte (issue de brew info) -->
+                                <TextBlock Classes="muted" FontSize="11.5" TextWrapping="Wrap" MaxLines="2"
+                                           TextTrimming="CharacterEllipsis" Margin="0,10,0,0"
+                                           Text="{Binding Description}"
+                                           IsVisible="{Binding Description, Converter={x:Static ac:ObjectConverters.IsNotNull}}" />
 
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,14,0,0">
                                     <Border Grid.Column="0" Classes="chip" HorizontalAlignment="Left"

@@ -30,6 +30,14 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([new Package(query, PackageKind.Formula)]);
 
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>(
+                names.Select(n => new Package(
+                    n,
+                    Casks.Contains(n) ? PackageKind.Cask : PackageKind.Formula,
+                    InstalledVersion: Installed.Contains(n) || Casks.Contains(n) ? "1.0" : null,
+                    LatestVersion: "1.0")).ToList());
+
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
@@ -206,6 +214,9 @@ public class ScreenViewModelTests
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>([]);
+
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
@@ -943,6 +954,7 @@ public class ScreenViewModelTests
 
         public Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
         public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);

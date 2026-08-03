@@ -15,6 +15,13 @@ public interface IHomebrewService
     /// <summary>Recherche des packages par nom / mot-clé.</summary>
     Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Récupère en un seul appel (<c>brew info --json=v2 …</c>) les métadonnées légères
+    /// d'une liste de packages (version, description, homepage), pour enrichir les tuiles
+    /// de résultats de recherche. Retourne un package par entrée trouvée.
+    /// </summary>
+    Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default);
+
     /// <summary>Liste les packages installés pour lesquels une mise à jour est disponible.</summary>
     Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default);
 

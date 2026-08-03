@@ -22,6 +22,9 @@ public partial class SearchViewModel : PackageListViewModel
 
     protected override string TitleKey => "Nav.Search";
 
+    /// <summary>Plafond d'enrichissement (brew info) pour borner le coût d'une recherche large.</summary>
+    private const int EnrichCap = 200;
+
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = string.Empty;
 
@@ -42,16 +45,34 @@ public partial class SearchViewModel : PackageListViewModel
         {
             var results = await Homebrew.SearchAsync(query);
 
-            // Marque les résultats déjà installés (brew search ne donne pas cet état) :
-            // on croise avec la liste des installés pour reporter leur version.
-            // Un même nom peut être installé en formula ET en cask (ex. powershell) :
-            // regrouper par nom évite une exception de clé dupliquée dans le dictionnaire.
-            var installedVersions = (await Homebrew.GetInstalledAsync())
-                .GroupBy(p => p.Name)
-                .ToDictionary(g => g.Key, g => g.First().InstalledVersion);
+            // Enrichit chaque résultat (icône via homepage, version disponible, description,
+            // et état installé) en UN seul appel brew info groupé — l'API Homebrew étant en
+            // cache, c'est rapide même pour beaucoup de noms. Best-effort : si l'info échoue,
+            // on garde les résultats bruts (nom + type). La clé (nom, type) gère le cas d'un
+            // même nom en formula ET en cask.
+            var infoByKey = new Dictionary<(string, PackageKind), Package>();
+            try
+            {
+                var names = results.Select(r => r.Name).Distinct().Take(EnrichCap).ToList();
+                foreach (var i in await Homebrew.GetInfoForAsync(names))
+                {
+                    infoByKey[(i.Name, i.Kind)] = i;
+                }
+            }
+            catch (HomebrewException)
+            {
+                // Enrichissement indisponible : on continue avec les résultats bruts.
+            }
+
             var marked = results
-                .Select(r => installedVersions.TryGetValue(r.Name, out var v) && v is not null
-                    ? r with { InstalledVersion = v }
+                .Select(r => infoByKey.TryGetValue((r.Name, r.Kind), out var i)
+                    ? r with
+                    {
+                        InstalledVersion = i.InstalledVersion,
+                        LatestVersion = i.LatestVersion,
+                        Description = i.Description,
+                        Homepage = i.Homepage,
+                    }
                     : r)
                 .ToList();
 

@@ -41,6 +41,19 @@ public sealed class HomebrewService : IHomebrewService
         return ParseSearch(result.StandardOutput);
     }
 
+    public async Task<IReadOnlyList<Package>> GetInfoForAsync(
+        IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+    {
+        if (names.Count == 0)
+        {
+            return [];
+        }
+
+        string[] args = ["info", "--json=v2", .. names];
+        var result = await RunAsync(args, cancellationToken);
+        return ParseInfoList(result.StandardOutput);
+    }
+
     public async Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
     {
         var result = await RunAsync(["outdated", "--json=v2"], cancellationToken);
@@ -272,6 +285,70 @@ public sealed class HomebrewService : IHomebrewService
                     token, PackageKind.Cask,
                     InstalledVersion: GetString(c, "installed"),
                     Homepage: GetString(c, "homepage")));
+            }
+        }
+
+        return packages;
+    }
+
+    /// <summary>
+    /// Parse la sortie JSON de <c>brew info --json=v2 &lt;noms&gt;</c> en packages enrichis :
+    /// version disponible (<c>versions.stable</c> / <c>version</c>), version installée si
+    /// présente, description et homepage. Sert à enrichir les tuiles de résultats de recherche.
+    /// </summary>
+    public static IReadOnlyList<Package> ParseInfoList(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var packages = new List<Package>();
+
+        if (root.TryGetProperty("formulae", out var formulae) && formulae.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var f in formulae.EnumerateArray())
+            {
+                if (GetString(f, "name") is not { } name)
+                {
+                    continue;
+                }
+
+                string? stable = null;
+                if (f.TryGetProperty("versions", out var versions) && versions.ValueKind == JsonValueKind.Object)
+                {
+                    stable = GetString(versions, "stable");
+                }
+
+                string? installed = null;
+                if (f.TryGetProperty("installed", out var inst)
+                    && inst.ValueKind == JsonValueKind.Array && inst.GetArrayLength() > 0)
+                {
+                    installed = GetString(inst[inst.GetArrayLength() - 1], "version");
+                }
+
+                packages.Add(new Package(
+                    name, PackageKind.Formula,
+                    InstalledVersion: installed, LatestVersion: stable,
+                    Description: GetString(f, "desc"), Homepage: GetString(f, "homepage")));
+            }
+        }
+
+        if (root.TryGetProperty("casks", out var casks) && casks.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var c in casks.EnumerateArray())
+            {
+                if (GetString(c, "token") is not { } token)
+                {
+                    continue;
+                }
+
+                packages.Add(new Package(
+                    token, PackageKind.Cask,
+                    InstalledVersion: GetString(c, "installed"), LatestVersion: GetString(c, "version"),
+                    Description: GetString(c, "desc"), Homepage: GetString(c, "homepage")));
             }
         }
 

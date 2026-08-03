@@ -83,6 +83,54 @@ public class HomebrewParsingTests
         => Assert.Empty(HomebrewService.ParseInstalledInfo(""));
 
     [Fact]
+    public void ParseInfoList_ReadsVersionDescriptionHomepageAndInstalled()
+    {
+        // `brew info --json=v2 <noms>` : enrichissement des tuiles de recherche.
+        const string json = """
+            {
+              "formulae": [
+                {
+                  "name": "wget",
+                  "desc": "Internet file retriever",
+                  "homepage": "https://www.gnu.org/software/wget/",
+                  "versions": { "stable": "1.24.5" },
+                  "installed": []
+                }
+              ],
+              "casks": [
+                {
+                  "token": "firefox",
+                  "desc": "Web browser",
+                  "homepage": "https://www.mozilla.org/firefox/",
+                  "version": "128.0",
+                  "installed": "127.0"
+                }
+              ]
+            }
+            """;
+
+        var packages = HomebrewService.ParseInfoList(json);
+
+        Assert.Equal(2, packages.Count);
+
+        var wget = packages[0];
+        Assert.Equal("wget", wget.Name);
+        Assert.Equal(PackageKind.Formula, wget.Kind);
+        Assert.Equal("1.24.5", wget.LatestVersion);
+        Assert.Equal("Internet file retriever", wget.Description);
+        Assert.Equal("https://www.gnu.org/software/wget/", wget.Homepage);
+        Assert.Null(wget.InstalledVersion);      // "installed": [] → non installé
+        Assert.False(wget.IsInstalled);
+
+        var firefox = packages[1];
+        Assert.Equal("firefox", firefox.Name);
+        Assert.Equal(PackageKind.Cask, firefox.Kind);
+        Assert.Equal("128.0", firefox.LatestVersion);
+        Assert.Equal("127.0", firefox.InstalledVersion);
+        Assert.True(firefox.IsOutdated);         // installé 127 < dispo 128
+    }
+
+    [Fact]
     public void ParseSearch_SplitsFormulaeAndCasksBySectionHeaders()
     {
         const string output = """

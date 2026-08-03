@@ -25,6 +25,9 @@ public class UpdateMonitorTests
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>([]);
+
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
 
