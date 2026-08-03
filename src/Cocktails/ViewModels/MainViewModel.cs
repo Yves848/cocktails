@@ -219,6 +219,12 @@ public partial class MainViewModel : ViewModelBase
                 return;
             }
 
+            // `list` (forme simple) → écran Installés.
+            if (TryRouteListToInstalled(parsed))
+            {
+                return;
+            }
+
             // Catalogue prêt → ajoute --cask automatiquement si le paquet est un cask pur.
             await EnsureNamesAsync();
             parsed = AutoCask(parsed);
@@ -298,6 +304,30 @@ public partial class MainViewModel : ViewModelBase
 
     private T? FindScreen<T>() where T : ScreenViewModel
         => NavItems.Select(n => n.Screen).OfType<T>().FirstOrDefault();
+
+    // `list` / `installed` (au plus filtré par --cask/--formula) → écran Installés. Avec
+    // d'autres options (ex. --versions) ou des noms, on laisse la commande brute (false).
+    private bool TryRouteListToInstalled(string[] args)
+    {
+        if (args[0] is not ("list" or "installed"))
+        {
+            return false;
+        }
+
+        if (args.Skip(1).Any(a => a is not ("--cask" or "--formula"))
+            || FindScreen<InstalledViewModel>() is not { } installed)
+        {
+            return false;
+        }
+
+        SelectScreen("Nav.Installed");
+        installed.LeavesOnly = false;
+        installed.KindFilter = args.Contains("--cask") ? PackageKindFilter.Cask
+            : args.Contains("--formula") ? PackageKindFilter.Formula
+            : PackageKindFilter.All;
+        _lastResults = [];
+        return true;
+    }
 
     /// <summary>Rappelle la commande précédente dans l'historique (↑).</summary>
     public void HistoryPrevious()
