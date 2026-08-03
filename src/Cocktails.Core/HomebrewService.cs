@@ -41,15 +41,11 @@ public sealed class HomebrewService : IHomebrewService
         return ParseSearch(result.StandardOutput);
     }
 
-    public async Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
+    public async Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
     {
         var formulae = await RunAsync(["formulae"], cancellationToken);
         var casks = await RunAsync(["casks"], cancellationToken);
-
-        var names = new List<string>();
-        names.AddRange(SplitLines(formulae.StandardOutput));
-        names.AddRange(SplitLines(casks.StandardOutput));
-        return names;
+        return new BrewCatalog([.. SplitLines(formulae.StandardOutput)], [.. SplitLines(casks.StandardOutput)]);
     }
 
     public async Task<IReadOnlyList<Package>> GetInfoForAsync(
@@ -143,11 +139,11 @@ public sealed class HomebrewService : IHomebrewService
     public async Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default)
         => await RunAsync(["analytics", enabled ? "on" : "off"], cancellationToken);
 
-    public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["install", name], cancellationToken, output);
+    public async Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(kind == PackageKind.Cask ? ["install", "--cask", name] : ["install", name], cancellationToken, output);
 
-    public async Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["reinstall", name], cancellationToken, output);
+    public async Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(kind == PackageKind.Cask ? ["reinstall", "--cask", name] : ["reinstall", name], cancellationToken, output);
 
     public async Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["uninstall", name], cancellationToken, output);

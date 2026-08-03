@@ -31,8 +31,8 @@ public class UpdateMonitorTests
         public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.FromResult(0);
 
-        public Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new BrewCatalog([], []));
 
         public Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default)
             => Task.FromResult(new PackageDetails(name, PackageKind.Formula, null, null, null, null, [], false, null));
@@ -46,8 +46,8 @@ public class UpdateMonitorTests
         public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;

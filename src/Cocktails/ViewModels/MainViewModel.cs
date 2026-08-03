@@ -43,11 +43,13 @@ public partial class MainViewModel : ViewModelBase
     private readonly List<string> _history = [];
     private int _historyIndex;          // == _history.Count : position « brouillon »
     private string _draft = string.Empty;
-    // Noms formulae+casks (complétion générale) et noms installés (complétion ciblée),
+    // Catalogue (complétion + détection cask) et noms installés (complétion ciblée),
     // chargés paresseusement à l'ouverture du terminal.
-    private IReadOnlyList<string>? _names;
+    private IReadOnlyList<string>? _names;             // formulae + casks (complétion générale)
     private IReadOnlyList<string>? _installedNames;
-    private bool _namesLoading;
+    private HashSet<string>? _formulaSet;              // pour distinguer un cask « pur »
+    private HashSet<string>? _caskSet;
+    private Task? _loadTask;             // chargement du catalogue mémoïsé (awaitable une fois)
     private bool _suppressSuggestions;   // vrai pendant un set programmatique (historique / accept)
 
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
@@ -190,9 +192,17 @@ public partial class MainViewModel : ViewModelBase
         // Commandes qui produisent une liste de paquets → affichées en tuiles sur l'écran
         // correspondant (Rechercher / Installés / Mises à jour) plutôt qu'en texte brut.
         var parsed = BrewCommandLine.Parse(input);
-        if (parsed is not null && TryRouteToScreen(parsed))
+        if (parsed is not null)
         {
-            return;
+            if (TryRouteToScreen(parsed))
+            {
+                return;
+            }
+
+            // Catalogue prêt → ajoute --cask automatiquement si le paquet est un cask pur.
+            await EnsureNamesAsync();
+            parsed = AutoCask(parsed);
+            input = string.Join(' ', parsed);
         }
 
         var args = await screen.RunTerminalCommandAsync(input);
@@ -295,34 +305,63 @@ public partial class MainViewModel : ViewModelBase
     {
         if (value)
         {
-            _ = LoadNamesAsync();
+            _ = EnsureNamesAsync();
         }
     }
 
+    /// <summary>Charge le catalogue une seule fois (mémoïsé) et le rend awaitable.</summary>
+    private Task EnsureNamesAsync() => _loadTask ??= LoadNamesAsync();
+
     private async Task LoadNamesAsync()
     {
-        if (_names is not null || _namesLoading)
-        {
-            return;
-        }
-
-        _namesLoading = true;
         try
         {
-            _names = await _homebrew.GetAllNamesAsync();
+            var catalog = await _homebrew.GetCatalogAsync();
+            _formulaSet = new HashSet<string>(catalog.Formulae, StringComparer.OrdinalIgnoreCase);
+            _caskSet = new HashSet<string>(catalog.Casks, StringComparer.OrdinalIgnoreCase);
+            _names = [.. catalog.Formulae, .. catalog.Casks];
             _installedNames = (await _homebrew.GetInstalledAsync()).Select(p => p.Name).ToList();
         }
         catch (Exception)
         {
             _names ??= [];
             _installedNames ??= [];
-        }
-        finally
-        {
-            _namesLoading = false;
+            _formulaSet ??= [];
+            _caskSet ??= [];
         }
 
         UpdateSuggestions();   // au cas où l'utilisateur a déjà commencé à taper
+    }
+
+    /// <summary>
+    /// Ajoute automatiquement <c>--cask</c> à une commande d'installation dont tous les
+    /// paquets sont des casks « purs » (cask et non formula) — évite l'erreur brew
+    /// « use --cask ». Ne touche rien si le flag est déjà présent ou en cas d'ambiguïté.
+    /// </summary>
+    private string[] AutoCask(string[] args)
+    {
+        if (args.Length < 2 || _caskSet is null || _formulaSet is null)
+        {
+            return args;
+        }
+
+        if (args[0] is not ("install" or "reinstall" or "upgrade"))
+        {
+            return args;
+        }
+
+        if (args.Any(a => a is "--cask" or "--formula"))
+        {
+            return args;
+        }
+
+        var names = args.Skip(1).Where(a => !a.StartsWith('-')).ToList();
+        if (names.Count == 0 || !names.All(n => _caskSet.Contains(n) && !_formulaSet.Contains(n)))
+        {
+            return args;   // aucun nom, ou au moins un n'est pas un cask pur → on ne touche pas
+        }
+
+        return [args[0], "--cask", .. args[1..]];
     }
 
     private const int SuggestionCap = 60;
@@ -349,7 +388,7 @@ public partial class MainViewModel : ViewModelBase
             pool = BrewCommandLine.CompletesInstalledOnly(sub) ? _installedNames : _names;
             if (pool is null)
             {
-                _ = LoadNamesAsync();   // chargement paresseux ; les suggestions suivront
+                _ = EnsureNamesAsync();   // chargement paresseux ; les suggestions suivront
                 return (prefix, word, []);
             }
         }

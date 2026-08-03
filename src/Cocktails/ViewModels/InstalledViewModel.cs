@@ -93,7 +93,7 @@ public partial class InstalledViewModel : PackageListViewModel
 
         return RunWithOutputAsync(L.Format("Status.Reinstalling", package.Name), async progress =>
         {
-            await Homebrew.ReinstallAsync(package.Name, progress);
+            await Homebrew.ReinstallAsync(package.Name, package.Kind, progress);
             Replace(await Homebrew.GetInstalledAsync());
             StatusMessage = L.Format("Status.Reinstalled", package.Name);
         });
@@ -180,7 +180,7 @@ public partial class InstalledViewModel : PackageListViewModel
             foreach (var package in targets)
             {
                 progress.Report($"$ brew reinstall {package.Name}");
-                await Homebrew.ReinstallAsync(package.Name, progress);
+                await Homebrew.ReinstallAsync(package.Name, package.Kind, progress);
                 done++;
                 StatusMessage = L.Format("Status.BatchReinstallProgress", done, targets.Count);
             }

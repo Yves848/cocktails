@@ -92,7 +92,7 @@ public partial class SearchViewModel : PackageListViewModel
 
         return RunWithOutputAsync(L.Format("Status.Installing", package.Name), async progress =>
         {
-            await Homebrew.InstallAsync(package.Name, progress);
+            await Homebrew.InstallAsync(package.Name, package.Kind, progress);
             StatusMessage = L.Format("Status.Installed", package.Name);
         });
     }
