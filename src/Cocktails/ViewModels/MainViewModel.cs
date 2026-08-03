@@ -5,6 +5,7 @@ using System.Linq;
 using Cocktails.Core;
 using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
@@ -111,6 +112,18 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial ScreenViewModel? CurrentScreen { get; set; }
+
+    /// <summary>Terminal intégré déplié (sinon seule sa barre est visible).</summary>
+    [ObservableProperty]
+    public partial bool IsTerminalExpanded { get; set; }
+
+    /// <summary>Déplie / replie le terminal intégré.</summary>
+    [RelayCommand]
+    private void ToggleTerminal() => IsTerminalExpanded = !IsTerminalExpanded;
+
+    /// <summary>Vide la sortie du terminal de l'écran courant.</summary>
+    [RelayCommand]
+    private void ClearTerminal() => CurrentScreen?.OutputLog.Clear();
 
     partial void OnSelectedNavChanged(NavItem? value)
     {

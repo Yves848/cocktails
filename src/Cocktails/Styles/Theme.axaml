@@ -64,6 +64,9 @@
     <StreamGeometry x:Key="IconDoctorGeo">M22 12h-4l-3 9L9 3l-3 9H2</StreamGeometry>
     <StreamGeometry x:Key="IconExportGeo">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 9l5-5 5 5 M12 4v12</StreamGeometry>
     <StreamGeometry x:Key="IconBellGeo">M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0</StreamGeometry>
+    <StreamGeometry x:Key="IconTerminalGeo">M4 17l6-6-6-6 M12 19h8</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronDownGeo">M6 9l6 6 6-6</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronUpGeo">M6 15l6-6 6 6</StreamGeometry>
   </Styles.Resources>
 
   <!-- Carte : conteneur racine arrondi + bordure 2px. Le fond translucide/flou est fourni par
@@ -353,6 +356,20 @@
   <!-- Bouton icône seule (tuiles) : padding carré, l'infobulle porte le libellé. -->
   <Style Selector="Button.act.iconbtn">
     <Setter Property="Padding" Value="7,6" />
+  </Style>
+
+  <!-- Terminal intégré (barre + zone de sortie) en bas de l'écran. -->
+  <Style Selector="Border.terminal">
+    <Setter Property="Background" Value="#0A0E15" />
+    <Setter Property="BorderBrush" Value="{StaticResource Hairline}" />
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+  </Style>
+  <Style Selector="Border.terminal TextBlock.term">
+    <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
+    <Setter Property="FontSize" Value="11.5" />
+    <Setter Property="LineHeight" Value="17" />
+    <Setter Property="Foreground" Value="#B7C0D0" />
+    <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
 
   <!-- Champ de saisie -->

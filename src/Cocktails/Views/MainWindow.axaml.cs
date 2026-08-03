@@ -363,7 +363,15 @@ public partial class MainWindow : Window
     }
 
     private void OnLogChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => Dispatcher.UIThread.Post(() => LogScroll?.ScrollToEnd(), DispatcherPriority.Background);
+    {
+        // Une commande brew a produit une sortie : on déplie le terminal pour la montrer.
+        if (e.Action == NotifyCollectionChangedAction.Add && DataContext is MainViewModel vm)
+        {
+            vm.IsTerminalExpanded = true;
+        }
+
+        Dispatcher.UIThread.Post(() => LogScroll?.ScrollToEnd(), DispatcherPriority.Background);
+    }
 
     private void OnOpened(object? sender, EventArgs e)
     {
