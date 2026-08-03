@@ -23,17 +23,18 @@ public partial class SearchViewModel : PackageListViewModel
     protected override string TitleKey => "Nav.Search";
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SearchCommand))]
     public partial string SearchQuery { get; set; } = string.Empty;
 
-    private bool CanSearch() => !string.IsNullOrWhiteSpace(SearchQuery);
-
-    [RelayCommand(CanExecute = nameof(CanSearch))]
+    [RelayCommand]
     private Task SearchAsync()
     {
         var query = SearchQuery.Trim();
         if (query.Length == 0)
         {
+            // Recherche vide = on remet la liste à zéro (efface les résultats précédents).
+            ClearSelection();
+            Replace([]);
+            StatusMessage = string.Empty;
             return Task.CompletedTask;
         }
 
