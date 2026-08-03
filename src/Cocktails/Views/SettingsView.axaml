@@ -126,6 +126,22 @@
 
                 <Border Classes="hairline" />
 
+                <!-- Raccourci du terminal (enregistrable). -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.TerminalShortcut}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{loc:Tr Settings.TerminalShortcutDesc}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="seg" VerticalAlignment="Center">
+                        <Button Classes="segbtn" Classes.on="{Binding IsRecordingShortcut}"
+                                MinWidth="130" Content="{Binding RecordButtonLabel}"
+                                Command="{Binding RecordShortcutCommand}" />
+                    </Border>
+                </Grid>
+
+                <Border Classes="hairline" />
+
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
                         <TextBlock Classes="body" Text="{loc:Tr Settings.Analytics}" />

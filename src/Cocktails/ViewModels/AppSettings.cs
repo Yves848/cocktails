@@ -36,6 +36,13 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     public partial AppLanguage Language { get; set; } = AppLanguage.System;
 
+    /// <summary>
+    /// Raccourci d'ouverture/focus du terminal, au format <see cref="Avalonia.Input.KeyGesture"/>
+    /// (ex. « Cmd+T », « Ctrl+Alt+J »). Configurable dans les Réglages.
+    /// </summary>
+    [ObservableProperty]
+    public partial string TerminalShortcut { get; set; } = "Cmd+T";
+
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";
 

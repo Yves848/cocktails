@@ -80,6 +80,38 @@ public sealed partial class SettingsViewModel : ScreenViewModel
         StatusMessage = L["Settings.TestNotifSent"];
     }
 
+    // --- Raccourci du terminal (configurable) --------------------------------
+
+    /// <summary>En cours d'enregistrement d'une combinaison (la fenêtre capture la saisie).</summary>
+    [ObservableProperty]
+    public partial bool IsRecordingShortcut { get; set; }
+
+    /// <summary>Libellé du bouton : « Appuyez… » en enregistrement, sinon le raccourci actuel.</summary>
+    public string RecordButtonLabel =>
+        IsRecordingShortcut ? L["Settings.PressKeys"] : FormatGesture(Settings.TerminalShortcut);
+
+    partial void OnIsRecordingShortcutChanged(bool value) => OnPropertyChanged(nameof(RecordButtonLabel));
+
+    /// <summary>Démarre / annule l'enregistrement d'un nouveau raccourci.</summary>
+    [RelayCommand]
+    private void RecordShortcut() => IsRecordingShortcut = !IsRecordingShortcut;
+
+    /// <summary>Applique le geste capturé (appelé par la fenêtre) et arrête l'enregistrement.</summary>
+    public void ApplyRecordedGesture(string gesture)
+    {
+        Settings.TerminalShortcut = gesture;
+        IsRecordingShortcut = false;
+        OnPropertyChanged(nameof(RecordButtonLabel));
+    }
+
+    /// <summary>Annule l'enregistrement (Échap).</summary>
+    public void CancelRecording() => IsRecordingShortcut = false;
+
+    // « Cmd+Shift+J » → « ⌘⇧J » pour l'affichage.
+    private static string FormatGesture(string gesture) => gesture
+        .Replace("Cmd", "⌘").Replace("Meta", "⌘").Replace("Ctrl", "⌃")
+        .Replace("Alt", "⌥").Replace("Shift", "⇧").Replace("+", string.Empty);
+
     protected override string TitleKey => "Nav.Settings";
 
     /// <summary>

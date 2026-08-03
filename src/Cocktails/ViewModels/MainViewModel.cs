@@ -57,6 +57,7 @@ public partial class MainViewModel : ViewModelBase
     {
         _homebrew = homebrew;
         settings ??= new AppSettings();
+        Settings = settings;
         // Une couleur d'accent distincte par onglet (icônes uniques et colorées).
         _updatesNav = new NavItem("Nav.Updates", IconUpdates, new OutdatedViewModel(homebrew), "#F0B429");
         NavItems =
@@ -86,6 +87,9 @@ public partial class MainViewModel : ViewModelBase
 
         SelectedNav = NavItems[0];
     }
+
+    /// <summary>Réglages partagés (instance du shell) — expose le raccourci du terminal.</summary>
+    public AppSettings Settings { get; }
 
     /// <summary>Moniteur de mises à jour (démarré par la racine de composition).</summary>
     public UpdateMonitor Monitor { get; }

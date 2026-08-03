@@ -85,6 +85,23 @@ public partial class MainWindow : Window
         var meta = e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         var vm = DataContext as MainViewModel;
 
+        // Enregistrement d'un raccourci (Réglages) : on capture la combinaison saisie.
+        if (vm?.CurrentScreen is SettingsViewModel { IsRecordingShortcut: true } recorder)
+        {
+            e.Handled = true;
+            if (e.Key == Key.Escape)
+            {
+                recorder.CancelRecording();
+            }
+            else if (!IsModifierKey(e.Key)
+                     && (e.KeyModifiers != KeyModifiers.None || e.Key is >= Key.F1 and <= Key.F24))
+            {
+                recorder.ApplyRecordedGesture(new KeyGesture(e.Key, e.KeyModifiers).ToString());
+            }
+
+            return;   // en enregistrement, aucun autre raccourci n'est traité
+        }
+
         if (meta && e.Key == Key.Q)
         {
             (Application.Current as App)?.Quit();
@@ -110,9 +127,10 @@ public partial class MainWindow : Window
             vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
-        else if (meta && e.Key == Key.T)
+        else if (MatchesTerminalShortcut(vm, e))
         {
-            // ⌘T : entre dans le terminal (ouvre + focus) ; s'il a déjà le focus, en sort.
+            // Raccourci configurable : entre dans le terminal (ouvre + focus) ; s'il a
+            // déjà le focus, en sort.
             ToggleTerminalFocus(vm);
             e.Handled = true;
         }
@@ -176,6 +194,28 @@ public partial class MainWindow : Window
     private bool IsFocusInTerminalInput()
         => this.FindControl<TextBox>("TerminalBox") is { } box
            && ReferenceEquals(FocusManager?.GetFocusedElement(), box);
+
+    // L'événement correspond-il au raccourci du terminal configuré ?
+    private static bool MatchesTerminalShortcut(MainViewModel? vm, KeyEventArgs e)
+    {
+        if (vm is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return KeyGesture.Parse(vm.Settings.TerminalShortcut).Matches(e);
+        }
+        catch (Exception)
+        {
+            return false;   // geste mal formé : on ignore plutôt que de planter
+        }
+    }
+
+    private static bool IsModifierKey(Key key) => key
+        is Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift
+        or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin;
 
     /// <summary>
     /// ⌘T : si le terminal n'a pas le focus (fermé ou focus ailleurs), l'ouvre et lui
