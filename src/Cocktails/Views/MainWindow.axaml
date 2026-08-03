@@ -167,6 +167,27 @@
                                             <KeyBinding Gesture="Enter" Command="{Binding ExecuteTerminalCommand}" />
                                         </TextBox.KeyBindings>
                                     </TextBox>
+
+                                    <!-- Popup de suggestions (complétion), ouvert au-dessus de la saisie. -->
+                                    <Popup Grid.Column="1" PlacementTarget="{Binding #TerminalBox}"
+                                           Placement="Top" VerticalOffset="-4"
+                                           IsOpen="{Binding IsSuggestionsOpen}"
+                                           IsLightDismissEnabled="False">
+                                        <Border Background="#0F1622" BorderBrush="{StaticResource CardBorder}"
+                                                BorderThickness="1" CornerRadius="9" Padding="4"
+                                                MinWidth="260" MaxHeight="240">
+                                            <ListBox x:Name="SuggestList" Classes="rows"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     ItemsSource="{Binding Suggestions}"
+                                                     SelectedIndex="{Binding SuggestionIndex}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Classes="term" Text="{Binding}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Border>
+                                    </Popup>
                                 </Grid>
                             </Grid>
                         </Border>

@@ -59,6 +59,20 @@ public partial class MainWindow : Window
         // Raccourcis clavier globaux (tunnel : indépendants du focus courant).
         AddHandler(KeyDownEvent, OnGlobalKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
+        // Clic sur une suggestion du popup : l'accepter puis rendre le focus à la saisie.
+        SuggestList.Tapped += (_, _) =>
+        {
+            if (DataContext is MainViewModel mvm)
+            {
+                mvm.AcceptSuggestion();
+                if (this.FindControl<TextBox>("TerminalBox") is { } box)
+                {
+                    box.Focus();
+                    box.CaretIndex = box.Text?.Length ?? 0;
+                }
+            }
+        };
+
         Opened += OnOpened;
     }
 
@@ -102,22 +116,8 @@ public partial class MainWindow : Window
             FindInContent<TextBox>("FilterBox")?.Focus();
             e.Handled = true;
         }
-        else if (IsFocusInTerminalInput() && e.Key is Key.Tab or Key.Up or Key.Down)
+        else if (IsFocusInTerminalInput() && HandleTerminalKey(vm, e.Key))
         {
-            // Terminal : Tab = complétion, ↑/↓ = historique (curseur replacé en fin).
-            if (e.Key == Key.Tab)
-            {
-                vm?.CompleteTerminal();
-            }
-            else if (e.Key == Key.Up)
-            {
-                vm?.HistoryPrevious();
-            }
-            else
-            {
-                vm?.HistoryNext();
-            }
-
             var box = this.FindControl<TextBox>("TerminalBox");
             Dispatcher.UIThread.Post(() =>
             {
@@ -170,6 +170,42 @@ public partial class MainWindow : Window
     private bool IsFocusInTerminalInput()
         => this.FindControl<TextBox>("TerminalBox") is { } box
            && ReferenceEquals(FocusManager?.GetFocusedElement(), box);
+
+    /// <summary>
+    /// Touches spéciales dans la saisie du terminal. Retourne <c>true</c> si l'action est
+    /// consommée. Popup ouvert : ↑/↓ naviguent, Tab/Entrée acceptent, Échap ferme. Popup
+    /// fermé : ↑/↓ historique, Tab complète, Entrée exécute (non consommée ici → KeyBinding).
+    /// </summary>
+    private static bool HandleTerminalKey(MainViewModel? vm, Key key)
+    {
+        if (vm is null)
+        {
+            return false;
+        }
+
+        var open = vm.IsSuggestionsOpen;
+        switch (key)
+        {
+            case Key.Up:
+                if (open) { vm.SuggestionUp(); } else { vm.HistoryPrevious(); }
+                return true;
+            case Key.Down:
+                if (open) { vm.SuggestionDown(); } else { vm.HistoryNext(); }
+                return true;
+            case Key.Tab:
+                if (open) { vm.AcceptSuggestion(); } else { vm.CompleteTerminal(); }
+                return true;
+            case Key.Escape:
+                if (!open) { return false; }
+                vm.CloseSuggestions();
+                return true;
+            case Key.Enter:
+                if (open && vm.SuggestionIndex >= 0) { vm.AcceptSuggestion(); return true; }
+                return false;   // laisse le KeyBinding exécuter la commande
+            default:
+                return false;
+        }
+    }
 
     private bool IsFocusInTiles()
     {

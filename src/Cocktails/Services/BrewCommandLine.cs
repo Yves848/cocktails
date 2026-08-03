@@ -21,6 +21,12 @@ public static class BrewCommandLine
         "tap", "untap", "link", "unlink", "cleanup", "autoremove", "bundle",
     };
 
+    // Sous-commandes dont les arguments sont des paquets DÉJÀ installés (complétion ciblée).
+    private static readonly HashSet<string> InstalledOnly = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "uninstall", "remove", "rm", "reinstall", "upgrade", "pin", "unpin", "link", "unlink", "uses",
+    };
+
     /// <summary>
     /// Découpe la saisie en arguments brew. Retire un <c>brew</c> de tête éventuel.
     /// Retourne <c>null</c> si la saisie est vide ou contient un opérateur shell.
@@ -56,6 +62,13 @@ public static class BrewCommandLine
     /// <summary>Vrai si la première sous-commande modifie l'état (install, uninstall…).</summary>
     public static bool IsMutating(IReadOnlyList<string> args)
         => args.Count > 0 && Mutating.Contains(args[0]);
+
+    /// <summary>
+    /// Vrai si les arguments de cette sous-commande sont des paquets déjà installés
+    /// (uninstall, reinstall, pin…) → complétion contre la liste des installés.
+    /// </summary>
+    public static bool CompletesInstalledOnly(string subcommand)
+        => subcommand.Length > 0 && InstalledOnly.Contains(subcommand);
 
     /// <summary>
     /// Sous-commandes brew usuelles proposées à la complétion du premier mot.

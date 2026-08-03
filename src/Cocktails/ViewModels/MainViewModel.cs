@@ -43,9 +43,12 @@ public partial class MainViewModel : ViewModelBase
     private readonly List<string> _history = [];
     private int _historyIndex;          // == _history.Count : position « brouillon »
     private string _draft = string.Empty;
-    // Noms formulae+casks pour la complétion (chargés paresseusement à l'ouverture).
+    // Noms formulae+casks (complétion générale) et noms installés (complétion ciblée),
+    // chargés paresseusement à l'ouverture du terminal.
     private IReadOnlyList<string>? _names;
+    private IReadOnlyList<string>? _installedNames;
     private bool _namesLoading;
+    private bool _suppressSuggestions;   // vrai pendant un set programmatique (historique / accept)
 
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
         INotifier? notifier = null)
@@ -141,6 +144,17 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial string TerminalInput { get; set; } = string.Empty;
 
+    /// <summary>Suggestions de complétion affichées dans le popup.</summary>
+    public ObservableCollection<string> Suggestions { get; } = [];
+
+    /// <summary>Popup de suggestions ouvert.</summary>
+    [ObservableProperty]
+    public partial bool IsSuggestionsOpen { get; set; }
+
+    /// <summary>Suggestion surlignée (-1 = aucune).</summary>
+    [ObservableProperty]
+    public partial int SuggestionIndex { get; set; } = -1;
+
     /// <summary>
     /// Exécute la commande brew saisie sur l'écran courant (sortie streamée dans le
     /// terminal). Si la commande modifie l'état (install, uninstall…), l'écran est
@@ -224,45 +238,48 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             _names = await _homebrew.GetAllNamesAsync();
+            _installedNames = (await _homebrew.GetInstalledAsync()).Select(p => p.Name).ToList();
         }
         catch (Exception)
         {
-            _names = [];
+            _names ??= [];
+            _installedNames ??= [];
         }
         finally
         {
             _namesLoading = false;
         }
+
+        UpdateSuggestions();   // au cas où l'utilisateur a déjà commencé à taper
     }
 
-    /// <summary>
-    /// Complète le mot courant de la saisie (Tab) : sous-commandes brew pour le premier
-    /// mot, sinon noms de paquets. Complète jusqu'au préfixe commun ; si aucun progrès et
-    /// plusieurs candidats, les liste dans le terminal (comportement type shell).
-    /// </summary>
-    public void CompleteTerminal()
+    private const int SuggestionCap = 60;
+
+    // Découpe la saisie pour la complétion : partie fixe avant le mot courant, mot
+    // courant, et les candidats correspondants (sous-commandes ou noms selon le contexte).
+    private (string prefix, string word, List<string> matches) ComputeCompletion(string text)
     {
-        var text = TerminalInput;
         var lastSpace = text.LastIndexOf(' ');
-        var prefixPart = lastSpace < 0 ? string.Empty : text[..(lastSpace + 1)];
+        var prefix = lastSpace < 0 ? string.Empty : text[..(lastSpace + 1)];
         var word = lastSpace < 0 ? text : text[(lastSpace + 1)..];
 
         var before = (lastSpace < 0 ? string.Empty : text[..lastSpace]).Trim();
         var firstWord = before.Length == 0 || before.Equals("brew", StringComparison.OrdinalIgnoreCase);
 
-        IReadOnlyList<string> pool;
+        IReadOnlyList<string>? pool;
         if (firstWord)
         {
             pool = BrewCommandLine.Subcommands;
         }
-        else if (_names is { } names)
-        {
-            pool = names;
-        }
         else
         {
-            _ = LoadNamesAsync();   // pas encore chargés : on lance et on abandonne ce Tab
-            return;
+            var sub = Subcommand(text);
+            pool = BrewCommandLine.CompletesInstalledOnly(sub) ? _installedNames : _names;
+            if (pool is null)
+            {
+                _ = LoadNamesAsync();   // chargement paresseux ; les suggestions suivront
+                return (prefix, word, []);
+            }
         }
 
         var matches = pool
@@ -270,6 +287,98 @@ public partial class MainViewModel : ViewModelBase
             .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        return (prefix, word, matches);
+    }
+
+    // Première sous-commande de la saisie (après un « brew » éventuel).
+    private static string Subcommand(string text)
+    {
+        var s = text.TrimStart();
+        if (s.StartsWith("brew ", StringComparison.OrdinalIgnoreCase))
+        {
+            s = s[5..].TrimStart();
+        }
+
+        var sp = s.IndexOf(' ');
+        return sp < 0 ? s : s[..sp];
+    }
+
+    // Recalcule le popup de suggestions à chaque frappe.
+    partial void OnTerminalInputChanged(string value)
+    {
+        if (_suppressSuggestions)
+        {
+            return;
+        }
+
+        UpdateSuggestions();
+    }
+
+    private void UpdateSuggestions()
+    {
+        var (_, word, matches) = ComputeCompletion(TerminalInput);
+        Suggestions.Clear();
+        foreach (var m in matches.Take(SuggestionCap))
+        {
+            Suggestions.Add(m);
+        }
+
+        SuggestionIndex = -1;
+        // On n'ouvre le popup que si l'utilisateur a commencé à écrire le mot.
+        IsSuggestionsOpen = Suggestions.Count > 0 && word.Length > 0;
+    }
+
+    private void SetInputSilently(string text)
+    {
+        _suppressSuggestions = true;
+        TerminalInput = text;
+        _suppressSuggestions = false;
+        CloseSuggestions();
+    }
+
+    public void SuggestionDown()
+    {
+        if (Suggestions.Count > 0)
+        {
+            SuggestionIndex = SuggestionIndex + 1 >= Suggestions.Count ? 0 : SuggestionIndex + 1;
+        }
+    }
+
+    public void SuggestionUp()
+    {
+        if (Suggestions.Count > 0)
+        {
+            SuggestionIndex = SuggestionIndex <= 0 ? Suggestions.Count - 1 : SuggestionIndex - 1;
+        }
+    }
+
+    public void CloseSuggestions()
+    {
+        IsSuggestionsOpen = false;
+        SuggestionIndex = -1;
+    }
+
+    /// <summary>Accepte la suggestion surlignée (ou la première) dans la saisie.</summary>
+    public void AcceptSuggestion()
+    {
+        var idx = SuggestionIndex >= 0 ? SuggestionIndex : 0;
+        if (idx >= Suggestions.Count)
+        {
+            return;
+        }
+
+        var chosen = Suggestions[idx];
+        var (prefix, _, _) = ComputeCompletion(TerminalInput);
+        SetInputSilently(prefix + chosen + " ");
+    }
+
+    /// <summary>
+    /// Complétion « shell » à la touche Tab : complète jusqu'au préfixe commun ; si
+    /// plusieurs candidats sans progrès, les liste dans le terminal.
+    /// </summary>
+    public void CompleteTerminal()
+    {
+        var (prefix, word, matches) = ComputeCompletion(TerminalInput);
         if (matches.Count == 0)
         {
             return;
@@ -277,18 +386,20 @@ public partial class MainViewModel : ViewModelBase
 
         if (matches.Count == 1)
         {
-            TerminalInput = prefixPart + matches[0] + " ";
+            SetInputSilently(prefix + matches[0] + " ");
             return;
         }
 
         var common = BrewCommandLine.CommonPrefix(matches);
         if (common.Length > word.Length)
         {
-            TerminalInput = prefixPart + common;
+            _suppressSuggestions = true;
+            TerminalInput = prefix + common;
+            _suppressSuggestions = false;
+            UpdateSuggestions();   // ré-ouvre le popup sur le nouveau préfixe
             return;
         }
 
-        // Aucun progrès possible : on affiche les candidats dans le terminal.
         IsTerminalExpanded = true;
         CurrentScreen?.OutputLog.Add(string.Join("   ", matches.Take(80))
             + (matches.Count > 80 ? $"   … (+{matches.Count - 80})" : string.Empty));
