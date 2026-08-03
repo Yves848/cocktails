@@ -70,7 +70,7 @@ public partial class App : Application
 
             _window = new MainWindow
             {
-                DataContext = new MainViewModel(homebrew, _settings, _monitor),
+                DataContext = new MainViewModel(homebrew, _settings, _monitor, notifier),
             };
             _window.Opened += (_, _) => EnsureVisibleOnScreen(_window!);
 

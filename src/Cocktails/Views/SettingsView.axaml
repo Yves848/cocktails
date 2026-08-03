@@ -82,6 +82,24 @@
 
                 <Border Classes="hairline" />
 
+                <!-- Test des notifications (vérifie la livraison, indépendamment du moniteur). -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.TestNotif}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{loc:Tr Settings.TestNotifDesc}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="act" VerticalAlignment="Center"
+                            Command="{Binding TestNotificationCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Path Data="{StaticResource IconBellGeo}" Classes="btnicon" />
+                            <TextBlock Text="{loc:Tr Settings.TestNotifBtn}" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Border Classes="hairline" />
+
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
                         <TextBlock Classes="body" Text="{loc:Tr Settings.Background}" />

@@ -35,7 +35,8 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly NavItem _updatesNav;
 
-    public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null)
+    public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
+        INotifier? notifier = null)
     {
         settings ??= new AppSettings();
         // Une couleur d'accent distincte par onglet (icônes uniques et colorées).
@@ -48,7 +49,7 @@ public partial class MainViewModel : ViewModelBase
             new NavItem("Nav.Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew), "#A78BFA"),
             new NavItem("Nav.Services", IconServices, new ServicesViewModel(homebrew), "#43C07A"),
             new NavItem("Nav.Taps", IconTaps, new TapsViewModel(homebrew), "#F472B6"),
-            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings), "#94A3B8"),
+            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings, notifier), "#94A3B8"),
             new NavItem("Nav.Help", IconHelp, new HelpViewModel(), "#FB923C"),
         ];
 

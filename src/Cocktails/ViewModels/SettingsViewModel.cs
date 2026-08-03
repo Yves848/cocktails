@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
 using Cocktails.Localization;
+using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
@@ -52,16 +54,30 @@ public sealed partial class SettingsViewModel : ScreenViewModel
 {
     private bool _analyticsEnabled;
     private bool _analyticsLoaded;
+    private readonly INotifier _notifier;
 
-    public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
+    public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null, INotifier? notifier = null)
+        : base(homebrew)
     {
         Settings = settings ?? new AppSettings();
+        _notifier = notifier ?? new NullNotifier();
         StatusMessage = L["Status.Settings"];
     }
 
     /// <summary>Constructeur design-time (previewer XAML).</summary>
     public SettingsViewModel() : this(new DesignHomebrewService())
     {
+    }
+
+    /// <summary>
+    /// Envoie une notification système de test (bouton « Tester une notification »),
+    /// pour vérifier que la livraison fonctionne — indépendamment du moniteur.
+    /// </summary>
+    [RelayCommand]
+    private async Task TestNotificationAsync()
+    {
+        await _notifier.NotifyAsync(L["Notif.TestTitle"], L["Notif.TestBody"]);
+        StatusMessage = L["Settings.TestNotifSent"];
     }
 
     protected override string TitleKey => "Nav.Settings";
