@@ -168,6 +168,12 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
+        // Une opération est déjà en cours : on ignore (sans effacer la saisie en cours).
+        if (screen.IsBusy)
+        {
+            return;
+        }
+
         var input = TerminalInput.Trim();
         TerminalInput = string.Empty;
         IsTerminalExpanded = true;
@@ -181,11 +187,77 @@ public partial class MainViewModel : ViewModelBase
         _historyIndex = _history.Count;
         _draft = string.Empty;
 
+        // Commandes qui produisent une liste de paquets → affichées en tuiles sur l'écran
+        // correspondant (Rechercher / Installés / Mises à jour) plutôt qu'en texte brut.
+        var parsed = BrewCommandLine.Parse(input);
+        if (parsed is not null && TryRouteToScreen(parsed))
+        {
+            return;
+        }
+
         var args = await screen.RunTerminalCommandAsync(input);
         if (args is not null && BrewCommandLine.IsMutating(args))
         {
             screen.Invalidate();
             await screen.ActivateAsync();
+        }
+    }
+
+    private T? FindScreen<T>() where T : ScreenViewModel
+        => NavItems.Select(n => n.Screen).OfType<T>().FirstOrDefault();
+
+    /// <summary>
+    /// Aiguille une commande « liste » vers l'écran adéquat (tuiles) : <c>search</c> →
+    /// Rechercher, <c>list</c>/<c>installed</c>/<c>leaves</c> → Installés (filtres posés),
+    /// <c>outdated</c> → Mises à jour. Retourne <c>true</c> si la commande a été aiguillée.
+    /// </summary>
+    private bool TryRouteToScreen(string[] args)
+    {
+        switch (args[0].ToLowerInvariant())
+        {
+            case "search" when args.Length >= 2:
+                var query = string.Join(' ', args.Skip(1).Where(a => !a.StartsWith('-')));
+                if (query.Length == 0 || FindScreen<SearchViewModel>() is not { } search)
+                {
+                    return false;
+                }
+
+                SelectScreen("Nav.Search");
+                search.SearchQuery = query;
+                search.SearchCommand.Execute(null);
+                return true;
+
+            case "list":
+            case "installed":
+                if (FindScreen<InstalledViewModel>() is not { } installed)
+                {
+                    return false;
+                }
+
+                SelectScreen("Nav.Installed");
+                installed.LeavesOnly = false;
+                installed.KindFilter = args.Contains("--cask") ? PackageKindFilter.Cask
+                    : args.Contains("--formula") ? PackageKindFilter.Formula
+                    : PackageKindFilter.All;
+                return true;
+
+            case "leaves":
+                if (FindScreen<InstalledViewModel>() is not { } leaves)
+                {
+                    return false;
+                }
+
+                SelectScreen("Nav.Installed");
+                leaves.KindFilter = PackageKindFilter.All;
+                leaves.LeavesOnly = true;
+                return true;
+
+            case "outdated":
+                SelectScreen("Nav.Updates");
+                return true;
+
+            default:
+                return false;
         }
     }
 

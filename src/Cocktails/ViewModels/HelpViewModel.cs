@@ -34,6 +34,7 @@ public sealed class HelpViewModel : ScreenViewModel
             new Shortcut("↑ ↓ ← →", L["Help.GridArrows"]),
             new Shortcut("Space", L["Help.ToggleCheck"]),
             new Shortcut("⌘ F", L["Help.FocusFilter"]),
+            new Shortcut("⌘ T", L["Help.ToggleTerminal"]),
             new Shortcut("⌘ ,", L["Help.OpenSettings"]),
             new Shortcut("F1", L["Help.OpenHelp"]),
         ]),

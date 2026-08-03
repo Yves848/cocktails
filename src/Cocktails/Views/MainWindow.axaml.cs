@@ -110,6 +110,12 @@ public partial class MainWindow : Window
             vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
+        else if (meta && e.Key == Key.T)
+        {
+            // ⌘T : entre dans le terminal (ouvre + focus) ; s'il a déjà le focus, en sort.
+            ToggleTerminalFocus(vm);
+            e.Handled = true;
+        }
         else if (meta && e.Key == Key.F)
         {
             // ⌘F : focus le champ de filtre de l'écran courant.
@@ -170,6 +176,37 @@ public partial class MainWindow : Window
     private bool IsFocusInTerminalInput()
         => this.FindControl<TextBox>("TerminalBox") is { } box
            && ReferenceEquals(FocusManager?.GetFocusedElement(), box);
+
+    /// <summary>
+    /// ⌘T : si le terminal n'a pas le focus (fermé ou focus ailleurs), l'ouvre et lui
+    /// donne le focus (« mode terminal »). S'il a déjà le focus, le referme et rend le
+    /// focus à la grille.
+    /// </summary>
+    private void ToggleTerminalFocus(MainViewModel? vm)
+    {
+        if (vm is null)
+        {
+            return;
+        }
+
+        if (!vm.IsTerminalExpanded || !IsFocusInTerminalInput())
+        {
+            vm.IsTerminalExpanded = true;
+            Dispatcher.UIThread.Post(() => this.FindControl<TextBox>("TerminalBox")?.Focus());
+        }
+        else
+        {
+            vm.IsTerminalExpanded = false;
+            if (TilesList() is { } tiles)
+            {
+                tiles.Focus();
+            }
+            else
+            {
+                this.FindControl<ListBox>("NavList")?.Focus();
+            }
+        }
+    }
 
     /// <summary>
     /// Touches spéciales dans la saisie du terminal. Retourne <c>true</c> si l'action est

@@ -187,6 +187,7 @@ public static class Strings
         ["Help.GridArrows"] = ["Move within the grid (rows and columns)", "Se déplacer dans la grille (rangées et colonnes)", "Moverse por la cuadrícula (filas y columnas)", "Im Raster bewegen (Zeilen und Spalten)"],
         ["Help.ToggleCheck"] = ["Tick / untick the focused tile", "Cocher / décocher la tuile focalisée", "Marcar / desmarcar la tarjeta enfocada", "Fokussierte Kachel an-/abwählen"],
         ["Help.FocusFilter"] = ["Focus the filter / search field", "Placer le curseur dans le filtre / la recherche", "Enfocar el filtro / la búsqueda", "Filter- / Suchfeld fokussieren"],
+        ["Help.ToggleTerminal"] = ["Open the terminal and type (again to close)", "Ouvrir le terminal et écrire (à nouveau pour fermer)", "Abrir el terminal y escribir (de nuevo para cerrar)", "Terminal öffnen und tippen (erneut zum Schließen)"],
         ["Help.GroupFilters"] = ["Filters", "Filtres", "Filtros", "Filter"],
         ["Help.FilterRoots"] = ["Toggle « roots only »", "Basculer « racines seulement »", "Alternar «solo raíces»", "„Nur Wurzeln“ umschalten"],
         ["Help.FilterKind"] = ["All / Formulae / Casks", "Tout / Formulae / Casks", "Todo / Formulae / Casks", "Alle / Formulae / Casks"],

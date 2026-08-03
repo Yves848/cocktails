@@ -161,8 +161,7 @@
                                     <TextBox Grid.Column="1" x:Name="TerminalBox" Classes="medit"
                                              Text="{Binding TerminalInput}"
                                              PlaceholderText="{loc:Tr Terminal.Prompt}"
-                                             FontFamily="Menlo, Consolas, monospace"
-                                             IsEnabled="{Binding !CurrentScreen.IsBusy}">
+                                             FontFamily="Menlo, Consolas, monospace">
                                         <TextBox.KeyBindings>
                                             <KeyBinding Gesture="Enter" Command="{Binding ExecuteTerminalCommand}" />
                                         </TextBox.KeyBindings>
