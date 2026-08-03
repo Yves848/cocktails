@@ -20,8 +20,13 @@
                 <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" />
                 <TextBlock Classes="muted" Text="brew services" VerticalAlignment="Center" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Refresh}"
-                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="1" Classes="act" HotKey="Cmd+R" ToolTip.Tip="⌘R"
+                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                    <TextBlock Text="{loc:Tr Btn.Refresh}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <ListBox x:Name="List" Grid.Row="1" Classes="rows" Margin="10,0,10,10"
@@ -40,19 +45,24 @@
                             <TextBlock Classes="muted"
                                        Text="{Binding Status, Converter={x:Static conv:ServiceStatusConverter.Instance}}" />
                         </StackPanel>
-                        <Button Grid.Column="2" Classes="act primary small" Content="{loc:Tr Btn.Start}"
-                                Margin="0,0,6,0"
-                                IsVisible="{Binding !IsRunning}"
+                        <Button Grid.Column="2" Classes="act primary small iconbtn" Margin="0,0,6,0"
+                                IsVisible="{Binding !IsRunning}" ToolTip.Tip="{loc:Tr Btn.Start}"
                                 Command="{Binding #List.((vm:ServicesViewModel)DataContext).StartCommand}"
-                                CommandParameter="{Binding}" />
+                                CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconPlayGeo}" Classes="btnicon onprimary" />
+                        </Button>
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6"
                                     IsVisible="{Binding IsRunning}">
-                            <Button Classes="act small" Content="{loc:Tr Btn.Restart}"
+                            <Button Classes="act small iconbtn" ToolTip.Tip="{loc:Tr Btn.Restart}"
                                     Command="{Binding #List.((vm:ServicesViewModel)DataContext).RestartCommand}"
-                                    CommandParameter="{Binding}" />
-                            <Button Classes="act danger small" Content="{loc:Tr Btn.Stop}"
+                                    CommandParameter="{Binding}">
+                                <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                            </Button>
+                            <Button Classes="act danger small iconbtn" ToolTip.Tip="{loc:Tr Btn.Stop}"
                                     Command="{Binding #List.((vm:ServicesViewModel)DataContext).StopCommand}"
-                                    CommandParameter="{Binding}" />
+                                    CommandParameter="{Binding}">
+                                <Path Data="{StaticResource IconStopGeo}" Classes="btnicon danger" />
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

@@ -55,6 +55,14 @@
     <StreamGeometry x:Key="IconInstallGeo">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3</StreamGeometry>
     <StreamGeometry x:Key="IconUpdateGeo">M12 20V6 M5 13l7-7 7 7 M5 4h14</StreamGeometry>
     <StreamGeometry x:Key="IconSearchGeo">M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z M21 21l-4.35-4.35</StreamGeometry>
+    <StreamGeometry x:Key="IconPlayGeo">M6 4l14 8-14 8z</StreamGeometry>
+    <StreamGeometry x:Key="IconStopGeo">M6 6h12v12H6z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlusGeo">M12 5v14 M5 12h14</StreamGeometry>
+    <StreamGeometry x:Key="IconCheckGeo">M20 6L9 17l-5-5</StreamGeometry>
+    <StreamGeometry x:Key="IconTrustGeo">M12 3l8 3v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z M9 12l2 2 4-4</StreamGeometry>
+    <StreamGeometry x:Key="IconCleanGeo">M13 3l3 7 7 3-7 3-3 7-3-7-7-3 7-3z M5 3v3 M3.5 4.5h3</StreamGeometry>
+    <StreamGeometry x:Key="IconDoctorGeo">M22 12h-4l-3 9L9 3l-3 9H2</StreamGeometry>
+    <StreamGeometry x:Key="IconExportGeo">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 9l5-5 5 5 M12 4v12</StreamGeometry>
   </Styles.Resources>
 
   <!-- Carte : conteneur racine arrondi + bordure 2px. Le fond translucide/flou est fourni par
