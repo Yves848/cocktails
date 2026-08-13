@@ -58,22 +58,19 @@ public abstract partial class ScreenViewModel : ViewModelBase
     public ObservableCollection<string> OutputLog { get; } = [];
 
     private const int MaxLogLines = 200;
-    private bool _activated;
+    private Task? _activation;   // chargement initial, mémoïsé (cf. ActivateAsync)
     private bool _sudoHintShown;   // une seule explication sudo par opération
 
     /// <summary>
     /// Appelé par le shell quand l'écran devient actif. Déclenche le chargement initial
     /// une seule fois (les rafraîchissements ultérieurs passent par les commandes de l'écran).
     /// </summary>
-    public async Task ActivateAsync()
+    public Task ActivateAsync()
     {
-        if (_activated)
-        {
-            return;
-        }
-
-        _activated = true;
-        await OnFirstActivatedAsync();
+        // La tâche est mémoïsée, pas seulement le fait d'avoir activé : un second appel
+        // pendant le chargement doit attendre CE chargement (sinon il observe une liste
+        // encore vide — cf. le lancement avec --select).
+        return _activation ??= OnFirstActivatedAsync();
     }
 
     /// <summary>Chargement initial de l'écran (aucun par défaut).</summary>
@@ -83,7 +80,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
     /// Marque l'écran comme « à recharger » : sa prochaine activation relancera le
     /// chargement initial (utilisé pour l'auto-rafraîchissement après monitoring).
     /// </summary>
-    public void Invalidate() => _activated = false;
+    public void Invalidate() => _activation = null;
 
     /// <summary>Demande confirmation avant d'exécuter <paramref name="onConfirm"/>.</summary>
     protected void RequestConfirmation(string title, string message, string confirmLabel, Func<Task> onConfirm)

@@ -97,6 +97,10 @@ public partial class App : Application
                     return shell.RequestPasswordAsync(prompt, cancellationToken);
                 });
 
+            // Options de lancement (captures d'écran) : un lancement = un écran, plutôt
+            // que de piloter l'interface au clavier — peu fiable pour une app agent.
+            ApplyStartupOptions(shell, StartupOptions.Parse(Environment.GetCommandLineArgs()));
+
             RestoreWindowGeometry(_window, _settings);
             _window.Closing += OnWindowClosing;
 
@@ -115,6 +119,31 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Applique les options de ligne de commande. La sélection d'un paquet attend que
+    /// l'écran ait fini son chargement initial (la liste est vide avant).
+    /// </summary>
+    private static void ApplyStartupOptions(MainViewModel shell, StartupOptions options)
+    {
+        if (options.ScreenKey is not { } key)
+        {
+            return;
+        }
+
+        shell.SelectScreen(key);
+
+        if (options.SelectPackage is { } name && shell.CurrentScreen is PackageListViewModel list)
+        {
+            Dispatcher.UIThread.Post(
+                async () =>
+                {
+                    await list.ActivateAsync();
+                    list.SelectByName(name);
+                },
+                DispatcherPriority.Background);
+        }
     }
 
     /// <summary>Durée de rétention réglée ; <see cref="int.MaxValue"/> = toute la session.</summary>

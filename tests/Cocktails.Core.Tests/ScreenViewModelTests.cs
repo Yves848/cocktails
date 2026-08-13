@@ -19,12 +19,20 @@ public class ScreenViewModelTests
         public List<string> InstallCalls { get; } = [];
         public List<string> UninstallCalls { get; } = [];
 
-        public Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
+        /// <summary>Si posé, le chargement des installés attend cette tâche (chargement lent scénarisé).</summary>
+        public Task? Gate { get; init; }
+
+        public async Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
         {
+            if (Gate is not null)
+            {
+                await Gate;
+            }
+
             var list = new List<Package>();
             list.AddRange(Installed.Select(n => new Package(n, PackageKind.Formula, InstalledVersion: "1.0")));
             list.AddRange(Casks.Select(n => new Package(n, PackageKind.Cask, InstalledVersion: "1.0")));
-            return Task.FromResult<IReadOnlyList<Package>>(list);
+            return list;
         }
 
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
@@ -994,5 +1002,24 @@ public class ScreenViewModelTests
         public Task AddTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task RemoveTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task TrustTapAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task ActivateAsync_WhileLoading_WaitsForTheSameLoad()
+    {
+        // Le shell déclenche déjà l'activation ; un second appel (lancement avec --select)
+        // doit attendre CE chargement, sinon il trouve une liste encore vide.
+        var gate = new TaskCompletionSource();
+        var screen = new InstalledViewModel(new FakeHomebrewService { Installed = { "cairo" }, Gate = gate.Task });
+
+        var first = screen.ActivateAsync();
+        var second = screen.ActivateAsync();
+
+        Assert.False(second.IsCompleted, "le second appel doit attendre le chargement en cours");
+
+        gate.SetResult();
+        await second;
+        Assert.NotEmpty(screen.Packages);
+        await first;
     }
 }

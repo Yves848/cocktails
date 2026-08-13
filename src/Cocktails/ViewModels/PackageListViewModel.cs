@@ -59,6 +59,24 @@ public abstract partial class PackageListViewModel : ScreenViewModel
 
     partial void OnSelectedItemChanged(SelectablePackage? value) => SelectedPackage = value?.Package;
 
+    /// <summary>
+    /// Met en surbrillance le paquet nommé, comme si l'utilisateur avait cliqué dessus
+    /// (le volet de détail suit). Rend <c>false</c> s'il n'est pas dans la liste chargée.
+    /// Sert au lancement avec <c>--select</c> (cf. <see cref="StartupOptions"/>).
+    /// </summary>
+    public bool SelectByName(string name)
+    {
+        var match = Packages.FirstOrDefault(
+            p => string.Equals(p.Package.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (match is null)
+        {
+            return false;
+        }
+
+        SelectedItem = match;
+        return true;
+    }
+
     /// <summary>Packages actuellement cochés (dans l'ordre du jeu complet).</summary>
     protected IReadOnlyList<Package> CheckedPackages()
         => _all.Where(p => _checkedNames.Contains(p.Name)).ToList();
