@@ -32,9 +32,24 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     public partial bool KeepRunningInBackground { get; set; } = true;
 
+    /// <summary>
+    /// Durée (minutes) pendant laquelle un mot de passe administrateur « retenu » survit
+    /// sans nouvel appel sudo, après quoi il est effacé de la mémoire. <see cref="int.MaxValue"/>
+    /// = toute la session. Jamais écrit sur disque : seule la durée l'est.
+    /// </summary>
+    [ObservableProperty]
+    public partial int SudoPasswordLifetimeMinutes { get; set; } = 60;
+
     /// <summary>Langue de l'interface (<see cref="AppLanguage.System"/> = suivre le système).</summary>
     [ObservableProperty]
     public partial AppLanguage Language { get; set; } = AppLanguage.System;
+
+    /// <summary>
+    /// Raccourci d'ouverture/focus du terminal, au format <see cref="Avalonia.Input.KeyGesture"/>
+    /// (ex. « Cmd+T », « Ctrl+Alt+J »). Configurable dans les Réglages.
+    /// </summary>
+    [ObservableProperty]
+    public partial string TerminalShortcut { get; set; } = "Cmd+T";
 
     /// <summary>Chemin de l'exécutable brew (affiché en lecture seule).</summary>
     public string BrewPath { get; init; } = "/opt/homebrew/bin/brew";

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:views="using:Cocktails.Views"
+             xmlns:controls="using:Cocktails.Controls"
              xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,13 +19,29 @@
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.UpdateIndex}" Margin="0,0,8,0"
+            <Button Grid.Column="1" Classes="act" Margin="0,0,8,0"
                     ToolTip.Tip="{loc:Tr Tooltip.UpdateIndex}"
-                    Command="{Binding UpdateIndexCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="2" Classes="act" Content="{loc:Tr Btn.Refresh}" Margin="0,0,8,0"
-                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Grid.Column="3" Classes="act primary" Content="{loc:Tr Btn.UpdateAll}"
-                    Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}" />
+                    Command="{Binding UpdateIndexCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconRefreshGeo}" Classes="btnicon" />
+                    <TextBlock Text="{loc:Tr Btn.UpdateIndex}" />
+                </StackPanel>
+            </Button>
+            <Button Grid.Column="2" Classes="act" Margin="0,0,8,0"
+                    HotKey="Cmd+R" ToolTip.Tip="⌘R"
+                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                    <TextBlock Text="{loc:Tr Btn.Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Grid.Column="3" Classes="act primary"
+                    Command="{Binding UpgradeAllCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconUpdateGeo}" Classes="btnicon onprimary" />
+                    <TextBlock Text="{loc:Tr Btn.UpdateAll}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- Barre d'actions par lot (visible dès qu'une ligne est cochée). -->
@@ -33,44 +50,71 @@
             <Grid ColumnDefinitions="*,Auto,Auto">
                 <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
                            Text="{Binding SelectedCountLabel}" />
-                <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Batch.UncheckAll}" Margin="0,0,8,0"
-                        Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
-                <Button Grid.Column="2" Classes="act primary small" Content="{loc:Tr Batch.UpdateSelection}"
-                        Command="{Binding BatchUpgradeCommand}" IsEnabled="{Binding !IsBusy}" />
+                <Button Grid.Column="1" Classes="act small" Margin="0,0,8,0"
+                        Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path Data="{StaticResource IconUncheckGeo}" Classes="btnicon" />
+                        <TextBlock Text="{loc:Tr Batch.UncheckAll}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="2" Classes="act primary small"
+                        Command="{Binding BatchUpgradeCommand}" IsEnabled="{Binding !IsBusy}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path Data="{StaticResource IconUpdateGeo}" Classes="btnicon onprimary" />
+                        <TextBlock Text="{loc:Tr Batch.UpdateSelection}" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
-            <!-- Master : liste des obsolètes -->
-            <ListBox x:Name="List" Grid.Column="0" Classes="rows" Margin="10,0,10,10"
+            <!-- Master : grille de tuiles (paquets obsolètes) -->
+            <ListBox x:Name="List" Grid.Column="0" Classes="tilebox" Margin="2,0,2,8"
                      SelectionMode="Single"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectedItem="{Binding SelectedItem}"
                      ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SelectablePackage">
-                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
-                            <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
-                                      IsChecked="{Binding IsChecked}"
-                                      ToolTip.Tip="{loc:Tr Tooltip.CheckUpdate}" />
-                            <Border Classes="badge" Grid.Column="1">
-                                <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextMuted}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Classes="body" Text="{Binding Name}" />
-                                <TextBlock Classes="muted" Text="{Binding KindLabel}" />
+                        <Border Classes="tile">
+                            <StackPanel Spacing="0">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <controls:AppIcon Grid.Column="0" Width="42" Height="42"
+                                                      Homepage="{Binding Homepage}"
+                                                      FallbackText="{Binding KindBadge}" />
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                   Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                            <Border Classes="verpill">
+                                                <TextBlock FontSize="10.5" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource Warning}"
+                                                           Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,14,0,0">
+                                    <CheckBox Grid.Column="0" VerticalAlignment="Center" MinWidth="0"
+                                              IsChecked="{Binding IsChecked}"
+                                              ToolTip.Tip="{loc:Tr Tooltip.CheckUpdate}" />
+                                    <Button Grid.Column="2" Classes="act primary small iconbtn"
+                                            ToolTip.Tip="{loc:Tr Btn.Update}"
+                                            Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
+                                            CommandParameter="{Binding Package}">
+                                        <Path Data="{StaticResource IconUpdateGeo}" Classes="btnicon onprimary" />
+                                    </Button>
+                                </Grid>
                             </StackPanel>
-                            <Border Grid.Column="3" Classes="chip" Margin="0,0,10,0">
-                                <TextBlock FontSize="11.5" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Warning}"
-                                           Text="{Binding LatestVersion, StringFormat='↑ {0}'}" />
-                            </Border>
-                            <Button Grid.Column="4" Classes="act primary small" Content="{loc:Tr Btn.Update}"
-                                    Command="{Binding #List.((vm:OutdatedViewModel)DataContext).UpgradeCommand}"
-                                    CommandParameter="{Binding Package}" />
-                        </Grid>
+                        </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

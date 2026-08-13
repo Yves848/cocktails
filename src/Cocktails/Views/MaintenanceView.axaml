@@ -30,9 +30,13 @@
                             <TextBlock Classes="muted" TextWrapping="Wrap"
                                        Text="{loc:Tr Maint.CacheDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act primary" Content="{loc:Tr Btn.Clean}"
-                                VerticalAlignment="Center"
-                                Command="{Binding CleanupCommand}" IsEnabled="{Binding !IsBusy}" />
+                        <Button Grid.Column="1" Classes="act primary" VerticalAlignment="Center"
+                                Command="{Binding CleanupCommand}" IsEnabled="{Binding !IsBusy}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="{StaticResource IconCleanGeo}" Classes="btnicon onprimary" />
+                                <TextBlock Text="{loc:Tr Btn.Clean}" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -43,9 +47,13 @@
                             <TextBlock Classes="muted" TextWrapping="Wrap"
                                        Text="{loc:Tr Maint.OrphansDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Remove}"
-                                VerticalAlignment="Center"
-                                Command="{Binding AutoremoveCommand}" IsEnabled="{Binding !IsBusy}" />
+                        <Button Grid.Column="1" Classes="act" VerticalAlignment="Center"
+                                Command="{Binding AutoremoveCommand}" IsEnabled="{Binding !IsBusy}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon" />
+                                <TextBlock Text="{loc:Tr Btn.Remove}" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -56,9 +64,13 @@
                             <TextBlock Classes="muted" TextWrapping="Wrap"
                                        Text="{loc:Tr Maint.DiagDesc}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.RunDoctor}"
-                                VerticalAlignment="Center"
-                                Command="{Binding DoctorCommand}" IsEnabled="{Binding !IsBusy}" />
+                        <Button Grid.Column="1" Classes="act" VerticalAlignment="Center"
+                                Command="{Binding DoctorCommand}" IsEnabled="{Binding !IsBusy}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="{StaticResource IconDoctorGeo}" Classes="btnicon" />
+                                <TextBlock Text="{loc:Tr Btn.RunDoctor}" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -70,9 +82,13 @@
                                 <TextBlock Classes="muted" TextWrapping="Wrap"
                                            Text="{loc:Tr Maint.MissingDesc}" />
                             </StackPanel>
-                            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Check}"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding CheckMissingCommand}" IsEnabled="{Binding !IsBusy}" />
+                            <Button Grid.Column="1" Classes="act" VerticalAlignment="Center"
+                                    Command="{Binding CheckMissingCommand}" IsEnabled="{Binding !IsBusy}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Path Data="{StaticResource IconCheckGeo}" Classes="btnicon" />
+                                    <TextBlock Text="{loc:Tr Btn.Check}" />
+                                </StackPanel>
+                            </Button>
                         </Grid>
 
                         <!-- Résultat sain -->
@@ -119,7 +135,12 @@
                                        Text="{loc:Tr Maint.ExportDesc}" />
                         </StackPanel>
                         <Button x:Name="ExportBrewfileButton" Grid.Column="1" Classes="act primary"
-                                Content="{loc:Tr Btn.Export}" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                                VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="{StaticResource IconExportGeo}" Classes="btnicon onprimary" />
+                                <TextBlock Text="{loc:Tr Btn.Export}" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -131,7 +152,12 @@
                                        Text="{loc:Tr Maint.ImportDesc}" />
                         </StackPanel>
                         <Button x:Name="ImportBrewfileButton" Grid.Column="1" Classes="act"
-                                Content="{loc:Tr Btn.Import}" VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}" />
+                                VerticalAlignment="Center" IsEnabled="{Binding !IsBusy}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Path Data="{StaticResource IconInstallGeo}" Classes="btnicon" />
+                                <TextBlock Text="{loc:Tr Btn.Import}" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 

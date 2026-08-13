@@ -15,11 +15,33 @@ public interface IHomebrewService
     /// <summary>Recherche des packages par nom / mot-clé.</summary>
     Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Catalogue complet (formulae + casks séparés), via <c>brew formulae</c> / <c>brew casks</c>.
+    /// Sert à la complétion du terminal et à l'ajout automatique de <c>--cask</c>. Mis en cache
+    /// par l'appelant.
+    /// </summary>
+    Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Récupère en un seul appel (<c>brew info --json=v2 …</c>) les métadonnées légères
+    /// d'une liste de packages (version, description, homepage), pour enrichir les tuiles
+    /// de résultats de recherche. Retourne un package par entrée trouvée.
+    /// </summary>
+    Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default);
+
     /// <summary>Liste les packages installés pour lesquels une mise à jour est disponible.</summary>
     Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Actualise l'index des formules/casks (<c>brew update</c>).</summary>
     Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Exécute une sous-commande <c>brew</c> arbitraire (terminal intégré) en streamant la
+    /// sortie ligne à ligne. On invoque directement le binaire <c>brew</c> avec ces arguments
+    /// (aucun shell). Ne lève <b>pas</b> sur code non nul — les erreurs font partie de la
+    /// sortie du terminal ; retourne le code de sortie du processus.
+    /// </summary>
+    Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
     /// <summary>Récupère le détail enrichi d'un package (description, dépendances, homepage…).</summary>
     Task<PackageDetails> GetInfoAsync(string name, CancellationToken cancellationToken = default);
@@ -46,10 +68,10 @@ public interface IHomebrewService
     Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default);
 
     /// <summary>Installe un package. <paramref name="output"/> reçoit le log brew en direct.</summary>
-    Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+    Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
     /// <summary>Réinstalle un package (<c>brew reinstall</c>).</summary>
-    Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);
+    Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default);
 
     /// <summary>Désinstalle un package installé. <paramref name="output"/> reçoit le log brew.</summary>
     Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default);

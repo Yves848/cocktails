@@ -29,9 +29,19 @@ public sealed class HelpViewModel : ScreenViewModel
     private static IReadOnlyList<ShortcutGroup> BuildGroups() =>
     [
         new ShortcutGroup(L["Help.GroupNav"], [
+            new Shortcut("⌘ 1…8", L["Help.JumpTabs"]),
+            new Shortcut("⇥", L["Help.SwitchZone"]),
+            new Shortcut("↑ ↓ ← →", L["Help.GridArrows"]),
+            new Shortcut("Space", L["Help.ToggleCheck"]),
+            new Shortcut("⌘ F", L["Help.FocusFilter"]),
+            new Shortcut("⌘ T", L["Help.ToggleTerminal"]),
             new Shortcut("⌘ ,", L["Help.OpenSettings"]),
             new Shortcut("F1", L["Help.OpenHelp"]),
-            new Shortcut("↑ ↓", L["Help.BrowseList"]),
+        ]),
+        new ShortcutGroup(L["Help.GroupFilters"], [
+            new Shortcut("⌥ R", L["Help.FilterRoots"]),
+            new Shortcut("⌥ A / ⌥ F / ⌥ C", L["Help.FilterKind"]),
+            new Shortcut("⌘ R", L["Help.RefreshList"]),
         ]),
         new ShortcutGroup(L["Help.GroupWindow"], [
             new Shortcut("⌘ W", L["Help.HideWindow"]),

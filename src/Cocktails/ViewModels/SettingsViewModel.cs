@@ -4,8 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
+using Cocktails.Core.Sudo;
 using Cocktails.Localization;
+using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Cocktails.ViewModels;
 
@@ -52,10 +55,22 @@ public sealed partial class SettingsViewModel : ScreenViewModel
 {
     private bool _analyticsEnabled;
     private bool _analyticsLoaded;
+    private readonly INotifier _notifier;
+    private readonly Action? _forgetSudoPassword;
 
-    public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null) : base(homebrew)
+    /// <param name="forgetSudoPassword">
+    /// Efface le mot de passe administrateur gardé en mémoire par le courtier askpass.
+    /// </param>
+    public SettingsViewModel(
+        IHomebrewService homebrew,
+        AppSettings? settings = null,
+        INotifier? notifier = null,
+        Action? forgetSudoPassword = null)
+        : base(homebrew)
     {
         Settings = settings ?? new AppSettings();
+        _notifier = notifier ?? new NullNotifier();
+        _forgetSudoPassword = forgetSudoPassword;
         StatusMessage = L["Status.Settings"];
     }
 
@@ -63,6 +78,49 @@ public sealed partial class SettingsViewModel : ScreenViewModel
     public SettingsViewModel() : this(new DesignHomebrewService())
     {
     }
+
+    /// <summary>
+    /// Envoie une notification système de test (bouton « Tester une notification »),
+    /// pour vérifier que la livraison fonctionne — indépendamment du moniteur.
+    /// </summary>
+    [RelayCommand]
+    private async Task TestNotificationAsync()
+    {
+        await _notifier.NotifyAsync(L["Notif.TestTitle"], L["Notif.TestBody"]);
+        StatusMessage = L["Settings.TestNotifSent"];
+    }
+
+    // --- Raccourci du terminal (configurable) --------------------------------
+
+    /// <summary>En cours d'enregistrement d'une combinaison (la fenêtre capture la saisie).</summary>
+    [ObservableProperty]
+    public partial bool IsRecordingShortcut { get; set; }
+
+    /// <summary>Libellé du bouton : « Appuyez… » en enregistrement, sinon le raccourci actuel.</summary>
+    public string RecordButtonLabel =>
+        IsRecordingShortcut ? L["Settings.PressKeys"] : FormatGesture(Settings.TerminalShortcut);
+
+    partial void OnIsRecordingShortcutChanged(bool value) => OnPropertyChanged(nameof(RecordButtonLabel));
+
+    /// <summary>Démarre / annule l'enregistrement d'un nouveau raccourci.</summary>
+    [RelayCommand]
+    private void RecordShortcut() => IsRecordingShortcut = !IsRecordingShortcut;
+
+    /// <summary>Applique le geste capturé (appelé par la fenêtre) et arrête l'enregistrement.</summary>
+    public void ApplyRecordedGesture(string gesture)
+    {
+        Settings.TerminalShortcut = gesture;
+        IsRecordingShortcut = false;
+        OnPropertyChanged(nameof(RecordButtonLabel));
+    }
+
+    /// <summary>Annule l'enregistrement (Échap).</summary>
+    public void CancelRecording() => IsRecordingShortcut = false;
+
+    // « Cmd+Shift+J » → « ⌘⇧J » pour l'affichage.
+    private static string FormatGesture(string gesture) => gesture
+        .Replace("Cmd", "⌘").Replace("Meta", "⌘").Replace("Ctrl", "⌃")
+        .Replace("Alt", "⌥").Replace("Shift", "⇧").Replace("+", string.Empty);
 
     protected override string TitleKey => "Nav.Settings";
 
@@ -131,6 +189,43 @@ public sealed partial class SettingsViewModel : ScreenViewModel
                 OnPropertyChanged();
             }
         }
+    }
+
+    // --- Mot de passe administrateur -----------------------------------------
+
+    /// <summary>
+    /// Durées de rétention proposées pour un mot de passe retenu. La dernière
+    /// (<see cref="int.MaxValue"/>) le garde toute la session — l'app pouvant rester
+    /// des jours en arrière-plan, ce n'est pas le défaut.
+    /// </summary>
+    public IReadOnlyList<FrequencyOption> SudoLifetimes { get; } =
+    [
+        new("Sudo.After15m", 15),
+        new("Sudo.After1h", 60),
+        new("Sudo.After4h", 240),
+        new("Sudo.WholeSession", int.MaxValue),
+    ];
+
+    public FrequencyOption SelectedSudoLifetime
+    {
+        get => SudoLifetimes.FirstOrDefault(o => o.Minutes == Settings.SudoPasswordLifetimeMinutes)
+               ?? SudoLifetimes[1];
+        set
+        {
+            if (value is not null && value.Minutes != Settings.SudoPasswordLifetimeMinutes)
+            {
+                Settings.SudoPasswordLifetimeMinutes = value.Minutes;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>Efface immédiatement le mot de passe administrateur gardé en mémoire.</summary>
+    [RelayCommand]
+    private void ForgetSudoPassword()
+    {
+        _forgetSudoPassword?.Invoke();
+        StatusMessage = L["Settings.SudoForgotten"];
     }
 
     protected override Task OnFirstActivatedAsync()

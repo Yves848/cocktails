@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Cocktails.ViewModels"
              xmlns:views="using:Cocktails.Views"
+             xmlns:controls="using:Cocktails.Controls"
              xmlns:ac="using:Avalonia.Data.Converters"
              xmlns:loc="using:Cocktails.Localization"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,70 +19,131 @@
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="18,16,18,10">
             <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="17"
                        FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0" />
-            <TextBox Grid.Column="1" Classes="medit"
-                     PlaceholderText="{loc:Tr Placeholder.Filter}"
+            <TextBox Grid.Column="1" x:Name="FilterBox" Classes="medit"
+                     PlaceholderText="{loc:Tr Placeholder.Filter}" ToolTip.Tip="⌘F"
                      Text="{Binding FilterText}" IsEnabled="{Binding !IsBusy}" />
-            <CheckBox Grid.Column="2" Content="{loc:Tr Filter.Roots}" VerticalAlignment="Center" Margin="8,0,0,0"
-                      ToolTip.Tip="{loc:Tr Tooltip.Leaves}"
-                      IsChecked="{Binding LeavesOnly}" IsEnabled="{Binding !IsBusy}" />
+            <!-- Roots : bouton on/off uniforme (comme All/Formulae/Casks). -->
+            <Border Grid.Column="2" Classes="seg" Margin="8,0,0,0">
+                <Button Classes="segbtn" Classes.on="{Binding LeavesOnly}" Content="{loc:Tr Filter.Roots}"
+                        HotKey="Alt+R" ToolTip.Tip="{loc:Tr Tooltip.Leaves}"
+                        Command="{Binding ToggleLeavesCommand}" IsEnabled="{Binding !IsBusy}" />
+            </Border>
             <Border Grid.Column="3" Classes="seg" Margin="8,0,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="2">
                     <Button Classes="segbtn" Classes.on="{Binding IsKindAll}" Content="{loc:Tr Filter.All}"
+                            HotKey="Alt+A" ToolTip.Tip="⌥A"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.All}" />
                     <Button Classes="segbtn" Classes.on="{Binding IsKindFormula}" Content="Formulae"
+                            HotKey="Alt+F" ToolTip.Tip="⌥F"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.Formula}" />
                     <Button Classes="segbtn" Classes.on="{Binding IsKindCask}" Content="Casks"
+                            HotKey="Alt+C" ToolTip.Tip="⌥C"
                             Command="{Binding SetKindFilterCommand}"
                             CommandParameter="{x:Static vm:PackageKindFilter.Cask}" />
                 </StackPanel>
             </Border>
-            <Button Grid.Column="4" Classes="act" Content="{loc:Tr Btn.Refresh}" Margin="8,0,0,0"
-                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="4" Classes="act" Margin="8,0,0,0"
+                    HotKey="Cmd+R" ToolTip.Tip="⌘R"
+                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconRefreshGeo}" Classes="btnicon" />
+                    <TextBlock Text="{loc:Tr Btn.Refresh}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- Barre d'actions par lot (visible dès qu'une ligne est cochée). -->
         <Border Grid.Row="1" Classes="mcard" Margin="18,0,18,10" Padding="12,8"
                 IsVisible="{Binding AnySelected}">
-            <Grid ColumnDefinitions="*,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                 <TextBlock Grid.Column="0" Classes="body" VerticalAlignment="Center"
                            Text="{Binding SelectedCountLabel}" />
-                <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Batch.UncheckAll}" Margin="0,0,8,0"
-                        Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}" />
-                <Button Grid.Column="2" Classes="act danger small" Content="{loc:Tr Batch.UninstallSelection}"
-                        Command="{Binding BatchUninstallCommand}" IsEnabled="{Binding !IsBusy}" />
+                <Button Grid.Column="1" Classes="act small" Margin="0,0,8,0"
+                        Command="{Binding ClearChecksCommand}" IsEnabled="{Binding !IsBusy}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path Data="{StaticResource IconUncheckGeo}" Classes="btnicon" />
+                        <TextBlock Text="{loc:Tr Batch.UncheckAll}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="2" Classes="act small" Margin="0,0,8,0"
+                        Command="{Binding BatchReinstallCommand}" IsEnabled="{Binding !IsBusy}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                        <TextBlock Text="{loc:Tr Batch.ReinstallSelection}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" Classes="act danger small"
+                        Command="{Binding BatchUninstallCommand}" IsEnabled="{Binding !IsBusy}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon danger" />
+                        <TextBlock Text="{loc:Tr Batch.UninstallSelection}" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
         <Grid Grid.Row="2" ColumnDefinitions="*,300">
 
-            <!-- Master : liste -->
-            <ListBox x:Name="List" Grid.Column="0" Classes="rows" Margin="10,0,10,10"
+            <!-- Master : grille de tuiles (ListBox en WrapPanel : sélection + navigation
+                 flèches natives ; scroll horizontal désactivé pour que le WrapPanel
+                 s'enroule sur la largeur). -->
+            <ListBox x:Name="List" Grid.Column="0" Classes="tilebox" Margin="2,0,2,8"
                      SelectionMode="Single"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectedItem="{Binding SelectedItem}"
                      ItemsSource="{Binding Packages}" IsEnabled="{Binding !IsBusy}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SelectablePackage">
-                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
-                            <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0"
-                                      IsChecked="{Binding IsChecked}"
-                                      ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
-                            <Border Classes="badge" Grid.Column="1">
-                                <TextBlock Text="{Binding KindBadge}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextMuted}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Classes="body" Text="{Binding Name}" />
-                                <TextBlock Classes="muted" Text="{Binding KindLabel}" />
+                        <Border Classes="tile">
+                            <StackPanel Spacing="0">
+                                <!-- En-tête : icône + nom + type·version (+ pastille si obsolète) -->
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <controls:AppIcon Grid.Column="0" Width="42" Height="42"
+                                                      Homepage="{Binding Homepage}"
+                                                      FallbackText="{Binding KindBadge}" />
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Classes="body" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                   Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding KindLabel}" />
+                                            <TextBlock Classes="muted" FontSize="11" Text="·" />
+                                            <TextBlock Classes="muted" FontSize="11" Text="{Binding InstalledVersion}" />
+                                            <Border Classes="verpill" IsVisible="{Binding IsOutdated}">
+                                                <TextBlock FontSize="10.5" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource Warning}"
+                                                           Text="{Binding LatestVersion}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Actions -->
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,14,0,0">
+                                    <CheckBox Grid.Column="0" VerticalAlignment="Center" MinWidth="0"
+                                              IsChecked="{Binding IsChecked}"
+                                              ToolTip.Tip="{loc:Tr Tooltip.CheckUninstall}" />
+                                    <Button Grid.Column="2" Classes="act small iconbtn" Margin="0,0,7,0"
+                                            ToolTip.Tip="{loc:Tr Btn.Reinstall}"
+                                            Command="{Binding #List.((vm:InstalledViewModel)DataContext).ReinstallCommand}"
+                                            CommandParameter="{Binding Package}">
+                                        <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                                    </Button>
+                                    <Button Grid.Column="3" Classes="act danger small iconbtn"
+                                            ToolTip.Tip="{loc:Tr Btn.Uninstall}"
+                                            Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
+                                            CommandParameter="{Binding Package}">
+                                        <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon danger" />
+                                    </Button>
+                                </Grid>
                             </StackPanel>
-                            <TextBlock Grid.Column="3" Classes="muted" VerticalAlignment="Center"
-                                       Margin="0,0,12,0" Text="{Binding InstalledVersion}" />
-                            <Button Grid.Column="4" Classes="act danger small" Content="{loc:Tr Btn.Uninstall}"
-                                    Command="{Binding #List.((vm:InstalledViewModel)DataContext).UninstallCommand}"
-                                    CommandParameter="{Binding Package}" />
-                        </Grid>
+                        </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

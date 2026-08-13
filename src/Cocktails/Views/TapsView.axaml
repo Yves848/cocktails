@@ -19,8 +19,13 @@
                 <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" />
                 <TextBlock Classes="muted" Text="{loc:Tr Taps.Subtitle}" VerticalAlignment="Center" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="act" Content="{loc:Tr Btn.Refresh}"
-                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="1" Classes="act" HotKey="Cmd+R" ToolTip.Tip="⌘R"
+                    Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconReinstallGeo}" Classes="btnicon" />
+                    <TextBlock Text="{loc:Tr Btn.Refresh}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- Ajout d'un tap -->
@@ -32,8 +37,13 @@
                     <KeyBinding Gesture="Enter" Command="{Binding AddCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
-            <Button Grid.Column="1" Classes="act primary" Content="{loc:Tr Btn.Add}" Margin="8,0,0,0"
-                    Command="{Binding AddCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Grid.Column="1" Classes="act primary" Margin="8,0,0,0"
+                    Command="{Binding AddCommand}" IsEnabled="{Binding !IsBusy}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Path Data="{StaticResource IconPlusGeo}" Classes="btnicon onprimary" />
+                    <TextBlock Text="{loc:Tr Btn.Add}" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <ListBox x:Name="List" Grid.Row="2" Classes="rows" Margin="10,0,10,10"
@@ -70,16 +80,21 @@
                         </StackPanel>
 
                         <!-- Faire confiance : seulement pour un tap tiers pas encore approuvé -->
-                        <Button Grid.Column="1" Classes="act small" Content="{loc:Tr Btn.Trust}" Margin="0,0,6,0"
+                        <Button Grid.Column="1" Classes="act small iconbtn" Margin="0,0,6,0"
                                 IsVisible="{Binding CanTrust}"
                                 ToolTip.Tip="{loc:Tr Tooltip.Trust}"
                                 Command="{Binding #List.((vm:TapsViewModel)DataContext).TrustCommand}"
-                                CommandParameter="{Binding}" />
+                                CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconTrustGeo}" Classes="btnicon" />
+                        </Button>
                         <!-- Retirer (taps tiers uniquement) -->
-                        <Button Grid.Column="2" Classes="act danger small" Content="{loc:Tr Btn.Remove}"
+                        <Button Grid.Column="2" Classes="act danger small iconbtn"
                                 IsVisible="{Binding !Official}"
+                                ToolTip.Tip="{loc:Tr Btn.Remove}"
                                 Command="{Binding #List.((vm:TapsViewModel)DataContext).RemoveCommand}"
-                                CommandParameter="{Binding}" />
+                                CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconUninstallGeo}" Classes="btnicon danger" />
+                        </Button>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

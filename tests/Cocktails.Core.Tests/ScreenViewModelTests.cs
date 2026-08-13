@@ -30,6 +30,20 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([new Package(query, PackageKind.Formula)]);
 
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>(
+                names.Select(n => new Package(
+                    n,
+                    Casks.Contains(n) ? PackageKind.Cask : PackageKind.Formula,
+                    InstalledVersion: Installed.Contains(n) || Casks.Contains(n) ? "1.0" : null,
+                    LatestVersion: "1.0")).ToList());
+
+        public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+
+        public Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new BrewCatalog([], []));
+
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
@@ -82,14 +96,14 @@ public class ScreenViewModelTests
             return Task.CompletedTask;
         }
 
-        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        public Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             InstallCalls.Add(name);
             Installed.Add(name);
             return Task.CompletedTask;
         }
 
-        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        public Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         {
             Maintenance.Add("reinstall:" + name);
             return Task.CompletedTask;
@@ -208,6 +222,15 @@ public class ScreenViewModelTests
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Package>>([]);
+
+        public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(0);
+
+        public Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new BrewCatalog([], []));
+
         public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Package>>([]);
 
@@ -225,10 +248,10 @@ public class ScreenViewModelTests
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        public Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        public Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
             => throw new HomebrewException(
                 "install " + name,
                 new Cocktails.Core.Process.ProcessResult(1, "", "No available formula"));
@@ -943,6 +966,9 @@ public class ScreenViewModelTests
 
         public Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
         public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
+        public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Package>>([]);
+        public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.FromResult(0);
+        public Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default) => Task.FromResult(new BrewCatalog([], []));
         public Task PinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UnpinAsync(string name, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<string>> GetDependentsAsync(string name, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<string>>([]);
@@ -951,8 +977,8 @@ public class ScreenViewModelTests
         public Task<bool> GetAnalyticsEnabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AutoremoveAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default) => Task.CompletedTask;

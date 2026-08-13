@@ -16,7 +16,8 @@ public sealed class ProcessRunner : IProcessRunner
         string fileName,
         IReadOnlyList<string> arguments,
         IProgress<string>? output = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyDictionary<string, string>? environment = null)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -29,6 +30,14 @@ public sealed class ProcessRunner : IProcessRunner
         foreach (var arg in arguments)
         {
             startInfo.ArgumentList.Add(arg);
+        }
+
+        if (environment is not null)
+        {
+            foreach (var (key, value) in environment)
+            {
+                startInfo.Environment[key] = value;
+            }
         }
 
         using var process = new System.Diagnostics.Process { StartInfo = startInfo };

@@ -32,23 +32,31 @@
 
             <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-                <!-- En-tête (zone de déplacement) -->
-                <Grid x:Name="DragArea" Grid.Row="0" ColumnDefinitions="*,Auto"
+                <!-- En-tête (zone de déplacement) : feux macOS à gauche, titre en accent. -->
+                <Grid x:Name="DragArea" Grid.Row="0" ColumnDefinitions="Auto,Auto,*"
                       Margin="16,13" Background="Transparent">
-                    <TextBlock Grid.Column="0" Classes="title" Text="Cocktails"
-                               VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                        <Button x:Name="MinBtn" Classes="icon" Content="‒" ToolTip.Tip="{loc:Tr Win.Minimize}" />
-                        <Button x:Name="MaxBtn" Classes="icon" Content="◻" ToolTip.Tip="{loc:Tr Win.Maximize}" />
-                        <Button x:Name="CloseBtn" Classes="icon" Content="✕" ToolTip.Tip="{loc:Tr Win.Close}" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                                VerticalAlignment="Center">
+                        <Button x:Name="CloseBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Close}">
+                            <Ellipse Width="12" Height="12" Fill="#FF5F57" />
+                        </Button>
+                        <Button x:Name="MinBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Minimize}">
+                            <Ellipse Width="12" Height="12" Fill="#FEBC2E" />
+                        </Button>
+                        <Button x:Name="MaxBtn" Classes="mac" ToolTip.Tip="{loc:Tr Win.Maximize}">
+                            <Ellipse Width="12" Height="12" Fill="#28C840" />
+                        </Button>
                     </StackPanel>
+                    <TextBlock Grid.Column="1" Classes="title" Text="Cocktails"
+                               Foreground="{StaticResource Accent}"
+                               Margin="14,0,0,0" VerticalAlignment="Center" />
                 </Grid>
 
                 <Border Grid.Row="1" Classes="hairline" />
 
                 <!-- Corps : navigation latérale + écran actif -->
                 <Grid Grid.Row="2" ColumnDefinitions="196,*">
-                    <ListBox Grid.Column="0" Classes="nav"
+                    <ListBox Grid.Column="0" x:Name="NavList" Classes="nav"
                              ItemsSource="{Binding NavItems}"
                              SelectedItem="{Binding SelectedNav}">
                         <ListBox.ItemTemplate>
@@ -56,7 +64,8 @@
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Path Grid.Column="0"
                                           Data="{Binding Icon, Converter={x:Static conv:StringToGeometryConverter.Instance}}"
-                                          Stroke="{StaticResource TextMuted}" StrokeThickness="1.8"
+                                          Stroke="{Binding Color, Converter={x:Static conv:StringToBrushConverter.Instance}}"
+                                          StrokeThickness="1.8"
                                           StrokeLineCap="Round" StrokeJoin="Round"
                                           Width="18" Height="18" Stretch="Uniform"
                                           VerticalAlignment="Center" />
@@ -79,45 +88,145 @@
                     <Border Grid.Column="0" Classes="hairline" Width="1"
                             HorizontalAlignment="Right" VerticalAlignment="Stretch" />
 
-                    <Grid Grid.Column="1">
-                        <!-- L'écran actif est résolu par le ViewLocator (VM → View). -->
-                        <ContentControl Content="{Binding CurrentScreen}" />
+                    <Grid Grid.Column="1" RowDefinitions="*,Auto">
+                        <!-- Écran actif (résolu par le ViewLocator) + overlay « occupé »
+                             limité à cette zone (le terminal reste visible en dessous). -->
+                        <Panel Grid.Row="0">
+                            <ContentControl Content="{Binding CurrentScreen}" />
+                            <Border Background="#B3070912" IsVisible="{Binding CurrentScreen.IsBusy}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Spacing="14" MaxWidth="560">
+                                    <controls:ShakerLoader HorizontalAlignment="Center" />
+                                    <TextBlock Classes="body" MaxWidth="360"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Text="{Binding CurrentScreen.StatusMessage}" />
+                                </StackPanel>
+                            </Border>
+                        </Panel>
 
-                        <!-- Indicateur commun à toutes les opérations Homebrew. -->
-                        <Border Background="#B3070912"
-                                IsVisible="{Binding CurrentScreen.IsBusy}">
-                            <StackPanel HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Spacing="14" MaxWidth="560">
-                                <controls:ShakerLoader HorizontalAlignment="Center" />
-                                <TextBlock Classes="body"
-                                           MaxWidth="360"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           Text="{Binding CurrentScreen.StatusMessage}" />
+                        <!-- Terminal intégré : sorties des commandes brew, collapsible. -->
+                        <Border Grid.Row="1" Classes="terminal">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="14,6">
+                                    <Path Grid.Column="0" Data="{StaticResource IconTerminalGeo}"
+                                          Classes="btnicon" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Classes="muted" Margin="9,0,0,0"
+                                               VerticalAlignment="Center" FontWeight="SemiBold"
+                                               Text="{loc:Tr Terminal.Title}" />
+                                    <Button Grid.Column="3" Classes="act small iconbtn"
+                                            ToolTip.Tip="{loc:Tr Terminal.Clear}"
+                                            IsVisible="{Binding CurrentScreen.OutputLog.Count}"
+                                            Command="{Binding ClearTerminalCommand}">
+                                        <Path Data="{StaticResource IconUncheckGeo}" Classes="btnicon" />
+                                    </Button>
+                                    <Button Grid.Column="4" Classes="act small iconbtn" Margin="6,0,0,0"
+                                            ToolTip.Tip="{loc:Tr Terminal.Toggle}"
+                                            Command="{Binding ToggleTerminalCommand}">
+                                        <Panel>
+                                            <Path Data="{StaticResource IconChevronDownGeo}" Classes="btnicon"
+                                                  IsVisible="{Binding IsTerminalExpanded}" />
+                                            <Path Data="{StaticResource IconChevronUpGeo}" Classes="btnicon"
+                                                  IsVisible="{Binding !IsTerminalExpanded}" />
+                                        </Panel>
+                                    </Button>
+                                </Grid>
 
-                                <!-- Log brew en direct (tail des dernières lignes). -->
-                                <Border Background="#D905060A"
-                                        BorderBrush="{StaticResource Hairline}" BorderThickness="1"
-                                        CornerRadius="9" Padding="14,11" Width="520"
-                                        IsVisible="{Binding CurrentScreen.OutputLog.Count}">
-                                    <ScrollViewer x:Name="LogScroll" MaxHeight="190"
-                                                  HorizontalScrollBarVisibility="Disabled">
-                                        <ItemsControl ItemsSource="{Binding CurrentScreen.OutputLog}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}"
-                                                               FontFamily="Menlo, Consolas, monospace"
-                                                               FontSize="11.5" LineHeight="17"
-                                                               Foreground="{StaticResource TextMuted}"
-                                                               TextTrimming="CharacterEllipsis" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
+                                <Border Grid.Row="1" BorderBrush="{StaticResource Hairline}"
+                                        BorderThickness="0,1,0,0" Padding="14,10"
+                                        IsVisible="{Binding IsTerminalExpanded}">
+                                    <Panel>
+                                        <TextBlock Classes="term" Foreground="{StaticResource TextMuted}"
+                                                   Text="{loc:Tr Terminal.Empty}"
+                                                   IsVisible="{Binding !CurrentScreen.OutputLog.Count}" />
+                                        <ScrollViewer x:Name="LogScroll" MaxHeight="210"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      IsVisible="{Binding CurrentScreen.OutputLog.Count}">
+                                            <ItemsControl ItemsSource="{Binding CurrentScreen.OutputLog}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Classes="term" Text="{Binding}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Panel>
                                 </Border>
-                            </StackPanel>
+
+                                <!-- Commandes proposées par brew (« To install …, run: … ») : puces
+                                     cliquables pour enchaîner directement. -->
+                                <ItemsControl Grid.Row="2" ItemsSource="{Binding SuggestedCommands}"
+                                              Margin="14,4,14,0" IsVisible="{Binding IsTerminalExpanded}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="act small" Margin="0,4,7,0"
+                                                    Command="{Binding #Root.((vm:MainViewModel)DataContext).UseSuggestionCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <Path Data="{StaticResource IconPlayGeo}" Classes="btnicon" />
+                                                    <TextBlock Classes="term" Text="{Binding}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Saisie : n'exécute que des sous-commandes brew. -->
+                                <Grid Grid.Row="3" ColumnDefinitions="Auto,*" Margin="14,8,14,11"
+                                      IsVisible="{Binding IsTerminalExpanded}">
+                                    <TextBlock Grid.Column="0" Classes="term" VerticalAlignment="Center"
+                                               Foreground="{StaticResource Accent}" Text="❯ brew" Margin="0,0,9,0" />
+                                    <TextBox Grid.Column="1" x:Name="TerminalBox" Classes="medit"
+                                             Text="{Binding TerminalInput}"
+                                             PlaceholderText="{loc:Tr Terminal.Prompt}"
+                                             FontFamily="Menlo, Consolas, monospace">
+                                        <TextBox.KeyBindings>
+                                            <KeyBinding Gesture="Enter" Command="{Binding ExecuteTerminalCommand}" />
+                                        </TextBox.KeyBindings>
+                                    </TextBox>
+
+                                    <!-- Popup de suggestions (complétion), calé sur le curseur (offset
+                                         horizontal ajusté en code-behind), ouvert au-dessus de la saisie. -->
+                                    <Popup x:Name="SuggestPopup" Grid.Column="1" PlacementTarget="{Binding #TerminalBox}"
+                                           Placement="Top" VerticalOffset="-4"
+                                           IsOpen="{Binding IsSuggestionsOpen}"
+                                           IsLightDismissEnabled="False">
+                                        <Border Background="#0F1622" BorderBrush="{StaticResource CardBorder}"
+                                                BorderThickness="1" CornerRadius="9" Padding="4"
+                                                MinWidth="260" MaxHeight="240">
+                                            <ListBox x:Name="SuggestList" Classes="rows"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     ItemsSource="{Binding Suggestions}"
+                                                     SelectedIndex="{Binding SuggestionIndex}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding}"
+                                                                       FontFamily="Menlo, Consolas, monospace"
+                                                                       FontSize="12" VerticalAlignment="Center" />
+                                                            <!-- Rappels touches (ligne sélectionnée) : ⇥ insérer, ↩ exécuter. -->
+                                                            <StackPanel Grid.Column="1" Classes="keyhints"
+                                                                        Orientation="Horizontal" Spacing="8"
+                                                                        Margin="14,0,0,0" VerticalAlignment="Center">
+                                                                <TextBlock Text="⇥" FontSize="13"
+                                                                           Foreground="{StaticResource TextMuted}"
+                                                                           ToolTip.Tip="{loc:Tr Terminal.HintInsert}" />
+                                                                <TextBlock Text="↩" FontSize="13" FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource Accent}"
+                                                                           ToolTip.Tip="{loc:Tr Terminal.HintRun}"
+                                                                           IsVisible="{Binding #Root.((vm:MainViewModel)DataContext).SuggestionsExecutable}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Grid>
@@ -190,6 +299,45 @@
                             <Button Classes="act danger"
                                     Content="{Binding CurrentScreen.Confirmation.ConfirmLabel}"
                                     Command="{Binding CurrentScreen.ConfirmCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- Saisie du mot de passe administrateur (sudo), demandée par brew via askpass -->
+            <Border CornerRadius="10" Background="#B3040509"
+                    IsVisible="{Binding PasswordRequest, Converter={x:Static ac:ObjectConverters.IsNotNull}}">
+                <Border Width="400" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="#F2101018" BorderBrush="{StaticResource CardBorder}"
+                        BorderThickness="1" CornerRadius="14"
+                        BoxShadow="0 24 60 -12 #B0000000">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,20,20,10">
+                            <Border Width="34" Height="34" CornerRadius="9"
+                                    Background="{StaticResource AccentSoft}" VerticalAlignment="Top">
+                                <Path Width="18" Height="18" Stretch="Uniform"
+                                      Stroke="{StaticResource Accent}" StrokeThickness="2"
+                                      StrokeLineCap="Round" StrokeJoin="Round"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Data="M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z M8 11V7a4 4 0 0 1 8 0v4" />
+                            </Border>
+                            <StackPanel Spacing="5">
+                                <TextBlock Classes="title" TextWrapping="Wrap"
+                                           Text="{Binding PasswordRequest.Title}" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="300"
+                                           Text="{Binding PasswordRequest.Message}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBox x:Name="PasswordBox" Margin="20,4,20,0" PasswordChar="•"
+                                 Text="{Binding PasswordInput, Mode=TwoWay}" />
+                        <CheckBox Margin="20,10,20,0" Content="{loc:Tr Sudo.Remember}"
+                                  IsChecked="{Binding RememberPassword, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                    Spacing="8" Margin="20,10,20,18">
+                            <Button Classes="act" Content="{loc:Tr Btn.Cancel}"
+                                    Command="{Binding CancelPasswordCommand}" />
+                            <Button Classes="act primary" Content="{loc:Tr Sudo.Submit}"
+                                    Command="{Binding SubmitPasswordCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>

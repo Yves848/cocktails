@@ -2,7 +2,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Core.Sudo;
 using Cocktails.Localization;
+using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -57,6 +59,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
     private const int MaxLogLines = 200;
     private bool _activated;
+    private bool _sudoHintShown;   // une seule explication sudo par opération
 
     /// <summary>
     /// Appelé par le shell quand l'écran devient actif. Déclenche le chargement initial
@@ -110,6 +113,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
         IsBusy = true;
         StatusMessage = busyMessage;
+        _sudoHintShown = false;
         try
         {
             await action();
@@ -136,15 +140,55 @@ public abstract partial class ScreenViewModel : ViewModelBase
     protected Task RunWithOutputAsync(string busyMessage, Func<IProgress<string>, Task> action)
     {
         OutputLog.Clear();
-        var progress = new Progress<string>(line =>
+        var progress = new Progress<string>(AppendLog);
+        return RunAsync(busyMessage, () => action(progress));
+    }
+
+    /// <summary>Ajoute une ligne au terminal (borne le tail comme le flux de sortie).</summary>
+    private void AppendLog(string line)
+    {
+        OutputLog.Add(line);
+
+        // Le courtier askpass devrait rendre ce message impossible ; s'il apparaît quand
+        // même, c'est que le mécanisme est indisponible — on l'explique au lieu de laisser
+        // l'utilisateur devant la sortie brute de sudo.
+        if (!_sudoHintShown && SudoOutput.IsPasswordFailure(line))
         {
-            OutputLog.Add(line);
-            while (OutputLog.Count > MaxLogLines)
-            {
-                OutputLog.RemoveAt(0);
-            }
+            _sudoHintShown = true;
+            OutputLog.Add(L["Sudo.Unavailable"]);
+        }
+
+        while (OutputLog.Count > MaxLogLines)
+        {
+            OutputLog.RemoveAt(0);
+        }
+    }
+
+    /// <summary>
+    /// Exécute une commande saisie dans le terminal intégré. La saisie est analysée en
+    /// arguments brew (<see cref="BrewCommandLine"/> ; aucun shell), et la sortie est
+    /// <b>ajoutée</b> au terminal (sans l'effacer). Retourne les arguments exécutés (ou
+    /// <c>null</c> si la saisie était invalide), pour que le shell décide d'un rechargement.
+    /// </summary>
+    public async Task<string[]?> RunTerminalCommandAsync(string input)
+    {
+        var args = BrewCommandLine.Parse(input);
+        if (args is null)
+        {
+            AppendLog(L["Terminal.Invalid"]);
+            return null;
+        }
+
+        var line = "brew " + string.Join(' ', args);
+        var progress = new Progress<string>(AppendLog);
+        await RunAsync(line, async () =>
+        {
+            AppendLog("$ " + line);
+            var exit = await Homebrew.RunBrewAsync(args, progress);
+            AppendLog(exit == 0 ? "✓" : $"✗ exit {exit}");
+            StatusMessage = exit == 0 ? L["Terminal.Done"] : L.Format("Terminal.Failed", exit);
         });
 
-        return RunAsync(busyMessage, () => action(progress));
+        return args;
     }
 }

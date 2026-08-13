@@ -38,6 +38,99 @@ public class HomebrewParsingTests
     }
 
     [Fact]
+    public void ParseInstalledInfo_ReadsNameVersionAndHomepage()
+    {
+        // Forme réelle de `brew info --installed --json=v2` : sections formulae/casks.
+        // Formula : version = dernier élément de "installed"[]. Cask : "installed" = string.
+        const string json = """
+            {
+              "formulae": [
+                {
+                  "name": "jq",
+                  "homepage": "https://jqlang.github.io/jq/",
+                  "installed": [ { "version": "1.6" }, { "version": "1.7.1" } ]
+                }
+              ],
+              "casks": [
+                {
+                  "token": "1password-cli",
+                  "homepage": "https://1password.com/downloads/command-line/",
+                  "installed": "2.38.1"
+                }
+              ]
+            }
+            """;
+
+        var packages = HomebrewService.ParseInstalledInfo(json);
+
+        Assert.Equal(2, packages.Count);
+
+        var jq = packages[0];
+        Assert.Equal("jq", jq.Name);
+        Assert.Equal(PackageKind.Formula, jq.Kind);
+        Assert.Equal("1.7.1", jq.InstalledVersion); // dernière version installée
+        Assert.Equal("https://jqlang.github.io/jq/", jq.Homepage);
+
+        var op = packages[1];
+        Assert.Equal("1password-cli", op.Name);
+        Assert.Equal(PackageKind.Cask, op.Kind);
+        Assert.Equal("2.38.1", op.InstalledVersion);
+        Assert.Equal("https://1password.com/downloads/command-line/", op.Homepage);
+    }
+
+    [Fact]
+    public void ParseInstalledInfo_BlankReturnsEmpty()
+        => Assert.Empty(HomebrewService.ParseInstalledInfo(""));
+
+    [Fact]
+    public void ParseInfoList_ReadsVersionDescriptionHomepageAndInstalled()
+    {
+        // `brew info --json=v2 <noms>` : enrichissement des tuiles de recherche.
+        const string json = """
+            {
+              "formulae": [
+                {
+                  "name": "wget",
+                  "desc": "Internet file retriever",
+                  "homepage": "https://www.gnu.org/software/wget/",
+                  "versions": { "stable": "1.24.5" },
+                  "installed": []
+                }
+              ],
+              "casks": [
+                {
+                  "token": "firefox",
+                  "desc": "Web browser",
+                  "homepage": "https://www.mozilla.org/firefox/",
+                  "version": "128.0",
+                  "installed": "127.0"
+                }
+              ]
+            }
+            """;
+
+        var packages = HomebrewService.ParseInfoList(json);
+
+        Assert.Equal(2, packages.Count);
+
+        var wget = packages[0];
+        Assert.Equal("wget", wget.Name);
+        Assert.Equal(PackageKind.Formula, wget.Kind);
+        Assert.Equal("1.24.5", wget.LatestVersion);
+        Assert.Equal("Internet file retriever", wget.Description);
+        Assert.Equal("https://www.gnu.org/software/wget/", wget.Homepage);
+        Assert.Null(wget.InstalledVersion);      // "installed": [] → non installé
+        Assert.False(wget.IsInstalled);
+
+        var firefox = packages[1];
+        Assert.Equal("firefox", firefox.Name);
+        Assert.Equal(PackageKind.Cask, firefox.Kind);
+        Assert.Equal("128.0", firefox.LatestVersion);
+        Assert.Equal("127.0", firefox.InstalledVersion);
+        Assert.True(firefox.IsOutdated);         // installé 127 < dispo 128
+    }
+
+    [Fact]
     public void ParseSearch_SplitsFormulaeAndCasksBySectionHeaders()
     {
         const string output = """

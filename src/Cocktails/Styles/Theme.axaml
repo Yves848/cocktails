@@ -20,11 +20,17 @@
   <Styles.Resources>
     <SolidColorBrush x:Key="TextPrimary" Color="#ECEEF5" />
     <SolidColorBrush x:Key="TextMuted" Color="#9AA0B4" />
-    <SolidColorBrush x:Key="Accent" Color="#5B8CFF" />
-    <SolidColorBrush x:Key="AccentSoft" Color="#295B8CFF" />
-    <SolidColorBrush x:Key="Success" Color="#37D67A" />
-    <SolidColorBrush x:Key="Warning" Color="#F5A623" />
-    <SolidColorBrush x:Key="Danger" Color="#FF5F6D" />
+    <!-- Accent CONFIGURABLE : la couleur est une ressource dynamique ; changer
+         AccentColor / AccentSoftColor à l'exécution recolore toutes les liaisons.
+         Défaut de la refonte = teal. Réglable dans les Réglages (à venir). -->
+    <Color x:Key="AccentColor">#2DD4BF</Color>
+    <Color x:Key="AccentSoftColor">#332DD4BF</Color>
+    <SolidColorBrush x:Key="Accent" Color="{DynamicResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentSoft" Color="{DynamicResource AccentSoftColor}" />
+    <SolidColorBrush x:Key="Success" Color="#43C07A" />
+    <SolidColorBrush x:Key="Warning" Color="#F0B429" />
+    <SolidColorBrush x:Key="Danger" Color="#F0616B" />
+    <SolidColorBrush x:Key="Violet" Color="#A78BFA" />
     <SolidColorBrush x:Key="Hairline" Color="#12FFFFFF" />
     <SolidColorBrush x:Key="FillSubtle" Color="#10FFFFFF" />
     <!-- Bordure 2px qui délimite la carte (filet clair discret sur fond sombre). -->
@@ -38,6 +44,29 @@
     <!-- Teinte sombre superposée AU-DESSUS de l'acrylique : contrôle la « noirceur ».
          Seul réglage à toucher pour + / − sombre (alpha du début : ~D9 = 85%). -->
     <SolidColorBrush x:Key="CardTint" Color="#D9070912" />
+
+    <!-- Icônes d'action (tracé au trait, viewBox 24×24, style Lucide) pour les boutons. -->
+    <StreamGeometry x:Key="IconReinstallGeo">M23 4v6h-6 M20.49 9A9 9 0 1 0 5.64 5.64L1 10</StreamGeometry>
+    <StreamGeometry x:Key="IconUninstallGeo">M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6 M10 11v6 M14 11v6</StreamGeometry>
+    <StreamGeometry x:Key="IconRefreshGeo">M23 4v6h-6 M1 20v-6h6 M20.49 9A9 9 0 0 0 5.64 5.64L1 10 M3.51 15a9 9 0 0 0 14.85 4.36L23 14</StreamGeometry>
+    <StreamGeometry x:Key="IconUncheckGeo">M18 6L6 18 M6 6l12 12</StreamGeometry>
+    <StreamGeometry x:Key="IconPinGeo">M12 17v5 M5 9l7-7 7 7-4 1-3 5-3-5-4-1z</StreamGeometry>
+    <StreamGeometry x:Key="IconOpenExtGeo">M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3</StreamGeometry>
+    <StreamGeometry x:Key="IconInstallGeo">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3</StreamGeometry>
+    <StreamGeometry x:Key="IconUpdateGeo">M12 20V6 M5 13l7-7 7 7 M5 4h14</StreamGeometry>
+    <StreamGeometry x:Key="IconSearchGeo">M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z M21 21l-4.35-4.35</StreamGeometry>
+    <StreamGeometry x:Key="IconPlayGeo">M6 4l14 8-14 8z</StreamGeometry>
+    <StreamGeometry x:Key="IconStopGeo">M6 6h12v12H6z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlusGeo">M12 5v14 M5 12h14</StreamGeometry>
+    <StreamGeometry x:Key="IconCheckGeo">M20 6L9 17l-5-5</StreamGeometry>
+    <StreamGeometry x:Key="IconTrustGeo">M12 3l8 3v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z M9 12l2 2 4-4</StreamGeometry>
+    <StreamGeometry x:Key="IconCleanGeo">M13 3l3 7 7 3-7 3-3 7-3-7-7-3 7-3z M5 3v3 M3.5 4.5h3</StreamGeometry>
+    <StreamGeometry x:Key="IconDoctorGeo">M22 12h-4l-3 9L9 3l-3 9H2</StreamGeometry>
+    <StreamGeometry x:Key="IconExportGeo">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 9l5-5 5 5 M12 4v12</StreamGeometry>
+    <StreamGeometry x:Key="IconBellGeo">M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0</StreamGeometry>
+    <StreamGeometry x:Key="IconTerminalGeo">M4 17l6-6-6-6 M12 19h8</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronDownGeo">M6 9l6 6 6-6</StreamGeometry>
+    <StreamGeometry x:Key="IconChevronUpGeo">M6 15l6-6 6 6</StreamGeometry>
   </Styles.Resources>
 
   <!-- Carte : conteneur racine arrondi + bordure 2px. Le fond translucide/flou est fourni par
@@ -48,6 +77,74 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="2" />
     <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+  </Style>
+
+  <!-- Grille de tuiles : ListBox.tilebox en WrapPanel (sélection + navigation flèches
+       natives). La sélection/survol pilote le liseré de la tuile ; on neutralise le
+       chrome par défaut du ListBoxItem. -->
+  <Style Selector="ListBox.tilebox">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="6" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="13" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Border.tile">
+    <Setter Property="Background" Value="#151C26" />
+    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="Width" Value="262" />
+    <Setter Property="Margin" Value="6" />
+    <Setter Property="Padding" Value="15,14" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:pointerover Border.tile">
+    <Setter Property="BorderBrush" Value="#33FFFFFF" />
+  </Style>
+  <Style Selector="ListBox.tilebox ListBoxItem:selected Border.tile">
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+  <!-- Focus clavier visible sur la tuile (liseré accent également). -->
+  <Style Selector="ListBox.tilebox ListBoxItem:focus-visible Border.tile">
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+  <!-- Icône dans un bouton d'action (trait, alignée au texte). -->
+  <Style Selector="Path.btnicon">
+    <Setter Property="Stroke" Value="{StaticResource TextPrimary}" />
+    <Setter Property="StrokeThickness" Value="1.7" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Width" Value="13" />
+    <Setter Property="Height" Value="13" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Path.btnicon.danger">
+    <Setter Property="Stroke" Value="{StaticResource Danger}" />
+  </Style>
+  <Style Selector="Path.btnicon.onprimary">
+    <Setter Property="Stroke" Value="White" />
+  </Style>
+
+  <!-- Pastille « version disponible » (paquet obsolète) -->
+  <Style Selector="Border.verpill">
+    <Setter Property="Background" Value="#1FF0B429" />
+    <Setter Property="BorderBrush" Value="#4DF0B429" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
   <!-- Filet de séparation 1px -->
@@ -224,8 +321,8 @@
     <Setter Property="Background" Value="{StaticResource Accent}" />
     <Setter Property="Foreground" Value="White" />
   </Style>
-  <Style Selector="Button.act.primary:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="#7BA0FF" />
+  <Style Selector="Button.act.primary:pointerover">
+    <Setter Property="Opacity" Value="0.9" />
   </Style>
   <!-- Action destructive (désinstaller) : rouge, discret tant qu'on ne survole pas. -->
   <Style Selector="Button.act.danger">
@@ -235,10 +332,68 @@
     <Setter Property="Background" Value="#33FF5F6D" />
   </Style>
 
+  <!-- Feux de circulation macOS (fermer / réduire / agrandir) : bouton sans chrome,
+       la pastille de couleur est une Ellipse ; léger assombrissement au survol. -->
+  <Style Selector="Button.mac">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="1" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.mac /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.mac:pointerover Ellipse">
+    <Setter Property="Opacity" Value="0.75" />
+  </Style>
+
   <!-- Bouton d'action compact (par ligne) -->
   <Style Selector="Button.act.small">
     <Setter Property="Padding" Value="10,5" />
     <Setter Property="FontSize" Value="12" />
+  </Style>
+  <!-- Bouton icône seule (tuiles) : padding carré, l'infobulle porte le libellé. -->
+  <Style Selector="Button.act.iconbtn">
+    <Setter Property="Padding" Value="7,6" />
+  </Style>
+
+  <!-- Popup de suggestions du terminal : ligne sélectionnée mise en évidence en accent. -->
+  <Style Selector="ListBox#SuggestList ListBoxItem">
+    <Setter Property="Padding" Value="9,5" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#16FFFFFF" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Accent}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <!-- Rappels touches (⇥ / ↩) affichés seulement sur la ligne surlignée. -->
+  <Style Selector="ListBox#SuggestList StackPanel.keyhints">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ListBox#SuggestList ListBoxItem:selected StackPanel.keyhints">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <!-- Terminal intégré (barre + zone de sortie) en bas de l'écran. -->
+  <Style Selector="Border.terminal">
+    <Setter Property="Background" Value="#0A0E15" />
+    <Setter Property="BorderBrush" Value="{StaticResource Hairline}" />
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+  </Style>
+  <Style Selector="Border.terminal TextBlock.term">
+    <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
+    <Setter Property="FontSize" Value="11.5" />
+    <Setter Property="LineHeight" Value="17" />
+    <Setter Property="Foreground" Value="#B7C0D0" />
+    <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
 
   <!-- Champ de saisie -->

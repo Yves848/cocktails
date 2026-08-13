@@ -18,12 +18,13 @@ public sealed class SettingsStore
 
     private readonly string _path;
 
+    /// <summary>Dossier de données de l'application (réglages, socket askpass…).</summary>
+    public static string DirectoryPath { get; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Cocktails");
+
     public SettingsStore(string? path = null)
     {
-        _path = path ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Cocktails",
-            "settings.json");
+        _path = path ?? Path.Combine(DirectoryPath, "settings.json");
     }
 
     /// <summary>Charge les réglages, ou les valeurs par défaut si absent/illisible.</summary>
@@ -44,6 +45,8 @@ public sealed class SettingsStore
                         MonitoringIntervalMinutes = dto.MonitoringIntervalMinutes,
                         KeepRunningInBackground = dto.KeepRunningInBackground,
                         Language = dto.Language,
+                        TerminalShortcut = dto.TerminalShortcut,
+                        SudoPasswordLifetimeMinutes = dto.SudoPasswordLifetimeMinutes,
                         WindowWidth = dto.WindowWidth,
                         WindowHeight = dto.WindowHeight,
                         WindowX = dto.WindowX,
@@ -75,10 +78,12 @@ public sealed class SettingsStore
                 MonitoringIntervalMinutes = settings.MonitoringIntervalMinutes,
                 KeepRunningInBackground = settings.KeepRunningInBackground,
                 Language = settings.Language,
+                TerminalShortcut = settings.TerminalShortcut,
                 WindowWidth = settings.WindowWidth,
                 WindowHeight = settings.WindowHeight,
                 WindowX = settings.WindowX,
                 WindowY = settings.WindowY,
+                SudoPasswordLifetimeMinutes = settings.SudoPasswordLifetimeMinutes,
                 WindowMaximized = settings.WindowMaximized,
             };
             File.WriteAllText(_path, JsonSerializer.Serialize(dto, JsonOptions));
@@ -98,6 +103,8 @@ public sealed class SettingsStore
         public int MonitoringIntervalMinutes { get; set; } = 360;
         public bool KeepRunningInBackground { get; set; } = true;
         public Cocktails.Localization.AppLanguage Language { get; set; } = Cocktails.Localization.AppLanguage.System;
+        public string TerminalShortcut { get; set; } = "Cmd+T";
+        public int SudoPasswordLifetimeMinutes { get; set; } = 60;
         public double? WindowWidth { get; set; }
         public double? WindowHeight { get; set; }
         public int? WindowX { get; set; }

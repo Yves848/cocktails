@@ -12,7 +12,7 @@ namespace Cocktails.ViewModels;
 /// d'exemple. Sert uniquement au previewer XAML (design-time) et au constructeur
 /// sans argument de <see cref="MainViewModel"/> ; jamais utilisée à l'exécution réelle.
 /// </summary>
-internal sealed class DesignHomebrewService : IHomebrewService
+public sealed class DesignHomebrewService : IHomebrewService
 {
     private static readonly IReadOnlyList<Package> Sample =
     [
@@ -26,6 +26,15 @@ internal sealed class DesignHomebrewService : IHomebrewService
 
     public Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
         => Task.FromResult(Sample);
+
+    public Task<IReadOnlyList<Package>> GetInfoForAsync(IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+        => Task.FromResult(Sample);
+
+    public Task<int> RunBrewAsync(IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => Task.FromResult(0);
+
+    public Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(new BrewCatalog(["git", "wget", "node", "ripgrep"], ["firefox", "visual-studio-code"]));
 
     public Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<Package>>([Sample[0]]);
@@ -55,10 +64,10 @@ internal sealed class DesignHomebrewService : IHomebrewService
             "https://git-scm.com", "2.45.2", "2.45.2",
             ["gettext", "pcre2", "openssl@3"], false, "homebrew/core"));
 
-    public Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+    public Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
-    public Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+    public Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
     public Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)

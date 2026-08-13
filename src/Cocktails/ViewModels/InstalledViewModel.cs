@@ -34,6 +34,10 @@ public partial class InstalledViewModel : PackageListViewModel
     [ObservableProperty]
     public partial bool LeavesOnly { get; set; }
 
+    /// <summary>Bascule le filtre « racines » (bouton on/off + raccourci ⌥R).</summary>
+    [RelayCommand]
+    private void ToggleLeaves() => LeavesOnly = !LeavesOnly;
+
     protected override Task OnFirstActivatedAsync() => LoadAsync();
 
     [RelayCommand]
@@ -89,7 +93,7 @@ public partial class InstalledViewModel : PackageListViewModel
 
         return RunWithOutputAsync(L.Format("Status.Reinstalling", package.Name), async progress =>
         {
-            await Homebrew.ReinstallAsync(package.Name, progress);
+            await Homebrew.ReinstallAsync(package.Name, package.Kind, progress);
             Replace(await Homebrew.GetInstalledAsync());
             StatusMessage = L.Format("Status.Reinstalled", package.Name);
         });
@@ -158,6 +162,33 @@ public partial class InstalledViewModel : PackageListViewModel
             L.Format("Confirm.BatchUninstallMsg", names),
             L["Confirm.BatchUninstallBtn"],
             () => DoBatchUninstallAsync(targets));
+    }
+
+    /// <summary>Réinstalle en une passe toutes les lignes cochées (non destructif, sans confirmation).</summary>
+    [RelayCommand]
+    private Task BatchReinstall()
+    {
+        var targets = CheckedPackages();
+        if (targets.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunWithOutputAsync(L.Format("Status.BatchReinstalling", targets.Count), async progress =>
+        {
+            var done = 0;
+            foreach (var package in targets)
+            {
+                progress.Report($"$ brew reinstall {package.Name}");
+                await Homebrew.ReinstallAsync(package.Name, package.Kind, progress);
+                done++;
+                StatusMessage = L.Format("Status.BatchReinstallProgress", done, targets.Count);
+            }
+
+            ClearSelection();
+            Replace(await Homebrew.GetInstalledAsync());
+            StatusMessage = L.Format("Status.BatchReinstalled", targets.Count);
+        });
     }
 
     private Task DoBatchUninstallAsync(IReadOnlyList<Package> targets)

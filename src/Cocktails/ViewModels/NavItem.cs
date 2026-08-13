@@ -8,11 +8,12 @@ public sealed partial class NavItem : ObservableObject
 {
     private readonly string _titleKey;
 
-    public NavItem(string titleKey, string icon, ScreenViewModel screen)
+    public NavItem(string titleKey, string icon, ScreenViewModel screen, string color = "#8A93A6")
     {
         _titleKey = titleKey;
         Icon = icon;
         Screen = screen;
+        Color = color;
         Localizer.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(Title));
     }
 
@@ -28,6 +29,9 @@ public sealed partial class NavItem : ObservableObject
     /// que les view models restent indépendants de la plateforme Avalonia (testables).
     /// </summary>
     public string Icon { get; }
+
+    /// <summary>Couleur d'accent propre à l'onglet (hex), pour distinguer les icônes.</summary>
+    public string Color { get; }
 
     public ScreenViewModel Screen { get; }
 

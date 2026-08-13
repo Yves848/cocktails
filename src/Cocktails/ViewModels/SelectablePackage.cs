@@ -27,4 +27,7 @@ public partial class SelectablePackage : ObservableObject
     public string? InstalledVersion => Package.InstalledVersion;
     public string? LatestVersion => Package.LatestVersion;
     public bool IsInstalled => Package.IsInstalled;
+    public bool IsOutdated => Package.IsOutdated;
+    public string? Homepage => Package.Homepage;
+    public string? Description => Package.Description;
 }

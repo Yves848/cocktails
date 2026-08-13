@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cocktails.Core;
@@ -19,6 +20,13 @@ public partial class OutdatedViewModel : PackageListViewModel
     }
 
     protected override string TitleKey => "Nav.Updates";
+
+    /// <summary>
+    /// Émis après une opération qui modifie l'ensemble des paquets obsolètes (upgrade,
+    /// mise à jour de l'index). Le shell s'y abonne pour rafraîchir le moniteur — donc
+    /// le badge de navigation — puisqu'une action interne ne passe pas par son timer.
+    /// </summary>
+    public event EventHandler? OutdatedSetChanged;
 
     protected override Task OnFirstActivatedAsync() => LoadAsync();
 
@@ -95,5 +103,10 @@ public partial class OutdatedViewModel : PackageListViewModel
         });
     }
 
-    private async Task ReloadAsync() => Replace(await Homebrew.GetOutdatedAsync());
+    private async Task ReloadAsync()
+    {
+        Replace(await Homebrew.GetOutdatedAsync());
+        // Prévient le shell → moniteur → badge de navigation (le timer ne l'a pas vu).
+        OutdatedSetChanged?.Invoke(this, EventArgs.Empty);
+    }
 }

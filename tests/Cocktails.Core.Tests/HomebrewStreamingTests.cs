@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Core.Models;
 using Cocktails.Core.Process;
 
 namespace Cocktails.Core.Tests;
@@ -27,7 +28,8 @@ public class HomebrewStreamingTests
             string fileName,
             IReadOnlyList<string> arguments,
             IProgress<string>? output = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IReadOnlyDictionary<string, string>? environment = null)
         {
             LastArguments.Clear();
             LastArguments.AddRange(arguments);
@@ -62,10 +64,21 @@ public class HomebrewStreamingTests
         var service = new HomebrewService(runner, "/opt/homebrew/bin/brew");
         var progress = new CollectingProgress();
 
-        await service.InstallAsync("wget", progress);
+        await service.InstallAsync("wget", PackageKind.Formula, progress);
 
         Assert.Equal(["==> Fetching wget", "==> Pouring wget", "🍺  poured"], progress.Lines);
         Assert.Equal(["install", "wget"], runner.LastArguments);
+    }
+
+    [Fact]
+    public async Task InstallAsync_Cask_AddsCaskFlag()
+    {
+        var runner = new ScriptedRunner([], 0);
+        var service = new HomebrewService(runner, "/opt/homebrew/bin/brew");
+
+        await service.InstallAsync("firefox", PackageKind.Cask);
+
+        Assert.Equal(["install", "--cask", "firefox"], runner.LastArguments);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Cocktails.Core.Models;
 using Cocktails.Core.Process;
+using Cocktails.Core.Sudo;
 
 namespace Cocktails.Core;
 
@@ -14,33 +15,60 @@ public sealed class HomebrewService : IHomebrewService
 {
     private readonly IProcessRunner _runner;
     private readonly string _brewPath;
+    private readonly ISudoAskpass? _askpass;
 
     /// <param name="runner">Exécuteur de processus (réel ou factice pour les tests).</param>
     /// <param name="brewPath">
     /// Chemin de l'exécutable <c>brew</c>. Défaut : <c>/opt/homebrew/bin/brew</c>
     /// (emplacement standard sur Apple Silicon ; <c>/usr/local/bin/brew</c> sur Intel).
     /// </param>
-    public HomebrewService(IProcessRunner runner, string brewPath = "/opt/homebrew/bin/brew")
+    /// <param name="askpass">
+    /// Courtier de mot de passe administrateur. <c>null</c> → les commandes qui réclament
+    /// <c>sudo</c> échoueront comme avant, faute de terminal pour saisir le mot de passe.
+    /// </param>
+    public HomebrewService(
+        IProcessRunner runner,
+        string brewPath = "/opt/homebrew/bin/brew",
+        ISudoAskpass? askpass = null)
     {
         _runner = runner;
         _brewPath = brewPath;
+        _askpass = askpass;
     }
 
     public async Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
     {
-        var formulae = await RunAsync(["list", "--versions", "--formula"], cancellationToken);
-        var casks = await RunAsync(["list", "--versions", "--cask"], cancellationToken);
-
-        var packages = new List<Package>();
-        packages.AddRange(ParseInstalled(formulae.StandardOutput, PackageKind.Formula));
-        packages.AddRange(ParseInstalled(casks.StandardOutput, PackageKind.Cask));
-        return packages;
+        // brew info --installed --json=v2 : un seul appel qui rend, pour chaque paquet
+        // installé, son nom, sa version installée ET sa homepage (source de l'icône).
+        // ~1 s pour ~200 paquets (Homebrew met en cache l'API), acceptable au chargement.
+        var result = await RunAsync(["info", "--installed", "--json=v2"], cancellationToken);
+        return ParseInstalledInfo(result.StandardOutput);
     }
 
     public async Task<IReadOnlyList<Package>> SearchAsync(string query, CancellationToken cancellationToken = default)
     {
         var result = await RunAsync(["search", query], cancellationToken);
         return ParseSearch(result.StandardOutput);
+    }
+
+    public async Task<BrewCatalog> GetCatalogAsync(CancellationToken cancellationToken = default)
+    {
+        var formulae = await RunAsync(["formulae"], cancellationToken);
+        var casks = await RunAsync(["casks"], cancellationToken);
+        return new BrewCatalog([.. SplitLines(formulae.StandardOutput)], [.. SplitLines(casks.StandardOutput)]);
+    }
+
+    public async Task<IReadOnlyList<Package>> GetInfoForAsync(
+        IReadOnlyList<string> names, CancellationToken cancellationToken = default)
+    {
+        if (names.Count == 0)
+        {
+            return [];
+        }
+
+        string[] args = ["info", "--json=v2", .. names];
+        var result = await RunAsync(args, cancellationToken);
+        return ParseInfoList(result.StandardOutput);
     }
 
     public async Task<IReadOnlyList<Package>> GetOutdatedAsync(CancellationToken cancellationToken = default)
@@ -72,6 +100,19 @@ public sealed class HomebrewService : IHomebrewService
 
     public async Task UpdateIndexAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
         => await RunAsync(["update"], cancellationToken, output);
+
+    public async Task<int> RunBrewAsync(
+        IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+    {
+        // Invocation directe du binaire brew avec ces arguments (pas de shell) : la saisie
+        // du terminal ne peut donc pas s'échapper vers un autre programme. On ne sait pas
+        // ce que l'utilisateur tape, donc on prévoit sudo dans tous les cas (la variable
+        // reste sans effet pour les commandes qui ne l'appellent pas).
+        var result = await _runner
+            .RunAsync(_brewPath, args, output, cancellationToken, SudoEnvironment())
+            .ConfigureAwait(false);
+        return result.ExitCode;
+    }
 
     public async Task PinAsync(string name, CancellationToken cancellationToken = default)
         => await RunAsync(["pin", name], cancellationToken);
@@ -112,19 +153,23 @@ public sealed class HomebrewService : IHomebrewService
     public async Task SetAnalyticsAsync(bool enabled, CancellationToken cancellationToken = default)
         => await RunAsync(["analytics", enabled ? "on" : "off"], cancellationToken);
 
-    public async Task InstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["install", name], cancellationToken, output);
+    public async Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(
+            kind == PackageKind.Cask ? ["install", "--cask", name] : ["install", name],
+            cancellationToken, output, mayUseSudo: true);
 
-    public async Task ReinstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["reinstall", name], cancellationToken, output);
+    public async Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
+        => await RunAsync(
+            kind == PackageKind.Cask ? ["reinstall", "--cask", name] : ["reinstall", name],
+            cancellationToken, output, mayUseSudo: true);
 
     public async Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["uninstall", name], cancellationToken, output);
+        => await RunAsync(["uninstall", name], cancellationToken, output, mayUseSudo: true);
 
     public async Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
     {
         string[] args = name is null ? ["upgrade"] : ["upgrade", name];
-        await RunAsync(args, cancellationToken, output);
+        await RunAsync(args, cancellationToken, output, mayUseSudo: true);
     }
 
     public async Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
@@ -153,7 +198,7 @@ public sealed class HomebrewService : IHomebrewService
         => await RunAsync(["bundle", "dump", "--file=" + path, "--force"], cancellationToken, output);
 
     public async Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output);
+        => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output, mayUseSudo: true);
 
     public async Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
     {
@@ -186,15 +231,39 @@ public sealed class HomebrewService : IHomebrewService
         => await RunAsync(["trust", name], cancellationToken, output);
 
     private async Task<ProcessResult> RunAsync(
-        string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
+        string[] args,
+        CancellationToken cancellationToken,
+        IProgress<string>? output = null,
+        bool mayUseSudo = false)
     {
-        var result = await _runner.RunAsync(_brewPath, args, output, cancellationToken).ConfigureAwait(false);
+        var result = await _runner
+            .RunAsync(_brewPath, args, output, cancellationToken, mayUseSudo ? SudoEnvironment() : null)
+            .ConfigureAwait(false);
         if (!result.Success)
         {
             throw new HomebrewException(string.Join(' ', args), result);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Environnement d'une commande susceptible d'appeler <c>sudo</c> : Homebrew ajoute
+    /// <c>-A</c> à ses appels sudo dès que <c>SUDO_ASKPASS</c> est défini, et demande alors
+    /// le mot de passe au programme désigné plutôt qu'à un terminal (qu'il n'a pas ici).
+    /// Sans courtier disponible, on n'exporte rien : brew se comporte comme avant.
+    /// </summary>
+    private IReadOnlyDictionary<string, string>? SudoEnvironment()
+    {
+        if (_askpass?.HelperPath is not { } helper)
+        {
+            return null;
+        }
+
+        // Nouvelle commande = nouvelle opération : le courtier repart d'un compteur de
+        // tentatives neuf pour distinguer un mot de passe refusé d'une première demande.
+        _askpass.BeginOperation();
+        return new Dictionary<string, string> { ["SUDO_ASKPASS"] = helper };
     }
 
     // --- Parsing (statique et testable) ---------------------------------------
@@ -217,6 +286,128 @@ public sealed class HomebrewService : IHomebrewService
 
             var version = parts.Length > 1 ? parts[^1] : null;
             packages.Add(new Package(parts[0], kind, InstalledVersion: version));
+        }
+
+        return packages;
+    }
+
+    /// <summary>
+    /// Parse la sortie JSON de <c>brew info --installed --json=v2</c> (sections
+    /// <c>formulae</c> et <c>casks</c>). Récupère, par paquet installé, son nom, sa
+    /// version installée et sa <c>homepage</c> (qui alimente l'icône dans l'UI).
+    /// </summary>
+    public static IReadOnlyList<Package> ParseInstalledInfo(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var packages = new List<Package>();
+
+        if (root.TryGetProperty("formulae", out var formulae) && formulae.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var f in formulae.EnumerateArray())
+            {
+                if (GetString(f, "name") is not { } name)
+                {
+                    continue;
+                }
+
+                string? installed = null;
+                if (f.TryGetProperty("installed", out var inst)
+                    && inst.ValueKind == JsonValueKind.Array && inst.GetArrayLength() > 0)
+                {
+                    installed = GetString(inst[inst.GetArrayLength() - 1], "version");
+                }
+
+                packages.Add(new Package(
+                    name, PackageKind.Formula,
+                    InstalledVersion: installed,
+                    Homepage: GetString(f, "homepage")));
+            }
+        }
+
+        if (root.TryGetProperty("casks", out var casks) && casks.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var c in casks.EnumerateArray())
+            {
+                if (GetString(c, "token") is not { } token)
+                {
+                    continue;
+                }
+
+                packages.Add(new Package(
+                    token, PackageKind.Cask,
+                    InstalledVersion: GetString(c, "installed"),
+                    Homepage: GetString(c, "homepage")));
+            }
+        }
+
+        return packages;
+    }
+
+    /// <summary>
+    /// Parse la sortie JSON de <c>brew info --json=v2 &lt;noms&gt;</c> en packages enrichis :
+    /// version disponible (<c>versions.stable</c> / <c>version</c>), version installée si
+    /// présente, description et homepage. Sert à enrichir les tuiles de résultats de recherche.
+    /// </summary>
+    public static IReadOnlyList<Package> ParseInfoList(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var packages = new List<Package>();
+
+        if (root.TryGetProperty("formulae", out var formulae) && formulae.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var f in formulae.EnumerateArray())
+            {
+                if (GetString(f, "name") is not { } name)
+                {
+                    continue;
+                }
+
+                string? stable = null;
+                if (f.TryGetProperty("versions", out var versions) && versions.ValueKind == JsonValueKind.Object)
+                {
+                    stable = GetString(versions, "stable");
+                }
+
+                string? installed = null;
+                if (f.TryGetProperty("installed", out var inst)
+                    && inst.ValueKind == JsonValueKind.Array && inst.GetArrayLength() > 0)
+                {
+                    installed = GetString(inst[inst.GetArrayLength() - 1], "version");
+                }
+
+                packages.Add(new Package(
+                    name, PackageKind.Formula,
+                    InstalledVersion: installed, LatestVersion: stable,
+                    Description: GetString(f, "desc"), Homepage: GetString(f, "homepage")));
+            }
+        }
+
+        if (root.TryGetProperty("casks", out var casks) && casks.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var c in casks.EnumerateArray())
+            {
+                if (GetString(c, "token") is not { } token)
+                {
+                    continue;
+                }
+
+                packages.Add(new Package(
+                    token, PackageKind.Cask,
+                    InstalledVersion: GetString(c, "installed"), LatestVersion: GetString(c, "version"),
+                    Description: GetString(c, "desc"), Homepage: GetString(c, "homepage")));
+            }
         }
 
         return packages;

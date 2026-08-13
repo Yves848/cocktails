@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Cocktails.ViewModels;
 
 namespace Cocktails.Views;
@@ -57,6 +62,46 @@ public partial class MainWindow : Window
         // Raccourcis clavier globaux (tunnel : indépendants du focus courant).
         AddHandler(KeyDownEvent, OnGlobalKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
+        // Clic sur une suggestion du popup : l'accepter puis rendre le focus à la saisie.
+        SuggestList.Tapped += (_, _) =>
+        {
+            if (DataContext is MainViewModel mvm)
+            {
+                mvm.AcceptSuggestion();
+                if (this.FindControl<TextBox>("TerminalBox") is { } box)
+                {
+                    box.Focus();
+                    box.CaretIndex = box.Text?.Length ?? 0;
+                }
+            }
+        };
+
+        // Cale le popup de complétion sur le curseur (largeur du texte avant le mot courant).
+        TerminalBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.TextProperty || e.Property == TextBox.CaretIndexProperty)
+            {
+                UpdateSuggestionPopupOffset();
+            }
+        };
+
+        // Le dialogue de mot de passe apparaît sans que l'utilisateur l'ait déclenché :
+        // on lui donne le focus pour qu'il puisse taper immédiatement.
+        DataContextChanged += (_, _) =>
+        {
+            if (DataContext is MainViewModel shell)
+            {
+                shell.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName == nameof(MainViewModel.PasswordRequest)
+                        && shell.PasswordRequest is not null)
+                    {
+                        Dispatcher.UIThread.Post(() => PasswordBox.Focus());
+                    }
+                };
+            }
+        };
+
         Opened += OnOpened;
     }
 
@@ -68,6 +113,41 @@ public partial class MainWindow : Window
     {
         var meta = e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         var vm = DataContext as MainViewModel;
+
+        // Saisie du mot de passe administrateur : dialogue modal, ↩ valide et ⎋ annule.
+        // Aucun autre raccourci ne passe tant qu'il est ouvert.
+        if (vm?.PasswordRequest is not null)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                vm.SubmitPasswordCommand.Execute(null);
+            }
+            else if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                vm.CancelPasswordCommand.Execute(null);
+            }
+
+            return;
+        }
+
+        // Enregistrement d'un raccourci (Réglages) : on capture la combinaison saisie.
+        if (vm?.CurrentScreen is SettingsViewModel { IsRecordingShortcut: true } recorder)
+        {
+            e.Handled = true;
+            if (e.Key == Key.Escape)
+            {
+                recorder.CancelRecording();
+            }
+            else if (!IsModifierKey(e.Key)
+                     && (e.KeyModifiers != KeyModifiers.None || e.Key is >= Key.F1 and <= Key.F24))
+            {
+                recorder.ApplyRecordedGesture(new KeyGesture(e.Key, e.KeyModifiers).ToString());
+            }
+
+            return;   // en enregistrement, aucun autre raccourci n'est traité
+        }
 
         if (meta && e.Key == Key.Q)
         {
@@ -94,7 +174,301 @@ public partial class MainWindow : Window
             vm?.SelectScreen("Nav.Help");
             e.Handled = true;
         }
+        else if (MatchesTerminalShortcut(vm, e))
+        {
+            // Raccourci configurable : entre dans le terminal (ouvre + focus) ; s'il a
+            // déjà le focus, en sort.
+            ToggleTerminalFocus(vm);
+            e.Handled = true;
+        }
+        else if (meta && e.Key == Key.F)
+        {
+            // ⌘F : focus le champ de filtre de l'écran courant.
+            FindInContent<TextBox>("FilterBox")?.Focus();
+            e.Handled = true;
+        }
+        else if (IsFocusInTerminalInput() && HandleTerminalKey(vm, e.Key))
+        {
+            var box = this.FindControl<TextBox>("TerminalBox");
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (box is not null)
+                {
+                    box.CaretIndex = box.Text?.Length ?? 0;
+                }
+            });
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Tab)
+        {
+            // Tab / ⇧Tab : bascule le focus entre la zone menu (nav) et la zone grille
+            // (tuiles). Les contrôles d'en-tête restent joignables par leurs raccourcis.
+            ToggleZoneFocus();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Space && IsFocusInTiles()
+                 && vm?.CurrentScreen is PackageListViewModel plvm && plvm.SelectedItem is { } sp)
+        {
+            // Espace : (dé)coche la tuile focalisée (opérations par lot).
+            sp.IsChecked = !sp.IsChecked;
+            e.Handled = true;
+        }
+        else if ((e.Key == Key.Up || e.Key == Key.Down) && IsFocusInTiles())
+        {
+            // Le WrapPanel ne gère pas le saut de rangée : on le fait géométriquement
+            // (tuile de la rangée voisine dont la colonne est la plus proche).
+            MoveTilesVertically(e.Key == Key.Down ? 1 : -1);
+            e.Handled = true;
+        }
+        else if (meta && TryGetDigitIndex(e.Key) is { } index)
+        {
+            // ⌘1…⌘8 → onglets. La rangée du haut (Key.D1…) et le pavé numérique
+            // (Key.NumPad1…) sont acceptés : sur AZERTY Apple la rangée du haut exige
+            // ⇧ pour un vrai chiffre, mais la touche physique reste Key.Dn — donc
+            // ⌘+touche fonctionne sans ⇧, et le pavé numérique offre de vrais chiffres.
+            vm?.SelectByIndex(index);
+            e.Handled = true;
+        }
     }
+
+    // --- Navigation clavier par zones (menu ↔ grille) ------------------------
+
+    private T? FindInContent<T>(string name) where T : Control
+        => this.GetVisualDescendants().OfType<T>().FirstOrDefault(c => c.Name == name);
+
+    private ListBox? TilesList() => FindInContent<ListBox>("List");
+
+    private bool IsFocusInTerminalInput()
+        => this.FindControl<TextBox>("TerminalBox") is { } box
+           && ReferenceEquals(FocusManager?.GetFocusedElement(), box);
+
+    // L'événement correspond-il au raccourci du terminal configuré ?
+    private static bool MatchesTerminalShortcut(MainViewModel? vm, KeyEventArgs e)
+    {
+        if (vm is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return KeyGesture.Parse(vm.Settings.TerminalShortcut).Matches(e);
+        }
+        catch (Exception)
+        {
+            return false;   // geste mal formé : on ignore plutôt que de planter
+        }
+    }
+
+    /// <summary>
+    /// Positionne le popup de complétion à l'horizontale du mot courant : on mesure la
+    /// largeur du texte qui précède ce mot dans la police (monospace) de la saisie.
+    /// </summary>
+    private void UpdateSuggestionPopupOffset()
+    {
+        if (this.FindControl<Popup>("SuggestPopup") is not { } popup
+            || this.FindControl<TextBox>("TerminalBox") is not { } box)
+        {
+            return;
+        }
+
+        var text = box.Text ?? string.Empty;
+        var caret = Math.Clamp(box.CaretIndex, 0, text.Length);
+        var lastSpace = text.LastIndexOf(' ', Math.Max(0, caret - 1));
+        var wordStart = lastSpace < 0 ? 0 : lastSpace + 1;
+        var prefix = text[..wordStart];
+
+        var typeface = new Typeface(box.FontFamily, box.FontStyle, box.FontWeight);
+        var width = new TextLayout(prefix, typeface, box.FontSize, Brushes.White).Width;
+        popup.HorizontalOffset = box.Padding.Left + width;
+    }
+
+    private static bool IsModifierKey(Key key) => key
+        is Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift
+        or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin;
+
+    /// <summary>
+    /// ⌘T : si le terminal n'a pas le focus (fermé ou focus ailleurs), l'ouvre et lui
+    /// donne le focus (« mode terminal »). S'il a déjà le focus, le referme et rend le
+    /// focus à la grille.
+    /// </summary>
+    private void ToggleTerminalFocus(MainViewModel? vm)
+    {
+        if (vm is null)
+        {
+            return;
+        }
+
+        if (!vm.IsTerminalExpanded || !IsFocusInTerminalInput())
+        {
+            vm.IsTerminalExpanded = true;
+            Dispatcher.UIThread.Post(() => this.FindControl<TextBox>("TerminalBox")?.Focus());
+        }
+        else
+        {
+            vm.IsTerminalExpanded = false;
+            if (TilesList() is { } tiles)
+            {
+                tiles.Focus();
+            }
+            else
+            {
+                this.FindControl<ListBox>("NavList")?.Focus();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Touches spéciales dans la saisie du terminal. Retourne <c>true</c> si l'action est
+    /// consommée. Popup ouvert : ↑/↓ naviguent, Tab/Entrée acceptent, Échap ferme. Popup
+    /// fermé : ↑/↓ historique, Tab complète, Entrée exécute (non consommée ici → KeyBinding).
+    /// </summary>
+    private static bool HandleTerminalKey(MainViewModel? vm, Key key)
+    {
+        if (vm is null)
+        {
+            return false;
+        }
+
+        var open = vm.IsSuggestionsOpen;
+        switch (key)
+        {
+            case Key.Up:
+                if (open) { vm.SuggestionUp(); } else { vm.HistoryPrevious(); }
+                return true;
+            case Key.Down:
+                if (open) { vm.SuggestionDown(); } else { vm.HistoryNext(); }
+                return true;
+            case Key.Tab:
+                if (open) { vm.AcceptSuggestion(); } else { vm.CompleteTerminal(); }
+                return true;
+            case Key.Escape:
+                if (!open) { return false; }
+                vm.CloseSuggestions();
+                return true;
+            case Key.Enter:
+                if (open && vm.SuggestionIndex >= 0) { vm.EnterOnSuggestion(); return true; }
+                return false;   // laisse le KeyBinding exécuter la commande
+            default:
+                return false;
+        }
+    }
+
+    private bool IsFocusInTiles()
+    {
+        var tiles = TilesList();
+        return tiles is not null
+               && FocusManager?.GetFocusedElement() is Visual focused
+               && (focused == tiles || tiles.IsVisualAncestorOf(focused));
+    }
+
+    /// <summary>
+    /// Déplace la sélection d'une rangée dans la grille (WrapPanel) : cherche, parmi les
+    /// tuiles de la rangée immédiatement au-dessus/au-dessous, celle dont la position
+    /// horizontale est la plus proche. <paramref name="dir"/> = +1 (bas) / -1 (haut).
+    /// </summary>
+    private void MoveTilesVertically(int dir)
+    {
+        var list = TilesList();
+        if (list is null || list.ItemCount == 0)
+        {
+            return;
+        }
+
+        var cur = list.SelectedIndex;
+        if (cur < 0)
+        {
+            list.SelectedIndex = 0;
+            FocusTile(list, 0);
+            return;
+        }
+
+        if (list.ContainerFromIndex(cur) is not Control curContainer)
+        {
+            return;
+        }
+
+        var curX = curContainer.Bounds.X;
+        var curY = curContainer.Bounds.Y;
+
+        var best = -1;
+        var bestScore = double.MaxValue;
+        for (var i = 0; i < list.ItemCount; i++)
+        {
+            if (i == cur || list.ContainerFromIndex(i) is not Control c)
+            {
+                continue;
+            }
+
+            var b = c.Bounds;
+            // La cible doit être sur une autre rangée dans le sens demandé.
+            if (dir > 0 && b.Y <= curY + 1)
+            {
+                continue;
+            }
+
+            if (dir < 0 && b.Y >= curY - 1)
+            {
+                continue;
+            }
+
+            // Rangée la plus proche d'abord, puis colonne la plus proche.
+            var score = (Math.Abs(b.Y - curY) * 100000) + Math.Abs(b.X - curX);
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = i;
+            }
+        }
+
+        if (best >= 0)
+        {
+            list.SelectedIndex = best;
+            FocusTile(list, best);
+        }
+    }
+
+    private static void FocusTile(ListBox list, int index)
+    {
+        list.ScrollIntoView(index);
+        (list.ContainerFromIndex(index) as Control)?.Focus();
+    }
+
+    /// <summary>Bascule le focus entre la grille de tuiles (zone 2) et le menu (zone 1).</summary>
+    private void ToggleZoneFocus()
+    {
+        var nav = this.FindControl<ListBox>("NavList");
+        if (IsFocusInTiles())
+        {
+            nav?.Focus();
+            return;
+        }
+
+        if (TilesList() is { ItemCount: > 0 } tiles)
+        {
+            var idx = tiles.SelectedIndex < 0 ? 0 : tiles.SelectedIndex;
+            tiles.SelectedIndex = idx;
+            FocusTile(tiles, idx);
+        }
+        else
+        {
+            nav?.Focus();
+        }
+    }
+
+    /// <summary>Indice 0-based de l'onglet pour une touche chiffre 1…8, sinon null.</summary>
+    private static int? TryGetDigitIndex(Key key) => key switch
+    {
+        Key.D1 or Key.NumPad1 => 0,
+        Key.D2 or Key.NumPad2 => 1,
+        Key.D3 or Key.NumPad3 => 2,
+        Key.D4 or Key.NumPad4 => 3,
+        Key.D5 or Key.NumPad5 => 4,
+        Key.D6 or Key.NumPad6 => 5,
+        Key.D7 or Key.NumPad7 => 6,
+        Key.D8 or Key.NumPad8 => 7,
+        _ => null,
+    };
 
     private void WireResize(Control handle, WindowEdge edge)
     {
@@ -202,7 +576,15 @@ public partial class MainWindow : Window
     }
 
     private void OnLogChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => Dispatcher.UIThread.Post(() => LogScroll?.ScrollToEnd(), DispatcherPriority.Background);
+    {
+        // Une commande brew a produit une sortie : on déplie le terminal pour la montrer.
+        if (e.Action == NotifyCollectionChangedAction.Add && DataContext is MainViewModel vm)
+        {
+            vm.IsTerminalExpanded = true;
+        }
+
+        Dispatcher.UIThread.Post(() => LogScroll?.ScrollToEnd(), DispatcherPriority.Background);
+    }
 
     private void OnOpened(object? sender, EventArgs e)
     {

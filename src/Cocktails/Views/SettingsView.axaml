@@ -69,6 +69,31 @@
 
                 <Border Classes="hairline" />
 
+                <!-- Mot de passe administrateur : durée de rétention + oubli immédiat. -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Sudo.Lifetime}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{loc:Tr Sudo.LifetimeHint}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                                VerticalAlignment="Center">
+                        <ComboBox MinWidth="170"
+                                  ItemsSource="{Binding SudoLifetimes}"
+                                  SelectedItem="{Binding SelectedSudoLifetime}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FrequencyOption">
+                                    <TextBlock Text="{Binding Display}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Classes="act" Content="{loc:Tr Sudo.Forget}"
+                                Command="{Binding ForgetSudoPasswordCommand}" />
+                    </StackPanel>
+                </Grid>
+
+                <Border Classes="hairline" />
+
                 <Grid ColumnDefinitions="*,Auto" Margin="0,12">
                     <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
                         <TextBlock Classes="body" Text="{loc:Tr Settings.Notifications}" />
@@ -78,6 +103,24 @@
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
                                   IsChecked="{Binding Settings.NotificationsEnabled}" />
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <!-- Test des notifications (vérifie la livraison, indépendamment du moniteur). -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.TestNotif}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{loc:Tr Settings.TestNotifDesc}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="act" VerticalAlignment="Center"
+                            Command="{Binding TestNotificationCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Path Data="{StaticResource IconBellGeo}" Classes="btnicon" />
+                            <TextBlock Text="{loc:Tr Settings.TestNotifBtn}" />
+                        </StackPanel>
+                    </Button>
                 </Grid>
 
                 <Border Classes="hairline" />
@@ -104,6 +147,22 @@
                     <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"
                                   OnContent="" OffContent=""
                                   IsChecked="{Binding Settings.ConfirmBeforeUninstall}" />
+                </Grid>
+
+                <Border Classes="hairline" />
+
+                <!-- Raccourci du terminal (enregistrable). -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,12">
+                    <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,16,0">
+                        <TextBlock Classes="body" Text="{loc:Tr Settings.TerminalShortcut}" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{loc:Tr Settings.TerminalShortcutDesc}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="seg" VerticalAlignment="Center">
+                        <Button Classes="segbtn" Classes.on="{Binding IsRecordingShortcut}"
+                                MinWidth="130" Content="{Binding RecordButtonLabel}"
+                                Command="{Binding RecordShortcutCommand}" />
+                    </Border>
                 </Grid>
 
                 <Border Classes="hairline" />
