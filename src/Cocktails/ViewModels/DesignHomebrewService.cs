@@ -12,7 +12,7 @@ namespace Cocktails.ViewModels;
 /// d'exemple. Sert uniquement au previewer XAML (design-time) et au constructeur
 /// sans argument de <see cref="MainViewModel"/> ; jamais utilisée à l'exécution réelle.
 /// </summary>
-internal sealed class DesignHomebrewService : IHomebrewService
+public sealed class DesignHomebrewService : IHomebrewService
 {
     private static readonly IReadOnlyList<Package> Sample =
     [

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Cocktails.Core.Models;
 using Cocktails.Core.Process;
+using Cocktails.Core.Sudo;
 
 namespace Cocktails.Core;
 
@@ -14,16 +15,25 @@ public sealed class HomebrewService : IHomebrewService
 {
     private readonly IProcessRunner _runner;
     private readonly string _brewPath;
+    private readonly ISudoAskpass? _askpass;
 
     /// <param name="runner">Exécuteur de processus (réel ou factice pour les tests).</param>
     /// <param name="brewPath">
     /// Chemin de l'exécutable <c>brew</c>. Défaut : <c>/opt/homebrew/bin/brew</c>
     /// (emplacement standard sur Apple Silicon ; <c>/usr/local/bin/brew</c> sur Intel).
     /// </param>
-    public HomebrewService(IProcessRunner runner, string brewPath = "/opt/homebrew/bin/brew")
+    /// <param name="askpass">
+    /// Courtier de mot de passe administrateur. <c>null</c> → les commandes qui réclament
+    /// <c>sudo</c> échoueront comme avant, faute de terminal pour saisir le mot de passe.
+    /// </param>
+    public HomebrewService(
+        IProcessRunner runner,
+        string brewPath = "/opt/homebrew/bin/brew",
+        ISudoAskpass? askpass = null)
     {
         _runner = runner;
         _brewPath = brewPath;
+        _askpass = askpass;
     }
 
     public async Task<IReadOnlyList<Package>> GetInstalledAsync(CancellationToken cancellationToken = default)
@@ -95,8 +105,12 @@ public sealed class HomebrewService : IHomebrewService
         IReadOnlyList<string> args, IProgress<string>? output = null, CancellationToken cancellationToken = default)
     {
         // Invocation directe du binaire brew avec ces arguments (pas de shell) : la saisie
-        // du terminal ne peut donc pas s'échapper vers un autre programme.
-        var result = await _runner.RunAsync(_brewPath, args, output, cancellationToken).ConfigureAwait(false);
+        // du terminal ne peut donc pas s'échapper vers un autre programme. On ne sait pas
+        // ce que l'utilisateur tape, donc on prévoit sudo dans tous les cas (la variable
+        // reste sans effet pour les commandes qui ne l'appellent pas).
+        var result = await _runner
+            .RunAsync(_brewPath, args, output, cancellationToken, SudoEnvironment())
+            .ConfigureAwait(false);
         return result.ExitCode;
     }
 
@@ -140,18 +154,22 @@ public sealed class HomebrewService : IHomebrewService
         => await RunAsync(["analytics", enabled ? "on" : "off"], cancellationToken);
 
     public async Task InstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(kind == PackageKind.Cask ? ["install", "--cask", name] : ["install", name], cancellationToken, output);
+        => await RunAsync(
+            kind == PackageKind.Cask ? ["install", "--cask", name] : ["install", name],
+            cancellationToken, output, mayUseSudo: true);
 
     public async Task ReinstallAsync(string name, PackageKind kind, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(kind == PackageKind.Cask ? ["reinstall", "--cask", name] : ["reinstall", name], cancellationToken, output);
+        => await RunAsync(
+            kind == PackageKind.Cask ? ["reinstall", "--cask", name] : ["reinstall", name],
+            cancellationToken, output, mayUseSudo: true);
 
     public async Task UninstallAsync(string name, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["uninstall", name], cancellationToken, output);
+        => await RunAsync(["uninstall", name], cancellationToken, output, mayUseSudo: true);
 
     public async Task UpgradeAsync(string? name = null, IProgress<string>? output = null, CancellationToken cancellationToken = default)
     {
         string[] args = name is null ? ["upgrade"] : ["upgrade", name];
-        await RunAsync(args, cancellationToken, output);
+        await RunAsync(args, cancellationToken, output, mayUseSudo: true);
     }
 
     public async Task CleanupAsync(IProgress<string>? output = null, CancellationToken cancellationToken = default)
@@ -180,7 +198,7 @@ public sealed class HomebrewService : IHomebrewService
         => await RunAsync(["bundle", "dump", "--file=" + path, "--force"], cancellationToken, output);
 
     public async Task BundleInstallAsync(string path, IProgress<string>? output = null, CancellationToken cancellationToken = default)
-        => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output);
+        => await RunAsync(["bundle", "install", "--file=" + path], cancellationToken, output, mayUseSudo: true);
 
     public async Task<IReadOnlyList<BrewService>> GetServicesAsync(CancellationToken cancellationToken = default)
     {
@@ -213,15 +231,39 @@ public sealed class HomebrewService : IHomebrewService
         => await RunAsync(["trust", name], cancellationToken, output);
 
     private async Task<ProcessResult> RunAsync(
-        string[] args, CancellationToken cancellationToken, IProgress<string>? output = null)
+        string[] args,
+        CancellationToken cancellationToken,
+        IProgress<string>? output = null,
+        bool mayUseSudo = false)
     {
-        var result = await _runner.RunAsync(_brewPath, args, output, cancellationToken).ConfigureAwait(false);
+        var result = await _runner
+            .RunAsync(_brewPath, args, output, cancellationToken, mayUseSudo ? SudoEnvironment() : null)
+            .ConfigureAwait(false);
         if (!result.Success)
         {
             throw new HomebrewException(string.Join(' ', args), result);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Environnement d'une commande susceptible d'appeler <c>sudo</c> : Homebrew ajoute
+    /// <c>-A</c> à ses appels sudo dès que <c>SUDO_ASKPASS</c> est défini, et demande alors
+    /// le mot de passe au programme désigné plutôt qu'à un terminal (qu'il n'a pas ici).
+    /// Sans courtier disponible, on n'exporte rien : brew se comporte comme avant.
+    /// </summary>
+    private IReadOnlyDictionary<string, string>? SudoEnvironment()
+    {
+        if (_askpass?.HelperPath is not { } helper)
+        {
+            return null;
+        }
+
+        // Nouvelle commande = nouvelle opération : le courtier repart d'un compteur de
+        // tentatives neuf pour distinguer un mot de passe refusé d'une première demande.
+        _askpass.BeginOperation();
+        return new Dictionary<string, string> { ["SUDO_ASKPASS"] = helper };
     }
 
     // --- Parsing (statique et testable) ---------------------------------------

@@ -21,10 +21,12 @@ public interface IProcessRunner
     /// Exécute <paramref name="fileName"/> avec ses arguments et attend la fin.
     /// Si <paramref name="output"/> est fourni, chaque ligne de stdout/stderr lui est
     /// signalée au fil de l'eau (en plus d'être accumulée dans le résultat final).
+    /// <paramref name="environment"/> ajoute des variables à celles héritées du processus.
     /// </summary>
     Task<ProcessResult> RunAsync(
         string fileName,
         IReadOnlyList<string> arguments,
         IProgress<string>? output = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        IReadOnlyDictionary<string, string>? environment = null);
 }

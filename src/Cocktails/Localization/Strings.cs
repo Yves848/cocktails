@@ -290,6 +290,22 @@ public static class Strings
         ["Error.Generic"] = ["Error: {0}", "Erreur : {0}", "Error: {0}", "Fehler: {0}"],
 
         // Confirmations
+        // Mot de passe administrateur (sudo) réclamé par un installeur de cask.
+        ["Sudo.Title"] = ["Administrator password", "Mot de passe administrateur", "Contraseña de administrador", "Administratorkennwort"],
+        ["Sudo.Explain"] = ["Homebrew needs to run an installer as root. Your password is sent straight to sudo and never saved to disk.", "Homebrew doit exécuter un installeur en tant que root. Votre mot de passe est transmis directement à sudo et n’est jamais écrit sur disque.", "Homebrew necesita ejecutar un instalador como root. Tu contraseña se envía directamente a sudo y nunca se guarda en disco.", "Homebrew muss ein Installationsprogramm als root ausführen. Ihr Kennwort geht direkt an sudo und wird nie auf die Festplatte geschrieben."],
+        ["Sudo.Rejected"] = ["Incorrect password — sudo refused it. Please try again.", "Mot de passe incorrect — sudo l’a refusé. Réessayez.", "Contraseña incorrecta: sudo la rechazó. Inténtalo de nuevo.", "Falsches Kennwort — sudo hat es abgelehnt. Bitte erneut versuchen."],
+        ["Sudo.Remember"] = ["Remember for this session", "Retenir pour cette session", "Recordar durante esta sesión", "Für diese Sitzung merken"],
+        ["Sudo.Submit"] = ["Continue", "Continuer", "Continuar", "Fortfahren"],
+        ["Sudo.Forget"] = ["Forget password", "Oublier le mot de passe", "Olvidar la contraseña", "Kennwort vergessen"],
+        ["Sudo.Lifetime"] = ["Forget the password after (minutes)", "Oublier le mot de passe après (minutes)", "Olvidar la contraseña tras (minutos)", "Kennwort vergessen nach (Minuten)"],
+        ["Sudo.Unavailable"] = ["⚠ Cocktails could not ask you for the administrator password (askpass helper unavailable). Run this command in Terminal.app to complete it.", "⚠ Cocktails n’a pas pu vous demander le mot de passe administrateur (programme askpass indisponible). Relancez cette commande dans Terminal.app pour la terminer.", "⚠ Cocktails no pudo pedirte la contraseña de administrador (asistente askpass no disponible). Ejecuta este comando en Terminal.app para completarlo.", "⚠ Cocktails konnte nicht nach dem Administratorkennwort fragen (askpass-Hilfsprogramm nicht verfügbar). Führen Sie diesen Befehl in Terminal.app aus."],
+        ["Sudo.After15m"] = ["After 15 minutes", "Après 15 minutes", "Tras 15 minutos", "Nach 15 Minuten"],
+        ["Sudo.After1h"] = ["After 1 hour", "Après 1 heure", "Tras 1 hora", "Nach 1 Stunde"],
+        ["Sudo.After4h"] = ["After 4 hours", "Après 4 heures", "Tras 4 horas", "Nach 4 Stunden"],
+        ["Sudo.WholeSession"] = ["Never (whole session)", "Jamais (toute la session)", "Nunca (toda la sesión)", "Nie (ganze Sitzung)"],
+        ["Settings.SudoForgotten"] = ["Administrator password forgotten.", "Mot de passe administrateur oublié.", "Contraseña de administrador olvidada.", "Administratorkennwort vergessen."],
+        ["Sudo.LifetimeHint"] = ["A remembered password is wiped from memory after this long without a sudo request.", "Un mot de passe retenu est effacé de la mémoire après ce délai sans appel sudo.", "Una contraseña recordada se borra de la memoria tras este tiempo sin llamadas a sudo.", "Ein gemerktes Kennwort wird nach dieser Zeit ohne sudo-Anfrage aus dem Speicher gelöscht."],
+
         ["Confirm.UninstallTitle"] = ["Uninstall this package?", "Désinstaller ce paquet ?", "¿Desinstalar este paquete?", "Dieses Paket deinstallieren?"],
         ["Confirm.UninstallMsg"] = ["Uninstalling “{0}” is irreversible. Packages depending on it may stop working.", "La désinstallation de « {0} » est irréversible. Les paquets qui en dépendent pourraient cesser de fonctionner.", "Desinstalar «{0}» es irreversible. Los paquetes que dependen de él podrían dejar de funcionar.", "Die Deinstallation von „{0}“ ist unumkehrbar. Abhängige Pakete funktionieren möglicherweise nicht mehr."],
         ["Confirm.BatchUninstallTitle"] = ["Uninstall {0} package(s)?", "Désinstaller {0} paquet(s) ?", "¿Desinstalar {0} paquete(s)?", "{0} Paket(e) deinstallieren?"],

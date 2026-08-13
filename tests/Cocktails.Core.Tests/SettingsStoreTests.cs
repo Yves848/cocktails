@@ -26,6 +26,7 @@ public class SettingsStoreTests
                 KeepRunningInBackground = false,
                 Language = Cocktails.Localization.AppLanguage.German,
                 TerminalShortcut = "Ctrl+Alt+J",
+                SudoPasswordLifetimeMinutes = 15,
                 WindowWidth = 1024,
                 WindowHeight = 720,
                 WindowX = 100,
@@ -42,6 +43,7 @@ public class SettingsStoreTests
             Assert.False(loaded.KeepRunningInBackground);
             Assert.Equal(Cocktails.Localization.AppLanguage.German, loaded.Language);
             Assert.Equal("Ctrl+Alt+J", loaded.TerminalShortcut);
+            Assert.Equal(15, loaded.SudoPasswordLifetimeMinutes);
             Assert.Equal(1024, loaded.WindowWidth);
             Assert.Equal(720, loaded.WindowHeight);
             Assert.Equal(100, loaded.WindowX);

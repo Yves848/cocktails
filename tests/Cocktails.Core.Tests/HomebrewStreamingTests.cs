@@ -28,7 +28,8 @@ public class HomebrewStreamingTests
             string fileName,
             IReadOnlyList<string> arguments,
             IProgress<string>? output = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IReadOnlyDictionary<string, string>? environment = null)
         {
             LastArguments.Clear();
             LastArguments.AddRange(arguments);

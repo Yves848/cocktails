@@ -32,6 +32,14 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     public partial bool KeepRunningInBackground { get; set; } = true;
 
+    /// <summary>
+    /// Durée (minutes) pendant laquelle un mot de passe administrateur « retenu » survit
+    /// sans nouvel appel sudo, après quoi il est effacé de la mémoire. <see cref="int.MaxValue"/>
+    /// = toute la session. Jamais écrit sur disque : seule la durée l'est.
+    /// </summary>
+    [ObservableProperty]
+    public partial int SudoPasswordLifetimeMinutes { get; set; } = 60;
+
     /// <summary>Langue de l'interface (<see cref="AppLanguage.System"/> = suivre le système).</summary>
     [ObservableProperty]
     public partial AppLanguage Language { get; set; } = AppLanguage.System;

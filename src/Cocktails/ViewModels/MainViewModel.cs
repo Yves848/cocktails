@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Core.Sudo;
+using Cocktails.Localization;
 using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -53,8 +56,13 @@ public partial class MainViewModel : ViewModelBase
     private bool _suppressSuggestions;   // vrai pendant un set programmatique (historique / accept)
     private List<string> _lastResults = [];   // résultats de la commande précédente (enchaînement)
 
+    /// <param name="askpass">
+    /// Courtier du mot de passe administrateur : le shell lui sert de dialogue de saisie
+    /// (<see cref="RequestPasswordAsync"/>) et les Réglages peuvent lui faire oublier le
+    /// mot de passe retenu.
+    /// </param>
     public MainViewModel(IHomebrewService homebrew, AppSettings? settings = null, UpdateMonitor? monitor = null,
-        INotifier? notifier = null)
+        INotifier? notifier = null, AskpassBroker? askpass = null)
     {
         _homebrew = homebrew;
         settings ??= new AppSettings();
@@ -69,7 +77,9 @@ public partial class MainViewModel : ViewModelBase
             new NavItem("Nav.Maintenance", IconMaintenance, new MaintenanceViewModel(homebrew), "#A78BFA"),
             new NavItem("Nav.Services", IconServices, new ServicesViewModel(homebrew), "#43C07A"),
             new NavItem("Nav.Taps", IconTaps, new TapsViewModel(homebrew), "#F472B6"),
-            new NavItem("Nav.Settings", IconSettings, new SettingsViewModel(homebrew, settings, notifier), "#94A3B8"),
+            new NavItem("Nav.Settings", IconSettings,
+                new SettingsViewModel(homebrew, settings, notifier, askpass is null ? null : askpass.ForgetPassword),
+                "#94A3B8"),
             new NavItem("Nav.Help", IconHelp, new HelpViewModel(), "#FB923C"),
         ];
 
@@ -134,6 +144,68 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial ScreenViewModel? CurrentScreen { get; set; }
+
+    // --- Mot de passe administrateur (sudo) ----------------------------------
+
+    /// <summary>Demande de mot de passe en attente (non nulle → dialogue affiché).</summary>
+    [ObservableProperty]
+    public partial PasswordRequest? PasswordRequest { get; set; }
+
+    /// <summary>Saisie en cours dans le champ masqué du dialogue.</summary>
+    [ObservableProperty]
+    public partial string PasswordInput { get; set; } = string.Empty;
+
+    /// <summary>Garder le mot de passe en mémoire pour les prochaines demandes.</summary>
+    [ObservableProperty]
+    public partial bool RememberPassword { get; set; }
+
+    private TaskCompletionSource<PasswordReply?>? _passwordReply;
+    private CancellationTokenRegistration _passwordCancellation;
+
+    /// <summary>
+    /// Traduit une demande du courtier askpass en dialogue, et attend la réponse de
+    /// l'utilisateur. Rend <c>null</c> s'il annule (ou si l'opération est annulée).
+    /// </summary>
+    public Task<PasswordReply?> RequestPasswordAsync(PasswordPrompt prompt, CancellationToken cancellationToken)
+    {
+        var pending = new TaskCompletionSource<PasswordReply?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _passwordReply = pending;
+        PasswordInput = string.Empty;
+        PasswordRequest = new PasswordRequest(
+            Localizer.Instance["Sudo.Title"],
+            Localizer.Instance[prompt.IsRetry ? "Sudo.Rejected" : "Sudo.Explain"],
+            prompt.IsRetry);
+
+        _passwordCancellation = cancellationToken.Register(CancelPassword);
+        return pending.Task;
+    }
+
+    /// <summary>Valide la saisie : le mot de passe part vers sudo.</summary>
+    [RelayCommand]
+    private void SubmitPassword()
+    {
+        var pending = _passwordReply;
+        var reply = new PasswordReply(PasswordInput, RememberPassword);
+        ClosePasswordDialog();
+        pending?.TrySetResult(reply);
+    }
+
+    /// <summary>Annule : rien n'est transmis, sudo abandonne et la commande brew échoue.</summary>
+    [RelayCommand]
+    private void CancelPassword()
+    {
+        var pending = _passwordReply;
+        ClosePasswordDialog();
+        pending?.TrySetResult(null);
+    }
+
+    private void ClosePasswordDialog()
+    {
+        _passwordCancellation.Dispose();
+        _passwordReply = null;
+        PasswordRequest = null;
+        PasswordInput = string.Empty;   // la saisie ne survit pas au dialogue
+    }
 
     /// <summary>Terminal intégré déplié (sinon seule sa barre est visible).</summary>
     [ObservableProperty]

@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Cocktails.Core;
+using Cocktails.Core.Sudo;
 using Cocktails.Localization;
 using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -58,6 +59,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
     private const int MaxLogLines = 200;
     private bool _activated;
+    private bool _sudoHintShown;   // une seule explication sudo par opération
 
     /// <summary>
     /// Appelé par le shell quand l'écran devient actif. Déclenche le chargement initial
@@ -111,6 +113,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
 
         IsBusy = true;
         StatusMessage = busyMessage;
+        _sudoHintShown = false;
         try
         {
             await action();
@@ -137,15 +140,7 @@ public abstract partial class ScreenViewModel : ViewModelBase
     protected Task RunWithOutputAsync(string busyMessage, Func<IProgress<string>, Task> action)
     {
         OutputLog.Clear();
-        var progress = new Progress<string>(line =>
-        {
-            OutputLog.Add(line);
-            while (OutputLog.Count > MaxLogLines)
-            {
-                OutputLog.RemoveAt(0);
-            }
-        });
-
+        var progress = new Progress<string>(AppendLog);
         return RunAsync(busyMessage, () => action(progress));
     }
 
@@ -153,6 +148,16 @@ public abstract partial class ScreenViewModel : ViewModelBase
     private void AppendLog(string line)
     {
         OutputLog.Add(line);
+
+        // Le courtier askpass devrait rendre ce message impossible ; s'il apparaît quand
+        // même, c'est que le mécanisme est indisponible — on l'explique au lieu de laisser
+        // l'utilisateur devant la sortie brute de sudo.
+        if (!_sudoHintShown && SudoOutput.IsPasswordFailure(line))
+        {
+            _sudoHintShown = true;
+            OutputLog.Add(L["Sudo.Unavailable"]);
+        }
+
         while (OutputLog.Count > MaxLogLines)
         {
             OutputLog.RemoveAt(0);

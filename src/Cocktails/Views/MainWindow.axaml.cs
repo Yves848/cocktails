@@ -85,6 +85,23 @@ public partial class MainWindow : Window
             }
         };
 
+        // Le dialogue de mot de passe apparaît sans que l'utilisateur l'ait déclenché :
+        // on lui donne le focus pour qu'il puisse taper immédiatement.
+        DataContextChanged += (_, _) =>
+        {
+            if (DataContext is MainViewModel shell)
+            {
+                shell.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName == nameof(MainViewModel.PasswordRequest)
+                        && shell.PasswordRequest is not null)
+                    {
+                        Dispatcher.UIThread.Post(() => PasswordBox.Focus());
+                    }
+                };
+            }
+        };
+
         Opened += OnOpened;
     }
 
@@ -96,6 +113,24 @@ public partial class MainWindow : Window
     {
         var meta = e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         var vm = DataContext as MainViewModel;
+
+        // Saisie du mot de passe administrateur : dialogue modal, ↩ valide et ⎋ annule.
+        // Aucun autre raccourci ne passe tant qu'il est ouvert.
+        if (vm?.PasswordRequest is not null)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                vm.SubmitPasswordCommand.Execute(null);
+            }
+            else if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                vm.CancelPasswordCommand.Execute(null);
+            }
+
+            return;
+        }
 
         // Enregistrement d'un raccourci (Réglages) : on capture la combinaison saisie.
         if (vm?.CurrentScreen is SettingsViewModel { IsRecordingShortcut: true } recorder)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cocktails.Core;
 using Cocktails.Core.Models;
+using Cocktails.Core.Sudo;
 using Cocktails.Localization;
 using Cocktails.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -55,12 +56,21 @@ public sealed partial class SettingsViewModel : ScreenViewModel
     private bool _analyticsEnabled;
     private bool _analyticsLoaded;
     private readonly INotifier _notifier;
+    private readonly Action? _forgetSudoPassword;
 
-    public SettingsViewModel(IHomebrewService homebrew, AppSettings? settings = null, INotifier? notifier = null)
+    /// <param name="forgetSudoPassword">
+    /// Efface le mot de passe administrateur gardé en mémoire par le courtier askpass.
+    /// </param>
+    public SettingsViewModel(
+        IHomebrewService homebrew,
+        AppSettings? settings = null,
+        INotifier? notifier = null,
+        Action? forgetSudoPassword = null)
         : base(homebrew)
     {
         Settings = settings ?? new AppSettings();
         _notifier = notifier ?? new NullNotifier();
+        _forgetSudoPassword = forgetSudoPassword;
         StatusMessage = L["Status.Settings"];
     }
 
@@ -179,6 +189,43 @@ public sealed partial class SettingsViewModel : ScreenViewModel
                 OnPropertyChanged();
             }
         }
+    }
+
+    // --- Mot de passe administrateur -----------------------------------------
+
+    /// <summary>
+    /// Durées de rétention proposées pour un mot de passe retenu. La dernière
+    /// (<see cref="int.MaxValue"/>) le garde toute la session — l'app pouvant rester
+    /// des jours en arrière-plan, ce n'est pas le défaut.
+    /// </summary>
+    public IReadOnlyList<FrequencyOption> SudoLifetimes { get; } =
+    [
+        new("Sudo.After15m", 15),
+        new("Sudo.After1h", 60),
+        new("Sudo.After4h", 240),
+        new("Sudo.WholeSession", int.MaxValue),
+    ];
+
+    public FrequencyOption SelectedSudoLifetime
+    {
+        get => SudoLifetimes.FirstOrDefault(o => o.Minutes == Settings.SudoPasswordLifetimeMinutes)
+               ?? SudoLifetimes[1];
+        set
+        {
+            if (value is not null && value.Minutes != Settings.SudoPasswordLifetimeMinutes)
+            {
+                Settings.SudoPasswordLifetimeMinutes = value.Minutes;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>Efface immédiatement le mot de passe administrateur gardé en mémoire.</summary>
+    [RelayCommand]
+    private void ForgetSudoPassword()
+    {
+        _forgetSudoPassword?.Invoke();
+        StatusMessage = L["Settings.SudoForgotten"];
     }
 
     protected override Task OnFirstActivatedAsync()
